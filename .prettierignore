@@ -1,0 +1,11 @@
+.next
+node_modules
+coverage
+package-lock.json
+supabase/.temp
+types/database.ts
+
+# Project documents: owned by the team, formatted by hand
+PRD.md
+CLAUDE.md
+AGENTS.md
