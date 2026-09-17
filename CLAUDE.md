@@ -43,7 +43,8 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 | `npm run db:reset`                     | Reset database lokal + jalankan ulang migrasi |
 | `npm run db:push`                      | Terapkan migrasi ke proyek Supabase terhubung |
 | `npm run db:types`                     | Regenerasi `types/database.ts`                |
-| `npm run seed:owner`                   | Buat/perbarui akun `owner`                    |
+| `npm run seed:owner`                   | Buat/perbarui akun `owner` (+ `manager` bila `SEED_MANAGER_*` diisi) |
+| `npm run db:rls-check`                 | Uji kebijakan RLS di database lokal (`scripts/rls-check.sql`) |
 
 Sebelum menyelesaikan fase, jalankan: `npm run lint && npm run typecheck && npm run test && npm run build`.
 
@@ -52,3 +53,6 @@ Sebelum menyelesaikan fase, jalankan: `npm run lint && npm run typecheck && npm 
 - Next.js 16: berkas `middleware.ts` sudah diganti menjadi `proxy.ts` (runtime Node.js).
 - `AGENTS.md` ditulis ulang otomatis oleh `next dev`; baca juga berkas itu sebelum menulis kode Next.js.
 - Dokumentasi versi terpasang ada di `node_modules/next/dist/docs/`.
+- TanStack Table v9: `useTable` + `tableFeatures` (bukan `useReactTable`); panduan di `node_modules/@tanstack/react-table/skills/`.
+- Form: `useForm<z.input<S>, unknown, z.output<S>>` + `zodResolver` karena skema memakai transform/default.
+- Tautan email Supabase (undangan, pemulihan) memakai templat `supabase/templates/*.html` → `/auth/callback?token_hash=…`; templat yang sama wajib dipasang di dashboard proyek hosted.

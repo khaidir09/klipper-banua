@@ -17,13 +17,16 @@
     "db:reset": "supabase db reset",
     "db:push": "supabase db push",
     "db:types": "supabase gen types typescript --local > types/database.ts",
-    "seed:owner": "tsx scripts/seed-owner.ts"
+    "seed:owner": "tsx scripts/seed-owner.ts",
+    "db:rls-check": "docker exec -i supabase_db_klipper-banua psql -U postgres -d postgres -v ON_ERROR_STOP=0 -f - < scripts/rls-check.sql"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.116.0",
+    "@tanstack/react-table": "^9.2.4",
     "class-variance-authority": "^0.7.1",
+    "cmdk": "^1.1.1",
     "cn": "^0.3.0",
     "date-fns": "^4.4.0",
     "date-fns-tz": "^3.2.0",

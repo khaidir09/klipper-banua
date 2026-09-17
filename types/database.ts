@@ -34,9 +34,311 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_contacts: {
+        Row: {
+          client_id: string
+          created_at: string
+          email: string
+          id: string
+          is_primary: boolean
+          name: string
+          phone_wa: string
+          position: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          email?: string
+          id?: string
+          is_primary?: boolean
+          name: string
+          phone_wa?: string
+          position?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          is_primary?: boolean
+          name?: string
+          phone_wa?: string
+          position?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_contacts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          notes: string
+          province: string
+          type: Database["public"]["Enums"]["client_type"]
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          city?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          notes?: string
+          province?: string
+          type?: Database["public"]["Enums"]["client_type"]
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          notes?: string
+          province?: string
+          type?: Database["public"]["Enums"]["client_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_bank_accounts: {
+        Row: {
+          account_holder: string
+          account_number: string
+          bank_name: string
+          created_at: string
+          creator_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          account_holder: string
+          account_number: string
+          bank_name: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          account_holder?: string
+          account_number?: string
+          bank_name?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_bank_accounts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_social_accounts: {
+        Row: {
+          audience_proof_path: string | null
+          created_at: string
+          creator_id: string
+          followers_count: number
+          handle: string
+          id: string
+          kalimantan_audience_pct: number | null
+          last_verified_at: string | null
+          platform: Database["public"]["Enums"]["social_platform"]
+          profile_url: string
+          top_cities: string
+          updated_at: string
+        }
+        Insert: {
+          audience_proof_path?: string | null
+          created_at?: string
+          creator_id: string
+          followers_count?: number
+          handle: string
+          id?: string
+          kalimantan_audience_pct?: number | null
+          last_verified_at?: string | null
+          platform: Database["public"]["Enums"]["social_platform"]
+          profile_url?: string
+          top_cities?: string
+          updated_at?: string
+        }
+        Update: {
+          audience_proof_path?: string | null
+          created_at?: string
+          creator_id?: string
+          followers_count?: number
+          handle?: string
+          id?: string
+          kalimantan_audience_pct?: number | null
+          last_verified_at?: string | null
+          platform?: Database["public"]["Enums"]["social_platform"]
+          profile_url?: string
+          top_cities?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_social_accounts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creators: {
+        Row: {
+          birth_date: string
+          city: string
+          created_at: string
+          created_by: string | null
+          email: string
+          full_name: string
+          id: string
+          niches: string[]
+          notes: string
+          phone_wa: string
+          province: string
+          stage_name: string
+          status: Database["public"]["Enums"]["creator_status"]
+          terms_agreed_at: string | null
+          terms_version: string | null
+          tier: Database["public"]["Enums"]["creator_tier"]
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          birth_date: string
+          city?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          full_name: string
+          id?: string
+          niches?: string[]
+          notes?: string
+          phone_wa?: string
+          province?: string
+          stage_name?: string
+          status?: Database["public"]["Enums"]["creator_status"]
+          terms_agreed_at?: string | null
+          terms_version?: string | null
+          tier?: Database["public"]["Enums"]["creator_tier"]
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          birth_date?: string
+          city?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          niches?: string[]
+          notes?: string
+          phone_wa?: string
+          province?: string
+          stage_name?: string
+          status?: Database["public"]["Enums"]["creator_status"]
+          terms_agreed_at?: string | null
+          terms_version?: string | null
+          tier?: Database["public"]["Enums"]["creator_tier"]
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creators_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creators_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
+          email: string
           full_name: string
           id: string
           is_active: boolean
@@ -46,6 +348,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string
           full_name?: string
           id: string
           is_active?: boolean
@@ -55,6 +358,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string
           full_name?: string
           id?: string
           is_active?: boolean
@@ -73,10 +377,34 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      get_masked_bank_account: {
+        Args: { p_creator_id: string }
+        Returns: {
+          account_number_masked: string
+          bank_name: string
+        }[]
+      }
       is_active_member: { Args: never; Returns: boolean }
       is_owner: { Args: never; Returns: boolean }
     }
     Enums: {
+      client_type:
+        | "kampus_swasta"
+        | "sekolah_swasta"
+        | "bank_daerah"
+        | "bumd"
+        | "pemda"
+        | "event_organizer"
+        | "umkm"
+        | "lainnya"
+      creator_status:
+        | "prospek"
+        | "terverifikasi"
+        | "aktif"
+        | "nonaktif"
+        | "diblokir"
+      creator_tier: "nano" | "mikro" | "menengah"
+      social_platform: "tiktok" | "instagram" | "youtube" | "facebook"
       user_role: "owner" | "manager"
     }
     CompositeTypes: {
@@ -208,6 +536,25 @@ export const Constants = {
   },
   public: {
     Enums: {
+      client_type: [
+        "kampus_swasta",
+        "sekolah_swasta",
+        "bank_daerah",
+        "bumd",
+        "pemda",
+        "event_organizer",
+        "umkm",
+        "lainnya",
+      ],
+      creator_status: [
+        "prospek",
+        "terverifikasi",
+        "aktif",
+        "nonaktif",
+        "diblokir",
+      ],
+      creator_tier: ["nano", "mikro", "menengah"],
+      social_platform: ["tiktok", "instagram", "youtube", "facebook"],
       user_role: ["owner", "manager"],
     },
   },
