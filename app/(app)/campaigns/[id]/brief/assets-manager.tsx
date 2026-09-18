@@ -33,8 +33,7 @@ import {
   type AssetType,
 } from "@/lib/constants/campaigns";
 import type { CampaignAssetRow } from "@/lib/data/campaigns";
-import { slugify } from "@/lib/referral/generate";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { uploadToBucket } from "@/lib/storage/upload";
 import { addAssetAction, deleteAssetAction } from "../../actions";
 
 type AssetWithUrl = CampaignAssetRow & { signed_url: string | null };
@@ -145,11 +144,6 @@ export function AssetsManager({
   );
 }
 
-function fileExtension(name: string): string {
-  const match = /\.([a-z0-9]{1,8})$/i.exec(name);
-  return match ? match[1]!.toLowerCase() : "bin";
-}
-
 function AddAssetDialog({ campaignId, onClose }: { campaignId: string; onClose: () => void }) {
   const [title, setTitle] = useState("");
   const [type, setType] = useState<AssetType>("video");
@@ -182,19 +176,13 @@ function AddAssetDialog({ campaignId, onClose }: { campaignId: string; onClose: 
     startTransition(async () => {
       let filePath: string | null = null;
 
-      // Upload straight to Storage with the user's session; RLS and the
-      // bucket's size/type limits apply. The server only records the path.
       if (file && !useLink) {
-        const base = slugify(file.name.replace(/\.[^.]+$/, ""), 40) || "materi";
-        filePath = `${campaignId}/${crypto.randomUUID()}-${base}.${fileExtension(file.name)}`;
-        const supabase = createSupabaseBrowserClient();
-        const { error: uploadError } = await supabase.storage
-          .from(BUCKET)
-          .upload(filePath, file, { contentType: file.type, upsert: false });
-        if (uploadError) {
-          setError(`Berkas gagal diunggah: ${uploadError.message}`);
+        const upload = await uploadToBucket(BUCKET, campaignId, file);
+        if (upload.error !== null) {
+          setError(`Berkas gagal diunggah: ${upload.error}`);
           return;
         }
+        filePath = upload.path;
       }
 
       const result = await addAssetAction({

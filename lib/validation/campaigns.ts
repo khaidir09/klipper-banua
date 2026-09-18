@@ -11,7 +11,13 @@ import {
   normalizeReferralCode,
   normalizeTrackingSlug,
 } from "@/lib/referral/generate";
-import { listQuerySchema, optionalTextField, uuidField } from "./common";
+import {
+  listQuerySchema,
+  nullableText,
+  optionalHttpUrl,
+  optionalTextField,
+  uuidField,
+} from "./common";
 import { countField, moneyField, optionalMoneyField } from "./money";
 
 const dateField = (message: string) => z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message });
@@ -44,27 +50,6 @@ export const hashtagsField = z
       )
       .max(30),
   );
-
-/**
- * Optional text that turns "" into null. It also accepts null, so a value that
- * was already parsed on the client parses again unchanged in the Server
- * Action (the forms submit Zod's output, and the server re-validates it).
- */
-const nullableText = z.union([z.string(), z.null()]).transform((value) => (value ?? "").trim());
-
-/** Optional http(s) URL; empty becomes null. */
-const optionalHttpUrl = nullableText.transform((value, ctx) => {
-  if (!value) return null;
-  const parsed = z
-    .url({ protocol: /^https?$/ })
-    .max(1000)
-    .safeParse(value);
-  if (!parsed.success) {
-    ctx.addIssue({ code: "custom", message: "URL harus diawali http:// atau https://." });
-    return z.NEVER;
-  }
-  return parsed.data;
-});
 
 const landingUrlField = optionalHttpUrl;
 

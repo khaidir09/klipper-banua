@@ -11,7 +11,8 @@ export type ActivityEntityType =
   | "creator_bank_account"
   | "campaign"
   | "campaign_asset"
-  | "campaign_creator";
+  | "campaign_creator"
+  | "content";
 
 export type ActivityAction =
   | "create"
@@ -24,7 +25,11 @@ export type ActivityAction =
   | "verify"
   | "terms_recorded"
   | "bank_account_viewed"
-  | "status_change";
+  | "status_change"
+  | "new_draft"
+  | "review"
+  | "posted"
+  | "removed";
 
 type LogInput = {
   actorId: string;

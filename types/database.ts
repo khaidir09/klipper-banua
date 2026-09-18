@@ -398,6 +398,123 @@ export type Database = {
           },
         ]
       }
+      content_reviews: {
+        Row: {
+          checklist: Json
+          content_id: string
+          created_at: string
+          decision: Database["public"]["Enums"]["review_decision"]
+          draft_snapshot: Json
+          id: string
+          notes: string
+          reviewer_id: string | null
+        }
+        Insert: {
+          checklist?: Json
+          content_id: string
+          created_at?: string
+          decision: Database["public"]["Enums"]["review_decision"]
+          draft_snapshot?: Json
+          id?: string
+          notes?: string
+          reviewer_id?: string | null
+        }
+        Update: {
+          checklist?: Json
+          content_id?: string
+          created_at?: string
+          decision?: Database["public"]["Enums"]["review_decision"]
+          draft_snapshot?: Json
+          id?: string
+          notes?: string
+          reviewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_reviews_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contents: {
+        Row: {
+          campaign_creator_id: string
+          caption_draft: string
+          created_at: string
+          created_by: string | null
+          draft_file_path: string | null
+          draft_url: string | null
+          id: string
+          live_status: Database["public"]["Enums"]["live_status"]
+          platform: Database["public"]["Enums"]["social_platform"]
+          posted_at: string | null
+          posted_url: string | null
+          removed_at: string | null
+          review_status: Database["public"]["Enums"]["review_status"]
+          revision_count: number
+          updated_at: string
+        }
+        Insert: {
+          campaign_creator_id: string
+          caption_draft?: string
+          created_at?: string
+          created_by?: string | null
+          draft_file_path?: string | null
+          draft_url?: string | null
+          id?: string
+          live_status?: Database["public"]["Enums"]["live_status"]
+          platform: Database["public"]["Enums"]["social_platform"]
+          posted_at?: string | null
+          posted_url?: string | null
+          removed_at?: string | null
+          review_status?: Database["public"]["Enums"]["review_status"]
+          revision_count?: number
+          updated_at?: string
+        }
+        Update: {
+          campaign_creator_id?: string
+          caption_draft?: string
+          created_at?: string
+          created_by?: string | null
+          draft_file_path?: string | null
+          draft_url?: string | null
+          id?: string
+          live_status?: Database["public"]["Enums"]["live_status"]
+          platform?: Database["public"]["Enums"]["social_platform"]
+          posted_at?: string | null
+          posted_url?: string | null
+          removed_at?: string | null
+          review_status?: Database["public"]["Enums"]["review_status"]
+          revision_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contents_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_bank_accounts: {
         Row: {
           account_holder: string
@@ -653,6 +770,10 @@ export type Database = {
         Args: { p_campaign_id: string }
         Returns: undefined
       }
+      content_campaign_id: {
+        Args: { p_campaign_creator_id: string }
+        Returns: string
+      }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
@@ -688,6 +809,9 @@ export type Database = {
         | "nonaktif"
         | "diblokir"
       creator_tier: "nano" | "mikro" | "menengah"
+      live_status: "belum_tayang" | "tayang" | "dihapus"
+      review_decision: "disetujui" | "revisi" | "ditolak"
+      review_status: "menunggu_review" | "disetujui" | "revisi" | "ditolak"
       social_platform: "tiktok" | "instagram" | "youtube" | "facebook"
       user_role: "owner" | "manager"
     }
@@ -842,6 +966,9 @@ export const Constants = {
         "diblokir",
       ],
       creator_tier: ["nano", "mikro", "menengah"],
+      live_status: ["belum_tayang", "tayang", "dihapus"],
+      review_decision: ["disetujui", "revisi", "ditolak"],
+      review_status: ["menunggu_review", "disetujui", "revisi", "ditolak"],
       social_platform: ["tiktok", "instagram", "youtube", "facebook"],
       user_role: ["owner", "manager"],
     },

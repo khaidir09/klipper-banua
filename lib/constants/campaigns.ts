@@ -45,7 +45,7 @@ export const CAMPAIGN_TABS = [
   { segment: "overview", label: "Ringkasan" },
   { segment: "brief", label: "Brief & Materi" },
   { segment: "creators", label: "Kreator" },
-  { segment: "contents", label: "Konten", phase: "Fase 3" },
+  { segment: "contents", label: "Konten" },
   { segment: "metrics", label: "Metrik", phase: "Fase 4" },
   { segment: "finance", label: "Keuangan", phase: "Fase 5" },
   { segment: "report", label: "Laporan", phase: "Fase 6" },

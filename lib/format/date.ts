@@ -1,4 +1,4 @@
-import { formatInTimeZone } from "date-fns-tz";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { id } from "date-fns/locale";
 import { resolveTimezone, timezoneLabel } from "@/lib/format/timezone";
 
@@ -59,4 +59,31 @@ export function formatCalendarDate(value: string, pattern = "d MMM yyyy"): strin
 export function formatCalendarRange(start: string, end: string): string {
   const sameYear = start.slice(0, 4) === end.slice(0, 4);
   return `${formatCalendarDate(start, sameYear ? "d MMM" : "d MMM yyyy")} – ${formatCalendarDate(end)}`;
+}
+
+/** `yyyy-MM-ddTHH:mm` in the display timezone, for `datetime-local` inputs. */
+export function formatDateTimeInput(value: DateInput, timezone?: string | null): string {
+  return formatInTimeZone(toDate(value), resolveTimezone(timezone), "yyyy-MM-dd'T'HH:mm");
+}
+
+const LOCAL_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+
+/**
+ * Reads a `datetime-local` value as wall-clock time in the user's timezone and
+ * returns the UTC instant as ISO 8601, ready for a `timestamptz` column.
+ * e.g. "2026-10-05T10:00" in WITA → "2026-10-05T02:00:00.000Z".
+ */
+export function zonedInputToUtc(value: string, timezone?: string | null): string {
+  if (!LOCAL_DATE_TIME.test(value)) {
+    throw new TypeError(`Invalid local date-time: ${value}`);
+  }
+  const date = fromZonedTime(value, resolveTimezone(timezone));
+  if (Number.isNaN(date.getTime())) {
+    throw new TypeError(`Invalid local date-time: ${value}`);
+  }
+  return date.toISOString();
+}
+
+export function isLocalDateTimeInput(value: string): boolean {
+  return LOCAL_DATE_TIME.test(value) && !Number.isNaN(new Date(`${value}:00Z`).getTime());
 }

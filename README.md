@@ -4,9 +4,9 @@ Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kali
 bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
-Status: **Fase 2 — Kampanye, Penugasan, dan Tautan Pelacakan** selesai (kampanye + brief + materi,
-penugasan kreator dengan kode referal & tautan `/r/<slug>`, teks brief WhatsApp). Fase 0–1:
-autentikasi, pengguna, klien, kreator.
+Status: **Fase 3 — Konten dan Review** selesai (pencatatan draf, checklist review, revisi, status
+tayang/dihapus, riwayat review permanen). Fase 0–2: autentikasi, pengguna, klien, kreator,
+kampanye, penugasan, tautan pelacakan.
 
 ## Prasyarat
 
@@ -51,7 +51,9 @@ menunjukkan bahwa `manager` tidak bisa membaca `creator_bank_accounts` secara la
 
 `npm run db:guards-check` menjalankan `scripts/guards-check.sql`: aktivasi tanpa URL tujuan/kreator,
 penugasan kreator prospek/diblokir, kode ambigu, insert klik oleh manager, transisi status mundur,
-perubahan kode setelah ada klik, dan kampanye tertutup — masing-masing harus ditolak database.
+perubahan kode setelah ada klik, kampanye tertutup, serta alur review konten (URL tayang sebelum
+disetujui, revisi tanpa catatan, checklist tidak lengkap, draf yang sudah direview, dan perubahan
+riwayat review) — masing-masing harus ditolak database.
 
 ## Tautan pelacakan
 

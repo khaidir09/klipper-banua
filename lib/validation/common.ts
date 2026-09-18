@@ -23,6 +23,29 @@ export const shortTextField = z.string().trim().max(200).default("");
 // RFC 4122 version nibble, rejecting ids that seed or imported data may use.
 export const uuidField = z.guid({ message: "ID tidak valid." });
 
+/**
+ * Optional text that turns "" into "" / null downstream. It also accepts null,
+ * so a value that was already parsed on the client parses again unchanged in
+ * the Server Action (forms submit Zod's output and the server re-validates).
+ */
+export const nullableText = z
+  .union([z.string(), z.null()])
+  .transform((value) => (value ?? "").trim());
+
+/** Optional http(s) URL; empty becomes null. */
+export const optionalHttpUrl = nullableText.transform((value, ctx) => {
+  if (!value) return null;
+  const parsed = z
+    .url({ protocol: /^https?$/ })
+    .max(1000)
+    .safeParse(value);
+  if (!parsed.success) {
+    ctx.addIssue({ code: "custom", message: "URL harus diawali http:// atau https://." });
+    return z.NEVER;
+  }
+  return parsed.data;
+});
+
 /** Pagination and search parameters shared by every list page. */
 export const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
