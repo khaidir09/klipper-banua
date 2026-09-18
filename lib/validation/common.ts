@@ -19,7 +19,9 @@ export const optionalTextField = z.string().trim().max(2000).default("");
 
 export const shortTextField = z.string().trim().max(200).default("");
 
-export const uuidField = z.uuid({ message: "ID tidak valid." });
+// Any 8-4-4-4-12 hex id, as Postgres accepts. z.uuid() would also demand an
+// RFC 4122 version nibble, rejecting ids that seed or imported data may use.
+export const uuidField = z.guid({ message: "ID tidak valid." });
 
 /** Pagination and search parameters shared by every list page. */
 export const listQuerySchema = z.object({

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { fail, invalid, ok, type ActionResult } from "@/lib/actions";
+import { PG_FOREIGN_KEY_VIOLATION, fail, invalid, ok, type ActionResult } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
 import { requireRole, requireSession } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -78,7 +78,13 @@ export async function deleteClientAction(values: unknown): Promise<ActionResult>
   if (!client) return fail("Klien tidak ditemukan.");
 
   const { error } = await supabase.from("clients").delete().eq("id", parsed.data.id);
-  if (error) return fail("Klien gagal dihapus.");
+  if (error) {
+    return fail(
+      error.code === PG_FOREIGN_KEY_VIOLATION
+        ? "Klien masih memiliki kampanye sehingga tidak dapat dihapus."
+        : "Klien gagal dihapus.",
+    );
+  }
 
   await logActivity(supabase, {
     actorId: session.user.id,

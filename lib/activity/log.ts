@@ -8,7 +8,10 @@ export type ActivityEntityType =
   | "client_contact"
   | "creator"
   | "creator_social_account"
-  | "creator_bank_account";
+  | "creator_bank_account"
+  | "campaign"
+  | "campaign_asset"
+  | "campaign_creator";
 
 export type ActivityAction =
   | "create"
@@ -20,7 +23,8 @@ export type ActivityAction =
   | "deactivate"
   | "verify"
   | "terms_recorded"
-  | "bank_account_viewed";
+  | "bank_account_viewed"
+  | "status_change";
 
 type LogInput = {
   actorId: string;

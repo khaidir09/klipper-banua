@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { PG_UNIQUE_VIOLATION, fail, invalid, ok, type ActionResult } from "@/lib/actions";
+import {
+  PG_FOREIGN_KEY_VIOLATION,
+  PG_UNIQUE_VIOLATION,
+  fail,
+  invalid,
+  ok,
+  type ActionResult,
+} from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
 import { requireRole, requireSession } from "@/lib/auth/guards";
 import { AUDIENCE_PROOF_BUCKET } from "@/lib/data/creators";
@@ -100,12 +107,21 @@ export async function deleteCreatorAction(values: unknown): Promise<ActionResult
   const paths = creator.social_accounts
     .map((account) => account.audience_proof_path)
     .filter((path): path is string => Boolean(path));
+
+  // Delete the row first: assignments restrict the delete, and the proof
+  // files must survive if the creator cannot actually be removed.
+  const { error } = await supabase.from("creators").delete().eq("id", parsed.data.id);
+  if (error) {
+    return fail(
+      error.code === PG_FOREIGN_KEY_VIOLATION
+        ? "Kreator sudah pernah ditugaskan di kampanye sehingga datanya tidak dapat dihapus."
+        : "Kreator gagal dihapus.",
+    );
+  }
+
   if (paths.length) {
     await supabase.storage.from(AUDIENCE_PROOF_BUCKET).remove(paths);
   }
-
-  const { error } = await supabase.from("creators").delete().eq("id", parsed.data.id);
-  if (error) return fail("Kreator gagal dihapus.");
 
   await logActivity(supabase, {
     actorId: session.user.id,

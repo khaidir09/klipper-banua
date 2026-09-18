@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { formatAmountDigits, formatRupiah, toBigInt } from "@/lib/format/currency";
 import { formatNumber, formatPercent } from "@/lib/format/number";
-import { formatDate, formatDateInput, formatDateTime, formatTime } from "@/lib/format/date";
+import {
+  formatCalendarDate,
+  formatCalendarRange,
+  formatDate,
+  formatDateInput,
+  formatDateTime,
+  formatTime,
+} from "@/lib/format/date";
 import { DEFAULT_TIMEZONE, resolveTimezone, timezoneLabel } from "@/lib/format/timezone";
 
 describe("formatRupiah", () => {
@@ -94,5 +101,21 @@ describe("resolveTimezone", () => {
 
   it("keeps a supported timezone", () => {
     expect(resolveTimezone("Asia/Jakarta")).toBe("Asia/Jakarta");
+  });
+});
+
+describe("calendar dates", () => {
+  it("formats date columns without shifting the day", () => {
+    expect(formatCalendarDate("2026-10-01")).toBe("1 Okt 2026");
+    expect(formatCalendarDate("1999-05-20", "d MMMM yyyy")).toBe("20 Mei 1999");
+  });
+
+  it("formats ranges compactly within a year", () => {
+    expect(formatCalendarRange("2026-10-01", "2026-10-31")).toBe("1 Okt – 31 Okt 2026");
+    expect(formatCalendarRange("2026-12-15", "2027-01-15")).toBe("15 Des 2026 – 15 Jan 2027");
+  });
+
+  it("rejects timestamps", () => {
+    expect(() => formatCalendarDate("2026-10-01T00:00:00Z")).toThrow(TypeError);
   });
 });

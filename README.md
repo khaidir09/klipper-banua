@@ -4,8 +4,9 @@ Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kali
 bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
-Status: **Fase 1 — Pengguna, Klien, dan Kreator** selesai (undangan pengguna, klien + kontak,
-kreator + akun sosial + bukti audiens + rekening khusus owner, log aktivitas).
+Status: **Fase 2 — Kampanye, Penugasan, dan Tautan Pelacakan** selesai (kampanye + brief + materi,
+penugasan kreator dengan kode referal & tautan `/r/<slug>`, teks brief WhatsApp). Fase 0–1:
+autentikasi, pengguna, klien, kreator.
 
 ## Prasyarat
 
@@ -42,11 +43,23 @@ sesi dibuat di sisi server (cookie), bukan di hash URL. Templat lokal ada di
 `supabase/templates/` dan diaktifkan lewat `supabase/config.toml`. **Sebelum rilis**, salin isi
 templat yang sama ke _Authentication → Email Templates_ di dashboard proyek Supabase hosted.
 
-## Uji RLS
+## Uji RLS dan aturan bisnis
 
 `npm run db:rls-check` menjalankan `scripts/rls-check.sql` terhadap database lokal dan
 menunjukkan bahwa `manager` tidak bisa membaca `creator_bank_accounts` secara langsung
 (0 baris; hanya lewat fungsi tersamar), `owner` bisa, dan `anon` tidak melihat kreator.
+
+`npm run db:guards-check` menjalankan `scripts/guards-check.sql`: aktivasi tanpa URL tujuan/kreator,
+penugasan kreator prospek/diblokir, kode ambigu, insert klik oleh manager, transisi status mundur,
+perubahan kode setelah ada klik, dan kampanye tertutup — masing-masing harus ditolak database.
+
+## Tautan pelacakan
+
+`GET /r/<slug>` (`app/r/[slug]/route.ts`) mencatat klik (IP di-hash dengan `CLICK_IP_HASH_SALT`,
+bot ditandai dari user agent) lalu mengarahkan (302) **hanya** ke `landing_url` kampanye di database
+ditambah `utm_source`, `utm_medium=kreator`, `utm_campaign`, dan `ref`. Query string pada tautan
+tidak pernah dibaca. Slug tak dikenal atau kampanye dibatalkan → 404. Rute ini dikecualikan dari
+`proxy.ts`.
 
 ## Perintah
 
@@ -64,6 +77,7 @@ menunjukkan bahwa `manager` tidak bisa membaca `creator_bank_accounts` secara la
 | `npm run db:types`             | Regenerasi `types/database.ts` dari database lokal      |
 | `npm run seed:owner`           | Membuat/memperbarui akun `owner` (dan `manager`)        |
 | `npm run db:rls-check`         | Uji kebijakan RLS di database lokal                     |
+| `npm run db:guards-check`      | Uji aturan kampanye/penugasan di database lokal         |
 
 ## Struktur
 
@@ -73,6 +87,9 @@ app/(app)/      halaman yang wajib login: dashboard, clients, creators, settings
 components/     ui (shadcn), layout, tables (TanStack), forms, creators
 lib/data/       query daftar/detail per modul (server-only)
 lib/activity/   penulisan log aktivitas (M11)
+lib/calculations/ fungsi murni honor & metrik (+ unit test)
+lib/referral/   generator kode referal & slug
+lib/tracking/   helper redirect /r/[slug]
 app/keluar/     route handler logout
 proxy.ts        proteksi rute (pengganti middleware.ts di Next.js 16)
 lib/            supabase, auth, validation, format

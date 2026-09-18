@@ -22,7 +22,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Dasbor", href: "/dashboard", icon: LayoutDashboard },
   { label: "Klien", href: "/clients", icon: Building2 },
   { label: "Kreator", href: "/creators", icon: Users },
-  { label: "Kampanye", href: "/campaigns", icon: Megaphone, phase: "Fase 2" },
+  { label: "Kampanye", href: "/campaigns", icon: Megaphone },
   { label: "Aktivitas", href: "/activity", icon: ScrollText, phase: "Fase 7", roles: ["owner"] },
   { label: "Pengaturan", href: "/settings", icon: Settings },
 ];

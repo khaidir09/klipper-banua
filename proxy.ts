@@ -9,9 +9,9 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Run on every request except static assets and image files, so auth
-     * redirects never block CSS, JS or icons.
+     * Run on every request except static assets, image files and the public
+     * tracking redirect `/r/<slug>` (no session needed; keeps it fast).
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|r/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

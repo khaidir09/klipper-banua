@@ -72,6 +72,241 @@ export type Database = {
           },
         ]
       }
+      campaign_assets: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          created_by: string | null
+          external_url: string | null
+          file_path: string | null
+          id: string
+          notes: string
+          title: string
+          type: Database["public"]["Enums"]["asset_type"]
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          created_by?: string | null
+          external_url?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string
+          title: string
+          type: Database["public"]["Enums"]["asset_type"]
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          created_by?: string | null
+          external_url?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string
+          title?: string
+          type?: Database["public"]["Enums"]["asset_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_assets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_creators: {
+        Row: {
+          base_fee: number | null
+          bonus_per_1000_views: number | null
+          bonus_per_registrant: number | null
+          campaign_id: string
+          contents_committed: number
+          created_at: string
+          created_by: string | null
+          creator_id: string
+          id: string
+          joined_at: string | null
+          referral_code: string
+          status: Database["public"]["Enums"]["assignment_status"]
+          tracking_slug: string
+          updated_at: string
+          views_bonus_cap: number | null
+        }
+        Insert: {
+          base_fee?: number | null
+          bonus_per_1000_views?: number | null
+          bonus_per_registrant?: number | null
+          campaign_id: string
+          contents_committed?: number
+          created_at?: string
+          created_by?: string | null
+          creator_id: string
+          id?: string
+          joined_at?: string | null
+          referral_code: string
+          status?: Database["public"]["Enums"]["assignment_status"]
+          tracking_slug: string
+          updated_at?: string
+          views_bonus_cap?: number | null
+        }
+        Update: {
+          base_fee?: number | null
+          bonus_per_1000_views?: number | null
+          bonus_per_registrant?: number | null
+          campaign_id?: string
+          contents_committed?: number
+          created_at?: string
+          created_by?: string | null
+          creator_id?: string
+          id?: string
+          joined_at?: string | null
+          referral_code?: string
+          status?: Database["public"]["Enums"]["assignment_status"]
+          tracking_slug?: string
+          updated_at?: string
+          views_bonus_cap?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          brief: string
+          client_id: string
+          closing_notes: string
+          code: string
+          created_at: string
+          created_by: string | null
+          default_base_fee: number
+          default_bonus_per_1000_views: number
+          default_bonus_per_registrant: number
+          default_views_bonus_cap: number | null
+          end_date: string
+          hashtags: string[]
+          id: string
+          landing_url: string | null
+          min_live_days: number
+          must_do: string[]
+          must_not: string[]
+          name: string
+          objective: Database["public"]["Enums"]["campaign_objective"]
+          package_price: number
+          paid_label_required: boolean
+          start_date: string
+          status: Database["public"]["Enums"]["campaign_status"]
+          target_contents: number
+          target_registrants: number
+          target_views: number
+          updated_at: string
+        }
+        Insert: {
+          brief?: string
+          client_id: string
+          closing_notes?: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          default_base_fee?: number
+          default_bonus_per_1000_views?: number
+          default_bonus_per_registrant?: number
+          default_views_bonus_cap?: number | null
+          end_date: string
+          hashtags?: string[]
+          id?: string
+          landing_url?: string | null
+          min_live_days?: number
+          must_do?: string[]
+          must_not?: string[]
+          name: string
+          objective?: Database["public"]["Enums"]["campaign_objective"]
+          package_price?: number
+          paid_label_required?: boolean
+          start_date: string
+          status?: Database["public"]["Enums"]["campaign_status"]
+          target_contents?: number
+          target_registrants?: number
+          target_views?: number
+          updated_at?: string
+        }
+        Update: {
+          brief?: string
+          client_id?: string
+          closing_notes?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          default_base_fee?: number
+          default_bonus_per_1000_views?: number
+          default_bonus_per_registrant?: number
+          default_views_bonus_cap?: number | null
+          end_date?: string
+          hashtags?: string[]
+          id?: string
+          landing_url?: string | null
+          min_live_days?: number
+          must_do?: string[]
+          must_not?: string[]
+          name?: string
+          objective?: Database["public"]["Enums"]["campaign_objective"]
+          package_price?: number
+          paid_label_required?: boolean
+          start_date?: string
+          status?: Database["public"]["Enums"]["campaign_status"]
+          target_contents?: number
+          target_registrants?: number
+          target_views?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_contacts: {
         Row: {
           client_id: string
@@ -335,6 +570,47 @@ export type Database = {
           },
         ]
       }
+      link_clicks: {
+        Row: {
+          campaign_creator_id: string
+          clicked_at: string
+          created_at: string
+          id: string
+          ip_hash: string | null
+          is_bot: boolean
+          referrer: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          campaign_creator_id: string
+          clicked_at?: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          is_bot?: boolean
+          referrer?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          campaign_creator_id?: string
+          clicked_at?: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          is_bot?: boolean
+          referrer?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_clicks_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -373,6 +649,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assert_campaign_editable: {
+        Args: { p_campaign_id: string }
+        Returns: undefined
+      }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
@@ -388,6 +668,10 @@ export type Database = {
       is_owner: { Args: never; Returns: boolean }
     }
     Enums: {
+      asset_type: "video" | "foto" | "dokumen" | "tautan"
+      assignment_status: "diundang" | "bergabung" | "mundur" | "selesai"
+      campaign_objective: "pendaftar" | "awareness" | "event"
+      campaign_status: "draft" | "aktif" | "selesai" | "dibatalkan"
       client_type:
         | "kampus_swasta"
         | "sekolah_swasta"
@@ -536,6 +820,10 @@ export const Constants = {
   },
   public: {
     Enums: {
+      asset_type: ["video", "foto", "dokumen", "tautan"],
+      assignment_status: ["diundang", "bergabung", "mundur", "selesai"],
+      campaign_objective: ["pendaftar", "awareness", "event"],
+      campaign_status: ["draft", "aktif", "selesai", "dibatalkan"],
       client_type: [
         "kampus_swasta",
         "sekolah_swasta",

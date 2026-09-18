@@ -6,9 +6,12 @@ import { DetailList } from "@/components/layout/detail-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ClientCampaignHistory } from "@/components/campaigns/campaign-history";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/guards";
+import { totalContractValue } from "@/lib/calculations/contract";
 import { CLIENT_TYPE_LABELS } from "@/lib/constants/clients";
+import { listClientCampaigns } from "@/lib/data/campaigns";
 import { getClient } from "@/lib/data/clients";
 import { formatDateTime } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -23,6 +26,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   const supabase = await createSupabaseServerClient();
   const client = await getClient(supabase, id);
   if (!client) notFound();
+  const campaigns = await listClientCampaigns(supabase, id);
 
   return (
     <div className="space-y-6">
@@ -74,14 +78,11 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         <ClientContacts clientId={id} contacts={client.contacts} />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Riwayat kampanye</CardTitle>
-          <CardDescription>
-            Daftar kampanye dan total nilai kontrak tampil di sini setelah modul kampanye (Fase 2).
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <ClientCampaignHistory
+        clientId={id}
+        campaigns={campaigns}
+        totalValue={totalContractValue(campaigns)}
+      />
     </div>
   );
 }

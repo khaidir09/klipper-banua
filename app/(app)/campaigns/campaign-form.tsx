@@ -1,0 +1,311 @@
+"use client";
+
+import Link from "next/link";
+import { useState, useTransition } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
+import { CAMPAIGN_OBJECTIVES, CAMPAIGN_OBJECTIVE_LABELS } from "@/lib/constants/campaigns";
+import { applyFieldErrors } from "@/lib/forms";
+import {
+  campaignSchema,
+  type CampaignFormInput,
+  type CampaignInput,
+} from "@/lib/validation/campaigns";
+import { createCampaignAction, updateCampaignAction } from "./actions";
+
+type ClientOption = { id: string; name: string };
+
+type CampaignFormProps = {
+  campaignId?: string;
+  clients: ClientOption[];
+  defaultValues?: Partial<CampaignFormInput>;
+};
+
+const EMPTY: CampaignFormInput = {
+  client_id: "",
+  code: "",
+  name: "",
+  objective: "pendaftar",
+  brief: "",
+  must_do: "",
+  must_not: "",
+  hashtags: "",
+  paid_label_required: true,
+  landing_url: "",
+  start_date: "",
+  end_date: "",
+  min_live_days: "30",
+  package_price: "",
+  target_contents: "",
+  target_views: "",
+  target_registrants: "",
+  default_base_fee: "",
+  default_bonus_per_1000_views: "",
+  default_bonus_per_registrant: "",
+  default_views_bonus_cap: "",
+};
+
+export function CampaignForm({ campaignId, clients, defaultValues }: CampaignFormProps) {
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const form = useForm<CampaignFormInput, unknown, CampaignInput>({
+    resolver: zodResolver(campaignSchema),
+    defaultValues: { ...EMPTY, ...defaultValues },
+  });
+
+  function onSubmit(values: CampaignInput) {
+    setServerError(null);
+    startTransition(async () => {
+      // A successful save redirects to the campaign and never returns.
+      const result = campaignId
+        ? await updateCampaignAction(campaignId, values)
+        : await createCampaignAction(values);
+      if (result?.status === "error") {
+        setServerError(result.message);
+        applyFieldErrors(form, result);
+      }
+    });
+  }
+
+  const { errors } = form.formState;
+  const text = (name: keyof CampaignFormInput) => ({
+    id: name,
+    "aria-invalid": Boolean(errors[name]),
+    ...form.register(name),
+  });
+  const money = (name: keyof CampaignFormInput) => ({
+    ...text(name),
+    inputMode: "numeric" as const,
+    placeholder: "0",
+  });
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="max-w-3xl">
+      <FieldGroup>
+        {serverError ? (
+          <Alert variant="destructive">
+            <AlertDescription>{serverError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        <FieldSet>
+          <FieldLegend>Identitas</FieldLegend>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="client_id">Klien</FieldLabel>
+              <NativeSelect {...text("client_id")}>
+                <NativeSelectOption value="">Pilih klien…</NativeSelectOption>
+                {clients.map((client) => (
+                  <NativeSelectOption key={client.id} value={client.id}>
+                    {client.name}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+              {clients.length === 0 ? (
+                <FieldDescription>
+                  Belum ada klien.{" "}
+                  <Link href="/clients/new" className="underline">
+                    Tambah klien
+                  </Link>{" "}
+                  dulu.
+                </FieldDescription>
+              ) : null}
+              <FieldError errors={[errors.client_id]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="objective">Tujuan</FieldLabel>
+              <NativeSelect {...text("objective")}>
+                {CAMPAIGN_OBJECTIVES.map((objective) => (
+                  <NativeSelectOption key={objective} value={objective}>
+                    {CAMPAIGN_OBJECTIVE_LABELS[objective]}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+              <FieldError errors={[errors.objective]} />
+            </Field>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="code">Kode kampanye</FieldLabel>
+              <Input
+                {...text("code")}
+                placeholder="PMB-KAMPUSX-2026-01"
+                className="font-mono uppercase"
+              />
+              <FieldDescription>Unik; huruf, angka, dan tanda hubung.</FieldDescription>
+              <FieldError errors={[errors.code]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="name">Nama kampanye</FieldLabel>
+              <Input {...text("name")} />
+              <FieldError errors={[errors.name]} />
+            </Field>
+          </div>
+        </FieldSet>
+
+        <FieldSet>
+          <FieldLegend>Brief</FieldLegend>
+          <Field>
+            <FieldLabel htmlFor="brief">Deskripsi brief</FieldLabel>
+            <Textarea {...text("brief")} rows={4} />
+            <FieldError errors={[errors.brief]} />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="must_do">Yang wajib</FieldLabel>
+              <Textarea {...text("must_do")} rows={4} placeholder={"Satu poin per baris"} />
+              <FieldError errors={[errors.must_do]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="must_not">Larangan</FieldLabel>
+              <Textarea {...text("must_not")} rows={4} placeholder={"Satu poin per baris"} />
+              <FieldError errors={[errors.must_not]} />
+            </Field>
+          </div>
+          <Field>
+            <FieldLabel htmlFor="hashtags">Hashtag</FieldLabel>
+            <Input {...text("hashtags")} placeholder="#PMBKampusX #KuliahDiBanua" />
+            <FieldDescription>Pisahkan dengan spasi atau koma.</FieldDescription>
+            <FieldError errors={[errors.hashtags]} />
+          </Field>
+          <Controller
+            control={form.control}
+            name="paid_label_required"
+            render={({ field }) => (
+              <Field orientation="horizontal">
+                <Checkbox
+                  id="paid_label_required"
+                  checked={field.value === true}
+                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                />
+                <FieldLabel htmlFor="paid_label_required" className="font-normal">
+                  Wajib mencantumkan label konten berbayar
+                </FieldLabel>
+              </Field>
+            )}
+          />
+        </FieldSet>
+
+        <FieldSet>
+          <FieldLegend>Tujuan & periode</FieldLegend>
+          <Field>
+            <FieldLabel htmlFor="landing_url">URL tujuan (landing_url)</FieldLabel>
+            <Input
+              {...text("landing_url")}
+              type="url"
+              placeholder="https://pmb.kampus.ac.id/daftar"
+            />
+            <FieldDescription>
+              Tujuan tautan pelacakan. Wajib sebelum kampanye bertujuan pendaftar diaktifkan.
+            </FieldDescription>
+            <FieldError errors={[errors.landing_url]} />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field>
+              <FieldLabel htmlFor="start_date">Tanggal mulai</FieldLabel>
+              <Input {...text("start_date")} type="date" />
+              <FieldError errors={[errors.start_date]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="end_date">Tanggal selesai</FieldLabel>
+              <Input {...text("end_date")} type="date" />
+              <FieldError errors={[errors.end_date]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="min_live_days">Minimal hari tayang</FieldLabel>
+              <Input {...text("min_live_days")} inputMode="numeric" />
+              <FieldError errors={[errors.min_live_days]} />
+            </Field>
+          </div>
+        </FieldSet>
+
+        <FieldSet>
+          <FieldLegend>Komersial & target</FieldLegend>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="package_price">Harga paket (Rp)</FieldLabel>
+              <Input {...money("package_price")} />
+              <FieldError errors={[errors.package_price]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="target_contents">Target jumlah konten</FieldLabel>
+              <Input {...money("target_contents")} />
+              <FieldError errors={[errors.target_contents]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="target_views">Target views</FieldLabel>
+              <Input {...money("target_views")} />
+              <FieldError errors={[errors.target_views]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="target_registrants">Target pendaftar</FieldLabel>
+              <Input {...money("target_registrants")} />
+              <FieldError errors={[errors.target_registrants]} />
+            </Field>
+          </div>
+        </FieldSet>
+
+        <FieldSet>
+          <FieldLegend>Skema honor default</FieldLegend>
+          <FieldDescription>
+            Berlaku untuk semua kreator kecuali diubah per penugasan. Nominal dalam Rupiah utuh.
+          </FieldDescription>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="default_base_fee">Honor dasar per konten</FieldLabel>
+              <Input {...money("default_base_fee")} />
+              <FieldError errors={[errors.default_base_fee]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="default_bonus_per_1000_views">Bonus per 1.000 views</FieldLabel>
+              <Input {...money("default_bonus_per_1000_views")} />
+              <FieldError errors={[errors.default_bonus_per_1000_views]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="default_bonus_per_registrant">Bonus per pendaftar</FieldLabel>
+              <Input {...money("default_bonus_per_registrant")} />
+              <FieldError errors={[errors.default_bonus_per_registrant]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="default_views_bonus_cap">
+                Batas bonus views per kreator
+              </FieldLabel>
+              <Input
+                {...money("default_views_bonus_cap")}
+                placeholder="Kosongkan jika tanpa batas"
+              />
+              <FieldError errors={[errors.default_views_bonus_cap]} />
+            </Field>
+          </div>
+        </FieldSet>
+
+        <div className="flex gap-2">
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Menyimpan…" : campaignId ? "Simpan perubahan" : "Simpan sebagai draft"}
+          </Button>
+          <Button type="button" variant="outline" asChild>
+            <Link href={campaignId ? `/campaigns/${campaignId}/overview` : "/campaigns"}>
+              Batal
+            </Link>
+          </Button>
+        </div>
+      </FieldGroup>
+    </form>
+  );
+}

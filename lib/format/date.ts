@@ -42,3 +42,21 @@ export function formatTime(value: DateInput, timezone?: string | null): string {
 export function formatDateInput(value: DateInput, timezone?: string | null): string {
   return formatInTimeZone(toDate(value), resolveTimezone(timezone), "yyyy-MM-dd");
 }
+
+/**
+ * Formats a Postgres `date` column (`yyyy-MM-dd`), e.g. a campaign period or a
+ * birth date. These are calendar dates without a time or zone, so no timezone
+ * conversion applies. e.g. `1 Okt 2026`.
+ */
+export function formatCalendarDate(value: string, pattern = "d MMM yyyy"): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw new TypeError(`Invalid calendar date: ${value}`);
+  }
+  return formatInTimeZone(toDate(`${value}T00:00:00Z`), "UTC", pattern, { locale: id });
+}
+
+/** e.g. `1 Okt – 31 Okt 2026`, or with both years when they differ. */
+export function formatCalendarRange(start: string, end: string): string {
+  const sameYear = start.slice(0, 4) === end.slice(0, 4);
+  return `${formatCalendarDate(start, sameYear ? "d MMM" : "d MMM yyyy")} – ${formatCalendarDate(end)}`;
+}

@@ -7,12 +7,14 @@ import { PageHeader } from "@/components/layout/page-header";
 import { CreatorStatusBadge } from "@/components/creators/creator-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CreatorCampaignHistory } from "@/components/campaigns/campaign-history";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { requireSession } from "@/lib/auth/guards";
 import { CREATOR_TIER_LABELS, nicheLabel } from "@/lib/constants/creators";
+import { listCreatorAssignments } from "@/lib/data/campaigns";
 import { getCreator, getMaskedBankAccount, signProofUrl } from "@/lib/data/creators";
-import { formatDate, formatDateTime } from "@/lib/format/date";
+import { formatCalendarDate, formatDateTime } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { verificationBlockers } from "@/lib/validation/creators";
 import { formatWhatsapp, whatsappLink } from "@/lib/validation/phone";
@@ -33,9 +35,10 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
   const isOwner = profile.role === "owner";
   const tz = profile.timezone;
 
-  const [proofUrls, maskedBank] = await Promise.all([
+  const [proofUrls, maskedBank, history] = await Promise.all([
     Promise.all(creator.social_accounts.map((a) => signProofUrl(supabase, a.audience_proof_path))),
     getMaskedBankAccount(supabase, id),
+    listCreatorAssignments(supabase, id),
   ]);
 
   const blockers = verificationBlockers({
@@ -108,7 +111,7 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
                   { label: "Kota / kabupaten", value: creator.city },
                   {
                     label: "Tanggal lahir",
-                    value: formatDate(`${creator.birth_date}T00:00:00Z`, "Asia/Jakarta"),
+                    value: formatCalendarDate(creator.birth_date, "d MMMM yyyy"),
                   },
                   { label: "Terdaftar", value: formatDateTime(creator.created_at, tz) },
                   { label: "Catatan", value: creator.notes, wide: true },
@@ -146,15 +149,7 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
         </TabsContent>
 
         <TabsContent value="riwayat">
-          <Card>
-            <CardHeader>
-              <CardTitle>Riwayat kampanye</CardTitle>
-              <CardDescription>
-                Riwayat kampanye, total views, pendaftar, dan honor tampil setelah modul kampanye
-                (Fase 2) dan keuangan (Fase 5) tersedia.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <CreatorCampaignHistory assignments={history} />
         </TabsContent>
       </Tabs>
     </div>

@@ -45,6 +45,7 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 | `npm run db:types`                     | Regenerasi `types/database.ts`                |
 | `npm run seed:owner`                   | Buat/perbarui akun `owner` (+ `manager` bila `SEED_MANAGER_*` diisi) |
 | `npm run db:rls-check`                 | Uji kebijakan RLS di database lokal (`scripts/rls-check.sql`) |
+| `npm run db:guards-check`              | Uji trigger aturan kampanye/penugasan (`scripts/guards-check.sql`) |
 
 Sebelum menyelesaikan fase, jalankan: `npm run lint && npm run typecheck && npm run test && npm run build`.
 
@@ -56,3 +57,5 @@ Sebelum menyelesaikan fase, jalankan: `npm run lint && npm run typecheck && npm 
 - TanStack Table v9: `useTable` + `tableFeatures` (bukan `useReactTable`); panduan di `node_modules/@tanstack/react-table/skills/`.
 - Form: `useForm<z.input<S>, unknown, z.output<S>>` + `zodResolver` karena skema memakai transform/default.
 - Tautan email Supabase (undangan, pemulihan) memakai templat `supabase/templates/*.html` → `/auth/callback?token_hash=…`; templat yang sama wajib dipasang di dashboard proyek hosted.
+- Server Action dibatasi 6 MB (`next.config.ts`); berkas besar (materi kampanye) diunggah langsung dari browser ke Storage, lalu action hanya mencatat path.
+- Aturan status kampanye dan penugasan ditegakkan dua kali: di action (pesan ramah) dan trigger database (`dbRuleMessage` di `lib/actions.ts` memetakan kode error trigger).
