@@ -351,6 +351,66 @@ export type Database = {
           },
         ]
       }
+      client_payments: {
+        Row: {
+          amount: number
+          campaign_id: string
+          created_at: string
+          created_by: string | null
+          due_date: string
+          id: string
+          invoice_number: string
+          paid_amount: number
+          paid_at: string | null
+          proof_path: string | null
+          status: Database["public"]["Enums"]["client_payment_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          campaign_id: string
+          created_at?: string
+          created_by?: string | null
+          due_date: string
+          id?: string
+          invoice_number: string
+          paid_amount?: number
+          paid_at?: string | null
+          proof_path?: string | null
+          status?: Database["public"]["Enums"]["client_payment_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          campaign_id?: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          paid_amount?: number
+          paid_at?: string | null
+          proof_path?: string | null
+          status?: Database["public"]["Enums"]["client_payment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_payments_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string
@@ -791,6 +851,91 @@ export type Database = {
           },
         ]
       }
+      payouts: {
+        Row: {
+          adjustment_amount: number
+          adjustment_reason: string
+          approved_at: string | null
+          approved_by: string | null
+          base_amount: number
+          calculated_at: string
+          calculation_snapshot: Json
+          campaign_creator_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          paid_at: string | null
+          registrant_bonus: number
+          status: Database["public"]["Enums"]["payout_status"]
+          total_amount: number
+          transfer_proof_path: string | null
+          updated_at: string
+          views_bonus: number
+        }
+        Insert: {
+          adjustment_amount?: number
+          adjustment_reason?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          base_amount?: number
+          calculated_at?: string
+          calculation_snapshot?: Json
+          campaign_creator_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          paid_at?: string | null
+          registrant_bonus?: number
+          status?: Database["public"]["Enums"]["payout_status"]
+          total_amount?: number
+          transfer_proof_path?: string | null
+          updated_at?: string
+          views_bonus?: number
+        }
+        Update: {
+          adjustment_amount?: number
+          adjustment_reason?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          base_amount?: number
+          calculated_at?: string
+          calculation_snapshot?: Json
+          campaign_creator_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          paid_at?: string | null
+          registrant_bonus?: number
+          status?: Database["public"]["Enums"]["payout_status"]
+          total_amount?: number
+          transfer_proof_path?: string | null
+          updated_at?: string
+          views_bonus?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: true
+            referencedRelation: "campaign_creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -923,6 +1068,7 @@ export type Database = {
       assignment_status: "diundang" | "bergabung" | "mundur" | "selesai"
       campaign_objective: "pendaftar" | "awareness" | "event"
       campaign_status: "draft" | "aktif" | "selesai" | "dibatalkan"
+      client_payment_status: "belum_dibayar" | "sebagian" | "lunas"
       client_type:
         | "kampus_swasta"
         | "sekolah_swasta"
@@ -941,6 +1087,7 @@ export type Database = {
       creator_tier: "nano" | "mikro" | "menengah"
       live_status: "belum_tayang" | "tayang" | "dihapus"
       metric_checkpoint: "H+1" | "H+3" | "H+7" | "akhir" | "lainnya"
+      payout_status: "draf" | "disetujui" | "dibayar"
       review_decision: "disetujui" | "revisi" | "ditolak"
       review_status: "menunggu_review" | "disetujui" | "revisi" | "ditolak"
       social_platform: "tiktok" | "instagram" | "youtube" | "facebook"
@@ -1079,6 +1226,7 @@ export const Constants = {
       assignment_status: ["diundang", "bergabung", "mundur", "selesai"],
       campaign_objective: ["pendaftar", "awareness", "event"],
       campaign_status: ["draft", "aktif", "selesai", "dibatalkan"],
+      client_payment_status: ["belum_dibayar", "sebagian", "lunas"],
       client_type: [
         "kampus_swasta",
         "sekolah_swasta",
@@ -1099,6 +1247,7 @@ export const Constants = {
       creator_tier: ["nano", "mikro", "menengah"],
       live_status: ["belum_tayang", "tayang", "dihapus"],
       metric_checkpoint: ["H+1", "H+3", "H+7", "akhir", "lainnya"],
+      payout_status: ["draf", "disetujui", "dibayar"],
       review_decision: ["disetujui", "revisi", "ditolak"],
       review_status: ["menunggu_review", "disetujui", "revisi", "ditolak"],
       social_platform: ["tiktok", "instagram", "youtube", "facebook"],

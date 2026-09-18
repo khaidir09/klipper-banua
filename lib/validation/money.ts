@@ -57,3 +57,27 @@ export const countField = z.union([z.string(), z.number()]).transform((value, ct
   }
   return parsed;
 });
+
+/** Signed whole-Rupiah amount, e.g. "-50.000" or "+25.000" (payout adjustments). */
+export function parseSignedRupiah(value: unknown): number | null {
+  if (typeof value === "number") return Number.isSafeInteger(value) ? value : null;
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim().replace(/\s+/g, "");
+  const match = /^([+-]?)(.*)$/.exec(trimmed);
+  const magnitude = parseRupiah(match?.[2] ?? "");
+  if (magnitude === null) return null;
+  return match?.[1] === "-" ? -magnitude : magnitude;
+}
+
+export const signedMoneyField = z.union([z.string(), z.number()]).transform((value, ctx) => {
+  if (typeof value === "string" && !value.trim()) return 0;
+  const parsed = parseSignedRupiah(value);
+  if (parsed === null) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Masukkan nominal Rupiah utuh, mis. -50.000 atau 25.000.",
+    });
+    return z.NEVER;
+  }
+  return parsed;
+});

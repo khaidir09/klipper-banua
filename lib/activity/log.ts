@@ -14,7 +14,9 @@ export type ActivityEntityType =
   | "campaign_creator"
   | "content"
   | "metric_snapshot"
-  | "registrant_report";
+  | "registrant_report"
+  | "payout"
+  | "client_payment";
 
 export type ActivityAction =
   | "create"
@@ -31,7 +33,13 @@ export type ActivityAction =
   | "new_draft"
   | "review"
   | "posted"
-  | "removed";
+  | "removed"
+  | "calculate"
+  | "adjust"
+  | "approve"
+  | "revoke_approval"
+  | "paid"
+  | "payment_recorded";
 
 type LogInput = {
   actorId: string;

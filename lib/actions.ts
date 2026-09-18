@@ -51,6 +51,11 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   SNAPSHOT_NEEDS_LIVE_CONTENT: "Snapshot metrik hanya untuk konten yang sudah tayang.",
   SNAPSHOT_BEFORE_POSTING: "Waktu pengambilan snapshot tidak boleh sebelum waktu tayang.",
   REPORT_ASSIGNMENT_MISMATCH: "Kode kreator tersebut bukan milik kampanye ini.",
+  PAYOUT_NEEDS_CLOSED_CAMPAIGN: "Honor baru dapat dihitung setelah kampanye berstatus selesai.",
+  PAYOUT_LOCKED: "Honor yang sudah disetujui atau dibayar tidak dapat dihitung ulang atau diubah.",
+  PAYOUT_OWNER_ONLY: "Hanya owner yang dapat menyetujui atau menandai honor dibayar.",
+  INVALID_PAYOUT_TRANSITION: "Perubahan status honor tersebut tidak diizinkan.",
+  FINANCE_OWNER_ONLY: "Bukti keuangan hanya dapat dikelola owner.",
 };
 
 /** Check constraints whose violation deserves a specific message. */
@@ -63,6 +68,10 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
   registrant_reports_proof_confirmation_check:
     "Konfirmasi bahwa bukti tidak memuat data pribadi pendaftar.",
   registrant_reports_period_check: "Akhir periode tidak boleh sebelum awal periode.",
+  payouts_adjustment_reason_check: "Alasan penyesuaian wajib diisi.",
+  payouts_paid_check: "Status dibayar wajib disertai tanggal bayar dan bukti transfer.",
+  client_payments_invoice_number_key: "Nomor invoice sudah dipakai.",
+  client_payments_paid_at_check: "Tanggal bayar wajib diisi jika ada pembayaran.",
 };
 
 /** Maps a trigger or constraint violation to Indonesian text; falls back otherwise. */

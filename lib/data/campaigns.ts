@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
+import { totalRegistrants, totalViews } from "@/lib/calculations/campaign-metrics";
 import type { CampaignListQuery } from "@/lib/validation/campaigns";
 import { escapeLike, pageRange, totalPages, type Paged } from "./pagination";
 
@@ -154,13 +155,26 @@ export async function listCreatorAssignments(
   const { data, error } = await supabase
     .from("campaign_creators")
     .select(
-      "id, status, contents_committed, referral_code, campaign:campaigns(id, code, name, status, start_date, end_date)",
+      `id, status, contents_committed, referral_code,
+       campaign:campaigns(id, code, name, status, start_date, end_date),
+       contents(posted_at, snapshots:metric_snapshots(checkpoint, captured_at, created_at, views)),
+       reports:registrant_reports(registrant_count),
+       payout:payouts(status, total_amount)`,
     )
     .eq("creator_id", creatorId)
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
-  return data;
+
+  // FR-M3-08 totals per assignment, using the same rules as the Metrics tab.
+  return data.map(({ contents, reports, payout, ...assignment }) => ({
+    ...assignment,
+    views: totalViews(
+      contents.map((c) => ({ posted: c.posted_at !== null, snapshots: c.snapshots })),
+    ),
+    registrants: totalRegistrants(reports),
+    payout: payout ? { status: payout.status, total_amount: payout.total_amount } : null,
+  }));
 }
 
 /** Active clients for the campaign form's select box. */

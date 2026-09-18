@@ -24,6 +24,9 @@ import {
 import type { AssignmentStatus, CampaignStatus } from "@/lib/constants/campaigns";
 import { formatRupiah } from "@/lib/format/currency";
 import { formatCalendarRange } from "@/lib/format/date";
+import { formatNumber } from "@/lib/format/number";
+import { creatorTotals } from "@/lib/calculations/creator-totals";
+import { PAYOUT_STATUS_LABELS, type PayoutStatus } from "@/lib/constants/finance";
 
 type HistoryCampaign = {
   id: string;
@@ -108,7 +111,7 @@ export function ClientCampaignHistory({
   );
 }
 
-/** Campaign assignments of a creator (FR-M3-08; views, registrants and fees arrive later). */
+/** FR-M3-08: campaign history with views, registrants and fees received. */
 export function CreatorCampaignHistory({
   assignments,
 }: {
@@ -118,15 +121,20 @@ export function CreatorCampaignHistory({
     contents_committed: number;
     referral_code: string;
     campaign: HistoryCampaign | null;
+    views: number;
+    registrants: number;
+    payout: { status: PayoutStatus; total_amount: number } | null;
   }[];
 }) {
+  const totals = creatorTotals(assignments);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Riwayat kampanye</CardTitle>
         <CardDescription>
-          Total views, pendaftar, dan honor tampil setelah modul metrik (Fase 4) dan keuangan (Fase
-          5).
+          Total views {formatNumber(totals.views)} · pendaftar {formatNumber(totals.registrants)} ·
+          honor diterima {formatRupiah(totals.feesReceived)}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -140,6 +148,9 @@ export function CreatorCampaignHistory({
                 <TableHead>Penugasan</TableHead>
                 <TableHead className="hidden sm:table-cell">Kode</TableHead>
                 <TableHead className="hidden md:table-cell">Periode</TableHead>
+                <TableHead className="hidden text-right lg:table-cell">Views</TableHead>
+                <TableHead className="hidden text-right lg:table-cell">Pendaftar</TableHead>
+                <TableHead className="text-right">Honor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -178,6 +189,24 @@ export function CreatorCampaignHistory({
                           assignment.campaign.end_date,
                         )
                       : "–"}
+                  </TableCell>
+                  <TableCell className="hidden text-right tabular-nums lg:table-cell">
+                    {formatNumber(assignment.views)}
+                  </TableCell>
+                  <TableCell className="hidden text-right tabular-nums lg:table-cell">
+                    {formatNumber(assignment.registrants)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {assignment.payout ? (
+                      <>
+                        {formatRupiah(assignment.payout.total_amount)}
+                        <span className="block text-xs text-muted-foreground">
+                          {PAYOUT_STATUS_LABELS[assignment.payout.status]}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">–</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

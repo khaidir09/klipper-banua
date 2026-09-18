@@ -149,3 +149,61 @@ insert into public.registrant_reports (campaign_id, period_start, period_end, re
 \echo 'P4-9. change the referral code after a report (expect TRACKING_FROZEN)'
 savepoint g; update public.campaign_creators set referral_code='XYZWVU' where id='55555555-0000-0000-0000-0000000000d1'; rollback to savepoint g;
 rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 5: payouts and client payments (PRD M8, 8.3)
+-- ---------------------------------------------------------------------------
+begin;
+\set QUIET on
+insert into public.clients (id, name, type, province) values ('66666666-0000-0000-0000-000000000001','Finance Client','kampus_swasta','Kalimantan Selatan');
+insert into public.creators (id, full_name, birth_date, province, status) values ('66666666-0000-0000-0000-0000000000a1','Finance C','1995-01-01','Kalimantan Selatan','terverifikasi');
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status) values ('66666666-0000-0000-0000-0000000000c1','66666666-0000-0000-0000-000000000001','FIN-2026-01','Finance','awareness','2026-10-01','2026-10-31','aktif');
+insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values ('66666666-0000-0000-0000-0000000000d1','66666666-0000-0000-0000-0000000000c1','66666666-0000-0000-0000-0000000000a1','FNCABC','finance-c');
+\set QUIET off
+create temporary table p5_roles on commit drop as
+  select (select id from public.profiles where role='manager' limit 1) as manager_id,
+         (select id from public.profiles where role='owner' limit 1) as owner_id;
+grant select on p5_roles to authenticated;
+
+select set_config('request.jwt.claims', json_build_object('sub',(select manager_id from p5_roles),'role','authenticated')::text, true);
+set local role authenticated;
+
+\echo 'P5-1. payout while the campaign is still aktif (expect PAYOUT_NEEDS_CLOSED_CAMPAIGN)'
+savepoint a; insert into public.payouts (campaign_creator_id, base_amount, total_amount) values ('66666666-0000-0000-0000-0000000000d1', 250000, 250000); rollback to savepoint a;
+reset role;
+update public.campaigns set status='selesai' where id='66666666-0000-0000-0000-0000000000c1';
+set local role authenticated;
+\echo 'P5-2. manager calculates a draft (expect INSERT, status draf)'
+insert into public.payouts (id, campaign_creator_id, base_amount, views_bonus, total_amount, status) values ('66666666-0000-0000-0000-0000000000f1','66666666-0000-0000-0000-0000000000d1', 250000, 105000, 355000, 'dibayar');
+select status, total_amount from public.payouts where id='66666666-0000-0000-0000-0000000000f1';
+\echo 'P5-3. adjustment without a reason (expect payouts_adjustment_reason_check)'
+savepoint b; update public.payouts set adjustment_amount=-50000, total_amount=305000 where id='66666666-0000-0000-0000-0000000000f1'; rollback to savepoint b;
+\echo 'P5-4. manager approves (expect PAYOUT_OWNER_ONLY)'
+savepoint c; update public.payouts set status='disetujui' where id='66666666-0000-0000-0000-0000000000f1'; rollback to savepoint c;
+\echo 'P5-5. owner approves (expect disetujui with approver)'
+select set_config('request.jwt.claims', json_build_object('sub',(select owner_id from p5_roles),'role','authenticated')::text, true);
+update public.payouts set status='disetujui' where id='66666666-0000-0000-0000-0000000000f1';
+select status, approved_by is not null as has_approver from public.payouts where id='66666666-0000-0000-0000-0000000000f1';
+\echo 'P5-6. recalculating an approved payout, even as owner (expect PAYOUT_LOCKED)'
+savepoint d; update public.payouts set base_amount=500000, total_amount=605000 where id='66666666-0000-0000-0000-0000000000f1'; rollback to savepoint d;
+\echo 'P5-7. mark paid without transfer proof (expect payouts_paid_check)'
+savepoint e; update public.payouts set status='dibayar', paid_at='2026-11-05' where id='66666666-0000-0000-0000-0000000000f1'; rollback to savepoint e;
+\echo 'P5-8. mark paid with date and proof (expect dibayar)'
+update public.payouts set status='dibayar', paid_at='2026-11-05', transfer_proof_path='66666666-0000-0000-0000-0000000000c1/transfer.png' where id='66666666-0000-0000-0000-0000000000f1';
+select status from public.payouts where id='66666666-0000-0000-0000-0000000000f1';
+\echo 'P5-9. reopen a paid payout (expect INVALID_PAYOUT_TRANSITION)'
+savepoint f; update public.payouts set status='draf' where id='66666666-0000-0000-0000-0000000000f1'; rollback to savepoint f;
+select set_config('request.jwt.claims', json_build_object('sub',(select manager_id from p5_roles),'role','authenticated')::text, true);
+\echo 'P5-10. manager attaches a client payment proof (expect FINANCE_OWNER_ONLY)'
+savepoint g; insert into public.client_payments (campaign_id, invoice_number, amount, due_date, proof_path) values ('66666666-0000-0000-0000-0000000000c1','INV-FIN-1',15000000,'2026-11-15','x/proof.pdf'); rollback to savepoint g;
+\echo 'P5-11. invoice status follows the paid amount (expect belum_dibayar, sebagian, lunas)'
+insert into public.client_payments (id, campaign_id, invoice_number, amount, due_date, status) values ('66666666-0000-0000-0000-0000000000b1','66666666-0000-0000-0000-0000000000c1','INV-FIN-1',15000000,'2026-11-15','lunas');
+select status from public.client_payments where id='66666666-0000-0000-0000-0000000000b1';
+update public.client_payments set paid_amount=5000000, paid_at='2026-11-10' where id='66666666-0000-0000-0000-0000000000b1';
+select status from public.client_payments where id='66666666-0000-0000-0000-0000000000b1';
+update public.client_payments set paid_amount=15000000 where id='66666666-0000-0000-0000-0000000000b1';
+select status from public.client_payments where id='66666666-0000-0000-0000-0000000000b1';
+\echo 'P5-12. paid amount without a payment date (expect client_payments_paid_at_check)'
+savepoint h; insert into public.client_payments (campaign_id, invoice_number, amount, due_date, paid_amount) values ('66666666-0000-0000-0000-0000000000c1','INV-FIN-2',1000000,'2026-11-15',1000); rollback to savepoint h;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;

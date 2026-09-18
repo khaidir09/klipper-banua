@@ -41,3 +41,19 @@ rollback;
 
 -- Clean up the fixture.
 delete from public.creators where id = '11111111-1111-1111-1111-111111111111';
+
+-- Finance proofs are owner-only (CLAUDE.md): a manager cannot even list them.
+begin;
+\set QUIET on
+insert into storage.objects (bucket_id, name) values ('finance-proofs', 'rls-check/transfer.pdf');
+\set QUIET off
+\echo '--- as MANAGER: finance-proofs objects (expect 0) ---'
+select set_config('request.jwt.claims', json_build_object('sub', (select id from public.profiles where role = 'manager' limit 1), 'role', 'authenticated')::text, true);
+set local role authenticated;
+select count(*) as finance_proofs_visible from storage.objects where bucket_id = 'finance-proofs';
+reset role;
+\echo '--- as OWNER: finance-proofs objects (expect 1) ---'
+select set_config('request.jwt.claims', json_build_object('sub', (select id from public.profiles where role = 'owner' limit 1), 'role', 'authenticated')::text, true);
+set local role authenticated;
+select count(*) as finance_proofs_visible from storage.objects where bucket_id = 'finance-proofs';
+rollback;

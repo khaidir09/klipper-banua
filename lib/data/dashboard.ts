@@ -49,7 +49,7 @@ export async function getDashboard(
 ) {
   const join = `assignment:campaign_creators!inner(campaign:campaigns(id, code, name, status, min_live_days), creator:creators(full_name, stage_name))`;
 
-  const [active, pending, live, removed] = await Promise.all([
+  const [active, pending, live, removed, unpaidPayouts, openInvoices] = await Promise.all([
     supabase.from("campaigns").select("id", { count: "exact", head: true }).eq("status", "aktif"),
     supabase
       .from("contents")
@@ -67,9 +67,12 @@ export async function getDashboard(
       .select(`id, posted_at, removed_at, ${join}`)
       .eq("live_status", "dihapus")
       .order("removed_at", { ascending: false }),
+    // FR-M10-01: payouts not yet paid, invoices not yet settled.
+    supabase.from("payouts").select("total_amount").neq("status", "dibayar"),
+    supabase.from("client_payments").select("amount, paid_amount").neq("status", "lunas"),
   ]);
 
-  for (const result of [active, pending, live, removed]) {
+  for (const result of [active, pending, live, removed, unpaidPayouts, openInvoices]) {
     if (result.error) throw new Error(result.error.message);
   }
 
@@ -132,7 +135,18 @@ export async function getDashboard(
       removedAt: row.removed_at!,
     }));
 
+  const payouts = unpaidPayouts.data ?? [];
+  const invoices = openInvoices.data ?? [];
+
   return {
+    unpaidPayouts: {
+      count: payouts.length,
+      amount: payouts.reduce((sum, p) => sum + p.total_amount, 0),
+    },
+    openInvoices: {
+      count: invoices.length,
+      outstanding: invoices.reduce((sum, i) => sum + Math.max(0, i.amount - i.paid_amount), 0),
+    },
     activeCampaigns: active.count ?? 0,
     pending: pendingItems,
     due: dueItems,

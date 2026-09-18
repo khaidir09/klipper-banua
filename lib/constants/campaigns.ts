@@ -47,7 +47,7 @@ export const CAMPAIGN_TABS = [
   { segment: "creators", label: "Kreator" },
   { segment: "contents", label: "Konten" },
   { segment: "metrics", label: "Metrik" },
-  { segment: "finance", label: "Keuangan", phase: "Fase 5" },
+  { segment: "finance", label: "Keuangan" },
   { segment: "report", label: "Laporan", phase: "Fase 6" },
 ] as const;
 

@@ -7,6 +7,7 @@ import { requireSession } from "@/lib/auth/guards";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/constants/creators";
 import { CHECKPOINT_LABELS } from "@/lib/constants/metrics";
 import { getDashboard } from "@/lib/data/dashboard";
+import { formatRupiah } from "@/lib/format/currency";
 import { formatDate, formatDateTime } from "@/lib/format/date";
 import { formatNumber } from "@/lib/format/number";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -19,23 +20,20 @@ function SummaryCard({
   label,
   value,
   href,
-  pending,
+  detail,
 }: {
   label: string;
-  value?: number;
+  value: number;
   href?: string;
-  pending?: string;
+  detail?: string;
 }) {
   const body = (
     <div className="h-full rounded-lg border bg-card p-4 transition-colors hover:bg-accent/40">
       <p className="text-sm text-muted-foreground">{label}</p>
-      {pending ? (
-        <p className="mt-2 text-sm text-muted-foreground">Tersedia pada {pending}</p>
-      ) : (
-        <p className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
-          {formatNumber(value ?? 0)}
-        </p>
-      )}
+      <p className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
+        {formatNumber(value)}
+      </p>
+      {detail ? <p className="mt-1 text-xs text-muted-foreground">{detail}</p> : null}
     </div>
   );
   return href ? (
@@ -137,8 +135,16 @@ export default async function DashboardPage() {
           value={data.due.length}
           href="#snapshot-jatuh-tempo"
         />
-        <SummaryCard label="Honor belum dibayar" pending="Fase 5" />
-        <SummaryCard label="Invoice klien belum lunas" pending="Fase 5" />
+        <SummaryCard
+          label="Honor belum dibayar"
+          value={data.unpaidPayouts.count}
+          detail={formatRupiah(data.unpaidPayouts.amount)}
+        />
+        <SummaryCard
+          label="Invoice klien belum lunas"
+          value={data.openInvoices.count}
+          detail={`Sisa ${formatRupiah(data.openInvoices.outstanding)}`}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

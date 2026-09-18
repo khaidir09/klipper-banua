@@ -4,9 +4,10 @@ Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kali
 bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
-Status: **Fase 4 — Metrik dan Dasbor** selesai (snapshot metrik dengan bukti, views dari snapshot
-terbaru, klik, laporan pendaftar agregat, grafik views kumulatif, dasbor pengingat). Fase 0–3:
-autentikasi, pengguna, klien, kreator, kampanye, penugasan, tautan pelacakan, konten dan review.
+Status: **Fase 5 — Keuangan** selesai (perhitungan honor PRD 8.2/8.3 di `lib/calculations/`,
+penyesuaian, persetujuan dan pembayaran honor oleh owner dengan bukti transfer, invoice dan
+pembayaran klien, margin kotor, CPM, biaya per pendaftar). Fase 0–4: autentikasi, pengguna, klien,
+kreator, kampanye, penugasan, tautan pelacakan, konten dan review, metrik dan dasbor.
 
 ## Prasyarat
 
@@ -47,7 +48,8 @@ templat yang sama ke _Authentication → Email Templates_ di dashboard proyek Su
 
 `npm run db:rls-check` menjalankan `scripts/rls-check.sql` terhadap database lokal dan
 menunjukkan bahwa `manager` tidak bisa membaca `creator_bank_accounts` secara langsung
-(0 baris; hanya lewat fungsi tersamar), `owner` bisa, dan `anon` tidak melihat kreator.
+(0 baris; hanya lewat fungsi tersamar), `owner` bisa, `anon` tidak melihat kreator, dan berkas
+bucket `finance-proofs` hanya terlihat oleh `owner`.
 
 `npm run db:guards-check` menjalankan `scripts/guards-check.sql`: aktivasi tanpa URL tujuan/kreator,
 penugasan kreator prospek/diblokir, kode ambigu, insert klik oleh manager, transisi status mundur,
@@ -55,7 +57,9 @@ perubahan kode setelah ada klik, kampanye tertutup, serta alur review konten (UR
 disetujui, revisi tanpa catatan, checklist tidak lengkap, draf yang sudah direview, dan perubahan
 riwayat review), serta metrik (snapshot untuk konten belum tayang, sebelum waktu tayang, tanpa
 bukti, checkpoint ganda; laporan dengan kode kampanye lain atau bukti tanpa konfirmasi bebas data
-pribadi; kode referal setelah ada laporan) — masing-masing harus ditolak database.
+pribadi; kode referal setelah ada laporan), serta keuangan (honor untuk kampanye belum selesai,
+persetujuan/pembayaran oleh manager, hitung ulang honor yang sudah disetujui, dibayar tanpa bukti,
+penyesuaian tanpa alasan, lompatan status) — masing-masing harus ditolak database.
 
 ## Tautan pelacakan
 
