@@ -4,11 +4,12 @@ Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kali
 bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
-Status: **Fase 6 — Laporan dan Waktu Operasional** selesai (laporan klien siap cetak A4 di
-`/print/campaigns/[id]` tanpa data keuangan, catatan penutup, ekspor CSV konten dan rekap kreator,
-catatan waktu kerja dengan rekap per aktivitas di tab Ringkasan). Fase 0–5: autentikasi, pengguna,
+Status: **Fase 7 — Pengerasan dan Rilis Pilot** selesai di sisi kode: log aktivitas untuk owner
+(`/activity`), anonimisasi data kreator, rate limit `/r/[slug]`, data demo, matriks uji RLS
+seluruh tabel, halaman error/404, header keamanan, image Docker + Caddy, dan uji E2E Playwright.
+Deploy ke domain produksi mengikuti [`DEPLOY.md`](./DEPLOY.md). Fase 0–6: autentikasi, pengguna,
 klien, kreator, kampanye, penugasan, tautan pelacakan, konten dan review, metrik dan dasbor,
-keuangan.
+keuangan, laporan dan waktu operasional.
 
 ## Prasyarat
 
@@ -22,6 +23,7 @@ npm install
 npm run db:start          # menyalakan Supabase lokal, mencetak URL dan kunci
 cp .env.example .env.local # lalu isi nilainya dari keluaran db:start
 npm run seed:owner        # membuat akun owner pertama
+npm run seed:demo         # opsional: 1 kampus, 8 kreator, 1 kampanye draft
 npm run dev               # http://localhost:3000
 ```
 
@@ -47,10 +49,12 @@ templat yang sama ke _Authentication → Email Templates_ di dashboard proyek Su
 
 ## Uji RLS dan aturan bisnis
 
-`npm run db:rls-check` menjalankan `scripts/rls-check.sql` terhadap database lokal dan
-menunjukkan bahwa `manager` tidak bisa membaca `creator_bank_accounts` secara langsung
-(0 baris; hanya lewat fungsi tersamar), `owner` bisa, `anon` tidak melihat kreator, dan berkas
-bucket `finance-proofs` hanya terlihat oleh `owner`.
+`npm run db:rls-check` menjalankan `scripts/rls-check.sql`: matriks SELECT/INSERT/UPDATE/DELETE
+untuk **setiap tabel dan bucket Storage** sebagai `owner`, `manager`, anggota nonaktif, dan `anon`,
+dibandingkan dengan hasil yang diharapkan (348 kasus). Skrip gagal (exit code bukan 0) bila ada
+yang tidak cocok atau bila ada tabel `public` tanpa RLS, tanpa kebijakan, atau belum masuk
+matriks, sehingga tabel baru tidak bisa lolos tanpa diuji. Juga memeriksa bahwa manager hanya
+melihat nomor rekening tersamar.
 
 `npm run db:guards-check` menjalankan `scripts/guards-check.sql`: aktivasi tanpa URL tujuan/kreator,
 penugasan kreator prospek/diblokir, kode ambigu, insert klik oleh manager, transisi status mundur,
@@ -61,8 +65,21 @@ bukti, checkpoint ganda; laporan dengan kode kampanye lain atau bukti tanpa konf
 pribadi; kode referal setelah ada laporan), serta keuangan (honor untuk kampanye belum selesai,
 persetujuan/pembayaran oleh manager, hitung ulang honor yang sudah disetujui, dibayar tanpa bukti,
 penyesuaian tanpa alasan, lompatan status), serta waktu operasional (mencatat atas nama orang lain,
-durasi di luar 1–1.440 menit, memindahkan catatan ke pengguna lain) — masing-masing harus ditolak
-database.
+durasi di luar 1–1.440 menit, memindahkan catatan ke pengguna lain), serta anonimisasi kreator
+(oleh manager, mengubah atau menambah rekening setelah dianonimkan, anonimisasi ganda) —
+masing-masing harus ditolak database.
+
+## Data demo dan uji E2E
+
+`npm run seed:demo` mengisi Universitas Demo Borneo (fiktif), 8 kreator dengan status beragam,
+dan kampanye draft `DEMO-PMB-2026`, sehingga alur PRD Bagian 5.2 bisa dilatih dari awal. Skrip
+menolak URL Supabase non-lokal. `npm run seed:demo:reset` mengembalikan kampanye demo ke draft.
+
+`npm run test:e2e` (Playwright, memakai Chrome terpasang) menjalankan alur kritis sebagai owner:
+tugaskan kreator → aktifkan → draf, revisi, setujui → tayang → snapshot dengan bukti, laporan
+pendaftar, klik tautan → selesaikan → hitung, setujui, bayar honor → invoice lunas → laporan
+cetak A4 dan CSV → log aktivitas. Lalu memeriksa batas akses manager. Data demo di-reset otomatis
+sebelum setiap run. Butuh `npm run db:start` dan akun dari `seed:owner` (termasuk manager).
 
 ## Laporan dan ekspor
 
@@ -95,6 +112,9 @@ tidak pernah dibaca. Slug tak dikenal atau kampanye dibatalkan → 404. Rute ini
 | `npm run db:push`              | Menerapkan migrasi ke proyek Supabase terhubung         |
 | `npm run db:types`             | Regenerasi `types/database.ts` dari database lokal      |
 | `npm run seed:owner`           | Membuat/memperbarui akun `owner` (dan `manager`)        |
+| `npm run seed:demo`            | Data demo lokal (1 kampus, 8 kreator, 1 kampanye)       |
+| `npm run seed:demo:reset`      | Kembalikan kampanye demo ke draft                       |
+| `npm run test:e2e`             | Uji alur kritis end-to-end (Playwright)                 |
 | `npm run db:rls-check`         | Uji kebijakan RLS di database lokal                     |
 | `npm run db:guards-check`      | Uji aturan kampanye/penugasan di database lokal         |
 

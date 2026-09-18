@@ -13,8 +13,6 @@ export type NavItem = {
   label: string;
   href: string;
   icon: LucideIcon;
-  /** Disabled until the phase that builds it (PRD section 11). */
-  phase?: string;
   roles?: UserRole[];
 };
 
@@ -23,7 +21,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Klien", href: "/clients", icon: Building2 },
   { label: "Kreator", href: "/creators", icon: Users },
   { label: "Kampanye", href: "/campaigns", icon: Megaphone },
-  { label: "Aktivitas", href: "/activity", icon: ScrollText, phase: "Fase 7", roles: ["owner"] },
+  { label: "Aktivitas", href: "/activity", icon: ScrollText, roles: ["owner"] },
   { label: "Pengaturan", href: "/settings", icon: Settings },
 ];
 

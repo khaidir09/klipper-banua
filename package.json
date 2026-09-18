@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -18,7 +19,9 @@
     "db:push": "supabase db push",
     "db:types": "supabase gen types typescript --local > types/database.ts",
     "seed:owner": "tsx scripts/seed-owner.ts",
-    "db:rls-check": "docker exec -i supabase_db_klipper-banua psql -U postgres -d postgres -v ON_ERROR_STOP=0 -f - < scripts/rls-check.sql",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "seed:demo:reset": "docker exec -i supabase_db_klipper-banua psql -U postgres -d postgres -q -f - < scripts/reset-demo.sql && tsx scripts/seed-demo.ts",
+    "db:rls-check": "docker exec -i supabase_db_klipper-banua psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f - < scripts/rls-check.sql",
     "db:guards-check": "docker exec -i supabase_db_klipper-banua psql -U postgres -d postgres -v ON_ERROR_STOP=0 -f - < scripts/guards-check.sql"
   },
   "dependencies": {
@@ -46,6 +49,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22.20.3",
     "@types/react": "^19",

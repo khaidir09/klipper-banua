@@ -244,3 +244,42 @@ update public.ops_time_logs set minutes=50 where id='77777777-0000-0000-0000-000
 savepoint d; update public.ops_time_logs set user_id=(select owner_id from p6_roles) where id='77777777-0000-0000-0000-0000000000e1'; rollback to savepoint d;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 7: creator anonymization (PRD section 9)
+-- ---------------------------------------------------------------------------
+begin;
+\set QUIET on
+insert into public.creators (id, full_name, stage_name, phone_wa, email, birth_date, province, status, notes) values ('88888888-0000-0000-0000-0000000000a1','Anon Target','anon.target','081234567890','anon@example.com','1995-01-01','Kalimantan Selatan','aktif','catatan pribadi');
+insert into public.creator_social_accounts (creator_id, platform, handle, audience_proof_path) values ('88888888-0000-0000-0000-0000000000a1','tiktok','anon.target.test','88888888-0000-0000-0000-0000000000a1/proof.png');
+insert into public.creator_bank_accounts (creator_id, bank_name, account_number, account_holder) values ('88888888-0000-0000-0000-0000000000a1','Bank Kalsel','9876543210','Anon Target');
+insert into public.activity_logs (actor_id, entity_type, entity_id, action, details) values ((select id from public.profiles where role='owner' limit 1),'creator','88888888-0000-0000-0000-0000000000a1','create','{"full_name":"Anon Target","status":"aktif"}');
+\set QUIET off
+create temporary table p7_roles on commit drop as
+  select (select id from public.profiles where role='manager' limit 1) as manager_id,
+         (select id from public.profiles where role='owner' limit 1) as owner_id;
+grant select on p7_roles to authenticated;
+
+select set_config('request.jwt.claims', json_build_object('sub',(select manager_id from p7_roles),'role','authenticated')::text, true);
+set local role authenticated;
+\echo 'P7-1. manager anonymizes a creator (expect OWNER_ONLY)'
+savepoint a; select public.anonymize_creator('88888888-0000-0000-0000-0000000000a1'); rollback to savepoint a;
+select set_config('request.jwt.claims', json_build_object('sub',(select owner_id from p7_roles),'role','authenticated')::text, true);
+\echo 'P7-2. owner anonymizes (expect the proof path returned)'
+select public.anonymize_creator('88888888-0000-0000-0000-0000000000a1') as proof_paths;
+reset role;
+\echo 'P7-3. personal data erased, accounts removed, log scrubbed (expect anonymous name, empty contact, null birth date, diblokir, 0, 0, no full_name)'
+select full_name, stage_name, phone_wa = '' and email = '' and notes = '' as contact_erased, birth_date, status, anonymized_at is not null as anonymized
+  from public.creators where id='88888888-0000-0000-0000-0000000000a1';
+select (select count(*) from public.creator_social_accounts where creator_id='88888888-0000-0000-0000-0000000000a1') as social,
+       (select count(*) from public.creator_bank_accounts where creator_id='88888888-0000-0000-0000-0000000000a1') as bank,
+       (select details from public.activity_logs where entity_id='88888888-0000-0000-0000-0000000000a1' limit 1) as log_details;
+set local role authenticated;
+\echo 'P7-4. editing an anonymized creator (expect CREATOR_ANONYMIZED)'
+savepoint b; update public.creators set full_name='Nama Baru' where id='88888888-0000-0000-0000-0000000000a1'; rollback to savepoint b;
+\echo 'P7-5. adding a bank account again (expect CREATOR_ANONYMIZED)'
+savepoint c; insert into public.creator_bank_accounts (creator_id, bank_name, account_number, account_holder) values ('88888888-0000-0000-0000-0000000000a1','Bank X','1234567','X'); rollback to savepoint c;
+\echo 'P7-6. anonymizing twice (expect CREATOR_ANONYMIZED)'
+savepoint d; select public.anonymize_creator('88888888-0000-0000-0000-0000000000a1'); rollback to savepoint d;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;

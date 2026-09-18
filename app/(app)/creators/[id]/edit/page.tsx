@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { requireSession } from "@/lib/auth/guards";
 import { NICHES, type Niche } from "@/lib/constants/creators";
@@ -17,6 +17,8 @@ export default async function EditCreatorPage({ params }: { params: Promise<{ id
   const supabase = await createSupabaseServerClient();
   const creator = await getCreator(supabase, id);
   if (!creator) notFound();
+  // Erased personal data cannot be filled in again (PRD section 9).
+  if (creator.anonymized_at) redirect(`/creators/${id}`);
 
   return (
     <div className="space-y-6">
@@ -34,7 +36,7 @@ export default async function EditCreatorPage({ params }: { params: Promise<{ id
           email: creator.email,
           city: creator.city,
           province: isProvince(creator.province) ? creator.province : "Kalimantan Selatan",
-          birth_date: creator.birth_date,
+          birth_date: creator.birth_date ?? "",
           niches: creator.niches.filter((n): n is Niche =>
             (NICHES as readonly string[]).includes(n),
           ),

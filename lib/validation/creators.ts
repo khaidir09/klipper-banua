@@ -151,3 +151,13 @@ export function verificationBlockers(input: {
   }
   return blockers;
 }
+
+/** PRD section 9: the owner types the word to confirm an irreversible erasure. */
+export const ANONYMIZE_CONFIRMATION = "ANONIMKAN";
+
+export const anonymizeCreatorSchema = z.object({
+  id: uuidField,
+  confirmation: z.literal(ANONYMIZE_CONFIRMATION, {
+    message: `Ketik ${ANONYMIZE_CONFIRMATION} untuk mengonfirmasi.`,
+  }),
+});

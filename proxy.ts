@@ -9,9 +9,9 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Run on every request except static assets, image files and the public
-     * tracking redirect `/r/<slug>` (no session needed; keeps it fast).
+     * Run on every request except static assets, image files, the public
+     * tracking redirect `/r/<slug>` and the health probe (no session needed).
      */
-    "/((?!_next/static|_next/image|favicon.ico|r/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|r/|healthz|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

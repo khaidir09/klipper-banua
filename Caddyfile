@@ -1,0 +1,13 @@
+# HTTPS certificates are obtained and renewed automatically for APP_DOMAIN.
+{$APP_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	# Caddy replaces any X-Forwarded-For sent by the client with the real
+	# address, so the app's click hashing and rate limit see the true IP.
+	reverse_proxy app:3000
+}

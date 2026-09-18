@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil } from "lucide-react";
+import { Pencil, UserX } from "lucide-react";
 import { DetailList } from "@/components/layout/detail-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { CreatorStatusBadge } from "@/components/creators/creator-status-badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreatorCampaignHistory } from "@/components/campaigns/campaign-history";
@@ -18,6 +19,7 @@ import { formatCalendarDate, formatDateTime } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { verificationBlockers } from "@/lib/validation/creators";
 import { formatWhatsapp, whatsappLink } from "@/lib/validation/phone";
+import { AnonymizeCreatorButton } from "./anonymize-creator-button";
 import { BankAccountPanel } from "./bank-account-panel";
 import { DeleteCreatorButton } from "./delete-creator-button";
 import { SocialAccounts } from "./social-accounts";
@@ -33,6 +35,7 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
   if (!creator) notFound();
 
   const isOwner = profile.role === "owner";
+  const anonymized = creator.anonymized_at !== null;
   const tz = profile.timezone;
 
   const [proofUrls, maskedBank, history] = await Promise.all([
@@ -54,17 +57,38 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
         backHref="/creators"
         backLabel="Daftar kreator"
         actions={
-          <>
-            <Button variant="outline" asChild>
-              <Link href={`/creators/${id}/edit`}>
-                <Pencil aria-hidden />
-                Ubah
-              </Link>
-            </Button>
-            {isOwner ? <DeleteCreatorButton creatorId={id} name={creator.full_name} /> : null}
-          </>
+          anonymized ? null : (
+            <>
+              <Button variant="outline" asChild>
+                <Link href={`/creators/${id}/edit`}>
+                  <Pencil aria-hidden />
+                  Ubah
+                </Link>
+              </Button>
+              {isOwner ? (
+                <>
+                  {/* Only creators never assigned can be deleted outright. */}
+                  {history.length === 0 ? (
+                    <DeleteCreatorButton creatorId={id} name={creator.full_name} />
+                  ) : (
+                    <AnonymizeCreatorButton creatorId={id} name={creator.full_name} />
+                  )}
+                </>
+              ) : null}
+            </>
+          )
         }
       />
+
+      {anonymized ? (
+        <Alert>
+          <UserX />
+          <AlertDescription>
+            Data pribadi kreator ini dianonimkan pada {formatDateTime(creator.anonymized_at!, tz)}.
+            Riwayat kampanye dan honor tetap tersimpan; data tidak dapat diubah lagi.
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-2">
         <CreatorStatusBadge status={creator.status} />
@@ -79,9 +103,15 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
       <Tabs defaultValue="profil">
         <TabsList className="flex-wrap">
           <TabsTrigger value="profil">Profil</TabsTrigger>
-          <TabsTrigger value="sosial">Akun sosial ({creator.social_accounts.length})</TabsTrigger>
-          <TabsTrigger value="verifikasi">Persetujuan & verifikasi</TabsTrigger>
-          <TabsTrigger value="rekening">Rekening</TabsTrigger>
+          {anonymized ? null : (
+            <>
+              <TabsTrigger value="sosial">
+                Akun sosial ({creator.social_accounts.length})
+              </TabsTrigger>
+              <TabsTrigger value="verifikasi">Persetujuan & verifikasi</TabsTrigger>
+              <TabsTrigger value="rekening">Rekening</TabsTrigger>
+            </>
+          )}
           <TabsTrigger value="riwayat">Riwayat</TabsTrigger>
         </TabsList>
 
@@ -111,7 +141,9 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
                   { label: "Kota / kabupaten", value: creator.city },
                   {
                     label: "Tanggal lahir",
-                    value: formatCalendarDate(creator.birth_date, "d MMMM yyyy"),
+                    value: creator.birth_date
+                      ? formatCalendarDate(creator.birth_date, "d MMMM yyyy")
+                      : null,
                   },
                   { label: "Terdaftar", value: formatDateTime(creator.created_at, tz) },
                   { label: "Catatan", value: creator.notes, wide: true },

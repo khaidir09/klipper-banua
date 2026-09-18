@@ -1,0 +1,16 @@
+# Keep the build context small and free of secrets.
+.git
+.next
+node_modules
+coverage
+playwright-report
+test-results
+e2e/.auth
+.env*
+!.env.example
+supabase/.branches
+supabase/.temp
+*.log
+Dockerfile
+docker-compose.yml
+Caddyfile

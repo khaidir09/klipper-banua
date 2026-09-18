@@ -668,7 +668,8 @@ export type Database = {
       }
       creators: {
         Row: {
-          birth_date: string
+          anonymized_at: string | null
+          birth_date: string | null
           city: string
           created_at: string
           created_by: string | null
@@ -689,7 +690,8 @@ export type Database = {
           verified_by: string | null
         }
         Insert: {
-          birth_date: string
+          anonymized_at?: string | null
+          birth_date?: string | null
           city?: string
           created_at?: string
           created_by?: string | null
@@ -710,7 +712,8 @@ export type Database = {
           verified_by?: string | null
         }
         Update: {
-          birth_date?: string
+          anonymized_at?: string | null
+          birth_date?: string | null
           city?: string
           created_at?: string
           created_by?: string | null
@@ -1092,6 +1095,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      anonymize_creator: { Args: { target_id: string }; Returns: string[] }
       assert_campaign_editable: {
         Args: { p_campaign_id: string }
         Returns: undefined

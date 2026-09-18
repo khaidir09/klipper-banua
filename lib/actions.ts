@@ -56,6 +56,9 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   PAYOUT_OWNER_ONLY: "Hanya owner yang dapat menyetujui atau menandai honor dibayar.",
   INVALID_PAYOUT_TRANSITION: "Perubahan status honor tersebut tidak diizinkan.",
   FINANCE_OWNER_ONLY: "Bukti keuangan hanya dapat dikelola owner.",
+  CREATOR_ANONYMIZED: "Data pribadi kreator ini sudah dianonimkan dan tidak dapat diubah lagi.",
+  CREATOR_NOT_FOUND: "Kreator tidak ditemukan.",
+  OWNER_ONLY: "Hanya owner yang dapat melakukan tindakan ini.",
   OPS_LOG_OWNER_FIXED: "Kampanye dan pencatat waktu tidak dapat diubah.",
 };
 

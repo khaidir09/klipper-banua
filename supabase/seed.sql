@@ -1,7 +1,7 @@
 -- Local development seed.
--- The owner account is created through the Auth admin API instead of raw SQL,
--- so that passwords are hashed the same way as in production:
+-- Accounts and demo data are created through scripts instead of raw SQL, so
+-- that passwords are hashed the same way as in production and demo audience
+-- proofs can be uploaded to Storage:
 --
---   npm run seed:owner
---
--- Demo data (campaigns, creators, clients) arrives in phase 7 (PRD section 11).
+--   npm run seed:owner   -- owner (+ manager) accounts
+--   npm run seed:demo    -- 1 campus, 8 creators, 1 draft campaign (local only)

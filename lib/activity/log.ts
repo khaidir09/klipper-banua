@@ -1,45 +1,10 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { ActivityAction, ActivityEntityType } from "@/lib/constants/activity";
+
 import type { Database, Json } from "@/types/database";
 
-export type ActivityEntityType =
-  | "profile"
-  | "client"
-  | "client_contact"
-  | "creator"
-  | "creator_social_account"
-  | "creator_bank_account"
-  | "campaign"
-  | "campaign_asset"
-  | "campaign_creator"
-  | "content"
-  | "metric_snapshot"
-  | "registrant_report"
-  | "payout"
-  | "client_payment";
-
-export type ActivityAction =
-  | "create"
-  | "update"
-  | "delete"
-  | "invite"
-  | "role_change"
-  | "activate"
-  | "deactivate"
-  | "verify"
-  | "terms_recorded"
-  | "bank_account_viewed"
-  | "status_change"
-  | "new_draft"
-  | "review"
-  | "posted"
-  | "removed"
-  | "calculate"
-  | "adjust"
-  | "approve"
-  | "revoke_approval"
-  | "paid"
-  | "payment_recorded";
+export type { ActivityAction, ActivityEntityType };
 
 type LogInput = {
   actorId: string;

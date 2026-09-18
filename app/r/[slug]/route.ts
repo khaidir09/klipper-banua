@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { serverEnv } from "@/lib/env.server";
 import { isValidTrackingSlug } from "@/lib/referral/generate";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { FixedWindowRateLimiter, TRACKING_RATE_LIMIT } from "@/lib/tracking/rate-limit";
 import {
   buildRedirectUrl,
   clientIpFromHeaders,
@@ -18,9 +19,22 @@ import {
  * into an open redirect. Clicks are written with the service role because
  * `link_clicks` has no insert policy for any client role.
  */
+
+// One limiter per server process (PRD section 9: simple rate limit).
+const limiter = new FixedWindowRateLimiter(TRACKING_RATE_LIMIT.limit, TRACKING_RATE_LIMIT.windowMs);
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   if (!isValidTrackingSlug(slug)) return notFoundResponse();
+
+  // Keyed by the salted hash so raw IPs are not even held in memory. Requests
+  // without a client IP (no proxy header) are not limited rather than lumped
+  // together into one shared bucket.
+  const ipHash = await hashIp(clientIpFromHeaders(request.headers), serverEnv().CLICK_IP_HASH_SALT);
+  if (ipHash) {
+    const decision = limiter.check(ipHash);
+    if (!decision.allowed) return tooManyRequestsResponse(decision.retryAfterSeconds);
+  }
 
   const admin = createSupabaseAdminClient();
   const { data: assignment } = await admin
@@ -45,7 +59,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     campaign_creator_id: assignment.id,
     referrer: truncate(request.headers.get("referer")),
     user_agent: truncate(userAgent),
-    ip_hash: await hashIp(clientIpFromHeaders(request.headers), serverEnv().CLICK_IP_HASH_SALT),
+    ip_hash: ipHash,
     is_bot: isBotUserAgent(userAgent),
   });
   // A failed insert must never break the visitor's redirect.
@@ -54,6 +68,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   return NextResponse.redirect(destination, {
     status: 302,
     headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" },
+  });
+}
+
+function tooManyRequestsResponse(retryAfterSeconds: number) {
+  const html = `<!doctype html>
+<html lang="id">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Terlalu banyak permintaan</title>
+<style>body{font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0;padding:16px;color:#222;background:#fafafa;text-align:center}h1{font-size:1.25rem;margin:0 0 .5rem}p{color:#666;margin:0}</style></head>
+<body><main><h1>Terlalu banyak permintaan</h1><p>Coba buka tautan ini lagi sebentar lagi.</p></main></body>
+</html>`;
+  return new NextResponse(html, {
+    status: 429,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Retry-After": String(retryAfterSeconds),
+      "X-Robots-Tag": "noindex",
+    },
   });
 }
 

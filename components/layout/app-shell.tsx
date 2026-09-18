@@ -51,21 +51,6 @@ function NavLinks({ role, onNavigate }: { role: UserRole; onNavigate?: () => voi
         const Icon = item.icon;
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-        if (item.phase) {
-          return (
-            <span
-              key={item.href}
-              aria-disabled="true"
-              title={`Tersedia pada ${item.phase}`}
-              className="flex cursor-not-allowed items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground/60"
-            >
-              <Icon className="size-4" aria-hidden />
-              <span className="flex-1">{item.label}</span>
-              <span className="text-xs">{item.phase}</span>
-            </span>
-          );
-        }
-
         return (
           <Link
             key={item.href}

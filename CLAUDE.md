@@ -46,8 +46,12 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 | `npm run seed:owner`                   | Buat/perbarui akun `owner` (+ `manager` bila `SEED_MANAGER_*` diisi) |
 | `npm run db:rls-check`                 | Uji kebijakan RLS di database lokal (`scripts/rls-check.sql`) |
 | `npm run db:guards-check`              | Uji trigger aturan kampanye/penugasan (`scripts/guards-check.sql`) |
+| `npm run seed:demo` / `seed:demo:reset` | Data demo lokal / kembalikan kampanye demo ke draft |
+| `npm run test:e2e`                     | Uji alur kritis Playwright (butuh Supabase lokal + data demo) |
 
 Sebelum menyelesaikan fase, jalankan: `npm run lint && npm run typecheck && npm run test && npm run build`.
+
+Tabel baru wajib ditambahkan ke matriks `scripts/rls-check.sql`; skrip gagal bila ada tabel yang belum tercakup. Deploy produksi: lihat `DEPLOY.md`.
 
 ## Catatan framework
 

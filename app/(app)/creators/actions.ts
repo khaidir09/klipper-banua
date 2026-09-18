@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
   PG_FOREIGN_KEY_VIOLATION,
+  dbRuleMessage,
   PG_UNIQUE_VIOLATION,
   fail,
   invalid,
@@ -17,6 +18,7 @@ import { AUDIENCE_PROOF_BUCKET } from "@/lib/data/creators";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { uuidField } from "@/lib/validation/common";
 import {
+  anonymizeCreatorSchema,
   bankAccountSchema,
   creatorSchema,
   socialAccountSchema,
@@ -133,6 +135,41 @@ export async function deleteCreatorAction(values: unknown): Promise<ActionResult
 
   revalidatePath("/creators");
   redirect("/creators");
+}
+
+/**
+ * PRD section 9 (UU PDP): erases a creator's personal data on request when the
+ * row cannot be deleted because campaign and payout history refer to it. The
+ * database function does the erasure atomically and returns the proof files.
+ */
+export async function anonymizeCreatorAction(values: unknown): Promise<ActionResult> {
+  const session = await requireRole("owner");
+  const parsed = anonymizeCreatorSchema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error);
+  const { id } = parsed.data;
+
+  const supabase = await createSupabaseServerClient();
+  const { data: proofPaths, error } = await supabase.rpc("anonymize_creator", { target_id: id });
+  if (error) return fail(dbRuleMessage(error, "Data kreator gagal dianonimkan."));
+
+  if (proofPaths?.length) {
+    const { error: storageError } = await supabase.storage
+      .from(AUDIENCE_PROOF_BUCKET)
+      .remove(proofPaths);
+    if (storageError) console.error("audience proof removal failed:", storageError.message);
+  }
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "creator",
+    entityId: id,
+    action: "anonymize",
+    details: { proof_files_removed: proofPaths?.length ?? 0 },
+  });
+
+  revalidatePath("/creators");
+  revalidatePath(`/creators/${id}`);
+  return ok("Data pribadi kreator sudah dianonimkan.");
 }
 
 /* ------------------------------------------------------------------ */
