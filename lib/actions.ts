@@ -40,13 +40,17 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   ACTIVATION_NEEDS_CREATOR: "Tugaskan minimal satu kreator sebelum mengaktifkan kampanye.",
   CREATOR_BLOCKED: "Kreator yang diblokir tidak dapat ditugaskan.",
   CREATOR_NOT_VERIFIED: "Hanya kreator terverifikasi atau aktif yang dapat ditugaskan.",
-  TRACKING_FROZEN: "Kode referal dan slug tidak dapat diubah karena sudah ada klik tercatat.",
+  TRACKING_FROZEN:
+    "Kode referal dan slug tidak dapat diubah karena sudah ada klik atau laporan pendaftar tercatat.",
   REVIEW_NOT_PENDING: "Konten ini sudah direview; tunggu draf baru sebelum mereview lagi.",
   CHECKLIST_INCOMPLETE: "Centang semua item checklist sebelum menyetujui konten.",
   INVALID_REVIEW_TRANSITION: "Status review hanya berubah lewat keputusan review atau draf baru.",
   DRAFT_FROZEN: "Draf yang sudah direview tidak dapat diubah; kirim draf baru setelah revisi.",
   REVIEW_IMMUTABLE: "Riwayat review tidak dapat diubah atau dihapus.",
   CONTENT_ASSIGNMENT_FIXED: "Konten tidak dapat dipindahkan ke kreator lain.",
+  SNAPSHOT_NEEDS_LIVE_CONTENT: "Snapshot metrik hanya untuk konten yang sudah tayang.",
+  SNAPSHOT_BEFORE_POSTING: "Waktu pengambilan snapshot tidak boleh sebelum waktu tayang.",
+  REPORT_ASSIGNMENT_MISMATCH: "Kode kreator tersebut bukan milik kampanye ini.",
 };
 
 /** Check constraints whose violation deserves a specific message. */
@@ -55,6 +59,10 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
     "URL tayang hanya dapat diisi untuk konten yang sudah disetujui.",
   content_reviews_revision_notes_check: "Catatan wajib diisi untuk permintaan revisi.",
   contents_removed_check: "Waktu penghapusan tidak boleh sebelum waktu tayang.",
+  metric_snapshots_checkpoint_key: "Checkpoint ini sudah memiliki snapshot untuk konten tersebut.",
+  registrant_reports_proof_confirmation_check:
+    "Konfirmasi bahwa bukti tidak memuat data pribadi pendaftar.",
+  registrant_reports_period_check: "Akhir periode tidak boleh sebelum awal periode.",
 };
 
 /** Maps a trigger or constraint violation to Indonesian text; falls back otherwise. */

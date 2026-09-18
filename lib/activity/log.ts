@@ -12,7 +12,9 @@ export type ActivityEntityType =
   | "campaign"
   | "campaign_asset"
   | "campaign_creator"
-  | "content";
+  | "content"
+  | "metric_snapshot"
+  | "registrant_report";
 
 export type ActivityAction =
   | "create"

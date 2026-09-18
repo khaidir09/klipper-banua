@@ -105,3 +105,47 @@ rollback;
 delete from public.campaigns where id='44444444-0000-0000-0000-0000000000c1';
 delete from public.creators where id='44444444-0000-0000-0000-0000000000a1';
 delete from public.clients where id='44444444-0000-0000-0000-000000000001';
+
+-- ---------------------------------------------------------------------------
+-- Phase 4: metric snapshots and registrant reports (PRD M7, 8.5)
+-- ---------------------------------------------------------------------------
+-- Fixtures live inside this transaction: reviews are immutable, so the final
+-- rollback is the only way to remove them again.
+begin;
+\set QUIET on
+insert into public.clients (id, name, type, province) values ('55555555-0000-0000-0000-000000000001','Metric Client','kampus_swasta','Kalimantan Selatan');
+insert into public.creators (id, full_name, birth_date, province, status) values ('55555555-0000-0000-0000-0000000000a1','Metric C','1995-01-01','Kalimantan Selatan','terverifikasi');
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date) values ('55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-000000000001','METRIC-2026-01','Metric','awareness','2026-10-01','2026-10-31');
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date) values ('55555555-0000-0000-0000-0000000000c2','55555555-0000-0000-0000-000000000001','METRIC-2026-02','Other','awareness','2026-10-01','2026-10-31');
+insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values ('55555555-0000-0000-0000-0000000000d1','55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-0000000000a1','MTRABC','metric-c');
+insert into public.contents (id, campaign_creator_id, platform, draft_url) values ('55555555-0000-0000-0000-0000000000e1','55555555-0000-0000-0000-0000000000d1','tiktok','https://drive.test/a');
+insert into public.contents (id, campaign_creator_id, platform, draft_url) values ('55555555-0000-0000-0000-0000000000e2','55555555-0000-0000-0000-0000000000d1','tiktok','https://drive.test/b');
+insert into public.content_reviews (content_id, decision, checklist) values ('55555555-0000-0000-0000-0000000000e1','disetujui','{"sesuai_brief":true,"tanpa_larangan":true,"label_berbayar":true,"info_akurat":true}');
+update public.contents set posted_url='https://tiktok.com/@m/1', posted_at='2026-10-05 10:00+08', live_status='tayang' where id='55555555-0000-0000-0000-0000000000e1';
+\set QUIET off
+
+select set_config('request.jwt.claims', json_build_object('sub',(select id from public.profiles where role='manager' limit 1),'role','authenticated')::text, true);
+set local role authenticated;
+
+\echo 'P4-1. snapshot for content that is not live (expect SNAPSHOT_NEEDS_LIVE_CONTENT)'
+savepoint a; insert into public.metric_snapshots (content_id, checkpoint, captured_at, views, proof_path) values ('55555555-0000-0000-0000-0000000000e2','H+1','2026-10-06 10:00+08',100,'x/p.png'); rollback to savepoint a;
+\echo 'P4-2. snapshot captured before posting (expect SNAPSHOT_BEFORE_POSTING)'
+savepoint b; insert into public.metric_snapshots (content_id, checkpoint, captured_at, views, proof_path) values ('55555555-0000-0000-0000-0000000000e1','H+1','2026-10-05 09:00+08',100,'x/p.png'); rollback to savepoint b;
+\echo 'P4-3. snapshot without proof (expect metric_snapshots_proof_check)'
+savepoint c; insert into public.metric_snapshots (content_id, checkpoint, captured_at, views, proof_path) values ('55555555-0000-0000-0000-0000000000e1','H+1','2026-10-06 10:00+08',100,' '); rollback to savepoint c;
+\echo 'P4-4. valid H+1 snapshot, then a second H+1 (expect INSERT, then unique violation)'
+insert into public.metric_snapshots (content_id, checkpoint, captured_at, views, proof_path) values ('55555555-0000-0000-0000-0000000000e1','H+1','2026-10-06 10:00+08',1200,'x/p.png');
+savepoint d; insert into public.metric_snapshots (content_id, checkpoint, captured_at, views, proof_path) values ('55555555-0000-0000-0000-0000000000e1','H+1','2026-10-06 12:00+08',1300,'x/p.png'); rollback to savepoint d;
+\echo 'P4-5. two "lainnya" snapshots are allowed (expect INSERT twice)'
+insert into public.metric_snapshots (content_id, checkpoint, captured_at, views, proof_path) values ('55555555-0000-0000-0000-0000000000e1','lainnya','2026-10-07 10:00+08',1500,'x/p.png');
+insert into public.metric_snapshots (content_id, checkpoint, captured_at, views, proof_path) values ('55555555-0000-0000-0000-0000000000e1','lainnya','2026-10-07 18:00+08',1600,'x/p.png');
+\echo 'P4-6. report with a code from another campaign (expect REPORT_ASSIGNMENT_MISMATCH)'
+savepoint e; insert into public.registrant_reports (campaign_id, campaign_creator_id, period_start, period_end, registrant_count) values ('55555555-0000-0000-0000-0000000000c2','55555555-0000-0000-0000-0000000000d1','2026-10-01','2026-10-07',3); rollback to savepoint e;
+\echo 'P4-7. proof without the no-personal-data confirmation (expect registrant_reports_proof_confirmation_check)'
+savepoint f; insert into public.registrant_reports (campaign_id, campaign_creator_id, period_start, period_end, registrant_count, proof_path) values ('55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-0000000000d1','2026-10-01','2026-10-07',3,'x/r.png'); rollback to savepoint f;
+\echo 'P4-8. valid report by code and one without a code (expect INSERT twice)'
+insert into public.registrant_reports (campaign_id, campaign_creator_id, period_start, period_end, registrant_count, proof_path, proof_confirmed_no_personal_data) values ('55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-0000000000d1','2026-10-01','2026-10-07',3,'x/r.png',true);
+insert into public.registrant_reports (campaign_id, period_start, period_end, registrant_count) values ('55555555-0000-0000-0000-0000000000c1','2026-10-01','2026-10-07',2);
+\echo 'P4-9. change the referral code after a report (expect TRACKING_FROZEN)'
+savepoint g; update public.campaign_creators set referral_code='XYZWVU' where id='55555555-0000-0000-0000-0000000000d1'; rollback to savepoint g;
+rollback;

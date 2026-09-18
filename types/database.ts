@@ -728,6 +728,69 @@ export type Database = {
           },
         ]
       }
+      metric_snapshots: {
+        Row: {
+          captured_at: string
+          checkpoint: Database["public"]["Enums"]["metric_checkpoint"]
+          comments: number
+          content_id: string
+          created_at: string
+          entered_by: string | null
+          id: string
+          likes: number
+          proof_path: string
+          saves: number
+          shares: number
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          captured_at: string
+          checkpoint: Database["public"]["Enums"]["metric_checkpoint"]
+          comments?: number
+          content_id: string
+          created_at?: string
+          entered_by?: string | null
+          id?: string
+          likes?: number
+          proof_path: string
+          saves?: number
+          shares?: number
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          captured_at?: string
+          checkpoint?: Database["public"]["Enums"]["metric_checkpoint"]
+          comments?: number
+          content_id?: string
+          created_at?: string
+          entered_by?: string | null
+          id?: string
+          likes?: number
+          proof_path?: string
+          saves?: number
+          shares?: number
+          updated_at?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metric_snapshots_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_snapshots_entered_by_fkey"
+            columns: ["entered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -760,6 +823,73 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      registrant_reports: {
+        Row: {
+          campaign_creator_id: string | null
+          campaign_id: string
+          created_at: string
+          entered_by: string | null
+          id: string
+          notes: string
+          period_end: string
+          period_start: string
+          proof_confirmed_no_personal_data: boolean
+          proof_path: string | null
+          registrant_count: number
+          updated_at: string
+        }
+        Insert: {
+          campaign_creator_id?: string | null
+          campaign_id: string
+          created_at?: string
+          entered_by?: string | null
+          id?: string
+          notes?: string
+          period_end: string
+          period_start: string
+          proof_confirmed_no_personal_data?: boolean
+          proof_path?: string | null
+          registrant_count: number
+          updated_at?: string
+        }
+        Update: {
+          campaign_creator_id?: string | null
+          campaign_id?: string
+          created_at?: string
+          entered_by?: string | null
+          id?: string
+          notes?: string
+          period_end?: string
+          period_start?: string
+          proof_confirmed_no_personal_data?: boolean
+          proof_path?: string | null
+          registrant_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registrant_reports_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registrant_reports_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registrant_reports_entered_by_fkey"
+            columns: ["entered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -810,6 +940,7 @@ export type Database = {
         | "diblokir"
       creator_tier: "nano" | "mikro" | "menengah"
       live_status: "belum_tayang" | "tayang" | "dihapus"
+      metric_checkpoint: "H+1" | "H+3" | "H+7" | "akhir" | "lainnya"
       review_decision: "disetujui" | "revisi" | "ditolak"
       review_status: "menunggu_review" | "disetujui" | "revisi" | "ditolak"
       social_platform: "tiktok" | "instagram" | "youtube" | "facebook"
@@ -967,6 +1098,7 @@ export const Constants = {
       ],
       creator_tier: ["nano", "mikro", "menengah"],
       live_status: ["belum_tayang", "tayang", "dihapus"],
+      metric_checkpoint: ["H+1", "H+3", "H+7", "akhir", "lainnya"],
       review_decision: ["disetujui", "revisi", "ditolak"],
       review_status: ["menunggu_review", "disetujui", "revisi", "ditolak"],
       social_platform: ["tiktok", "instagram", "youtube", "facebook"],

@@ -4,9 +4,9 @@ Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kali
 bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
-Status: **Fase 3 — Konten dan Review** selesai (pencatatan draf, checklist review, revisi, status
-tayang/dihapus, riwayat review permanen). Fase 0–2: autentikasi, pengguna, klien, kreator,
-kampanye, penugasan, tautan pelacakan.
+Status: **Fase 4 — Metrik dan Dasbor** selesai (snapshot metrik dengan bukti, views dari snapshot
+terbaru, klik, laporan pendaftar agregat, grafik views kumulatif, dasbor pengingat). Fase 0–3:
+autentikasi, pengguna, klien, kreator, kampanye, penugasan, tautan pelacakan, konten dan review.
 
 ## Prasyarat
 
@@ -53,7 +53,9 @@ menunjukkan bahwa `manager` tidak bisa membaca `creator_bank_accounts` secara la
 penugasan kreator prospek/diblokir, kode ambigu, insert klik oleh manager, transisi status mundur,
 perubahan kode setelah ada klik, kampanye tertutup, serta alur review konten (URL tayang sebelum
 disetujui, revisi tanpa catatan, checklist tidak lengkap, draf yang sudah direview, dan perubahan
-riwayat review) — masing-masing harus ditolak database.
+riwayat review), serta metrik (snapshot untuk konten belum tayang, sebelum waktu tayang, tanpa
+bukti, checkpoint ganda; laporan dengan kode kampanye lain atau bukti tanpa konfirmasi bebas data
+pribadi; kode referal setelah ada laporan) — masing-masing harus ditolak database.
 
 ## Tautan pelacakan
 
