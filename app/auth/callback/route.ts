@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
+import { appUrl } from "@/lib/app-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { safeNextPath } from "@/lib/validation/auth";
 
@@ -16,7 +17,7 @@ const EMAIL_OTP_TYPES: EmailOtpType[] = [
  * session, then sends the user on to pick a password (FR-M1-02, FR-M1-04).
  */
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = request.nextUrl;
+  const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const typeParam = searchParams.get("type");
@@ -28,16 +29,16 @@ export async function GET(request: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(new URL(next, origin));
+      return NextResponse.redirect(appUrl(next));
     }
   } else if (tokenHash) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
     if (!error) {
-      return NextResponse.redirect(new URL(next, origin));
+      return NextResponse.redirect(appUrl(next));
     }
   }
 
-  const loginUrl = new URL("/login", origin);
+  const loginUrl = appUrl("/login");
   loginUrl.searchParams.set("alasan", "tautan");
   return NextResponse.redirect(loginUrl);
 }

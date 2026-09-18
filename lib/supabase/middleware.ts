@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { appUrl } from "@/lib/app-url";
 import { publicEnv } from "@/lib/env";
 import type { Database } from "@/types/database";
 
@@ -52,7 +53,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   if (!user && !isPublicPath(pathname)) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = appUrl("/login");
     if (pathname !== "/") {
       loginUrl.searchParams.set("next", `${pathname}${search}`);
     }
@@ -60,7 +61,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && (pathname === "/login" || pathname === "/lupa-sandi")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(appUrl("/dashboard"));
   }
 
   return response;

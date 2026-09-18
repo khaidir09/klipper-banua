@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { appUrl } from "@/lib/app-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
@@ -10,7 +11,7 @@ async function signOutAndRedirect(request: NextRequest) {
   await supabase.auth.signOut();
 
   const reason = request.nextUrl.searchParams.get("alasan") ?? "keluar";
-  const loginUrl = new URL("/login", request.url);
+  const loginUrl = appUrl("/login");
   loginUrl.searchParams.set("alasan", reason);
 
   return NextResponse.redirect(loginUrl, { status: 303 });
