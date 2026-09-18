@@ -851,6 +851,57 @@ export type Database = {
           },
         ]
       }
+      ops_time_logs: {
+        Row: {
+          activity: Database["public"]["Enums"]["ops_activity"]
+          campaign_id: string
+          created_at: string
+          id: string
+          log_date: string
+          minutes: number
+          notes: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity: Database["public"]["Enums"]["ops_activity"]
+          campaign_id: string
+          created_at?: string
+          id?: string
+          log_date: string
+          minutes: number
+          notes?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          activity?: Database["public"]["Enums"]["ops_activity"]
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          log_date?: string
+          minutes?: number
+          notes?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ops_time_logs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ops_time_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payouts: {
         Row: {
           adjustment_amount: number
@@ -1087,6 +1138,14 @@ export type Database = {
       creator_tier: "nano" | "mikro" | "menengah"
       live_status: "belum_tayang" | "tayang" | "dihapus"
       metric_checkpoint: "H+1" | "H+3" | "H+7" | "akhir" | "lainnya"
+      ops_activity:
+        | "review"
+        | "rekap_metrik"
+        | "koordinasi_kreator"
+        | "koordinasi_klien"
+        | "pembayaran"
+        | "laporan"
+        | "lainnya"
       payout_status: "draf" | "disetujui" | "dibayar"
       review_decision: "disetujui" | "revisi" | "ditolak"
       review_status: "menunggu_review" | "disetujui" | "revisi" | "ditolak"
@@ -1247,6 +1306,15 @@ export const Constants = {
       creator_tier: ["nano", "mikro", "menengah"],
       live_status: ["belum_tayang", "tayang", "dihapus"],
       metric_checkpoint: ["H+1", "H+3", "H+7", "akhir", "lainnya"],
+      ops_activity: [
+        "review",
+        "rekap_metrik",
+        "koordinasi_kreator",
+        "koordinasi_klien",
+        "pembayaran",
+        "laporan",
+        "lainnya",
+      ],
       payout_status: ["draf", "disetujui", "dibayar"],
       review_decision: ["disetujui", "revisi", "ditolak"],
       review_status: ["menunggu_review", "disetujui", "revisi", "ditolak"],

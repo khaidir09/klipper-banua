@@ -56,6 +56,7 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   PAYOUT_OWNER_ONLY: "Hanya owner yang dapat menyetujui atau menandai honor dibayar.",
   INVALID_PAYOUT_TRANSITION: "Perubahan status honor tersebut tidak diizinkan.",
   FINANCE_OWNER_ONLY: "Bukti keuangan hanya dapat dikelola owner.",
+  OPS_LOG_OWNER_FIXED: "Kampanye dan pencatat waktu tidak dapat diubah.",
 };
 
 /** Check constraints whose violation deserves a specific message. */
@@ -72,6 +73,7 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
   payouts_paid_check: "Status dibayar wajib disertai tanggal bayar dan bukti transfer.",
   client_payments_invoice_number_key: "Nomor invoice sudah dipakai.",
   client_payments_paid_at_check: "Tanggal bayar wajib diisi jika ada pembayaran.",
+  ops_time_logs_minutes_check: "Durasi harus antara 1 dan 1.440 menit.",
 };
 
 /** Maps a trigger or constraint violation to Indonesian text; falls back otherwise. */

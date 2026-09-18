@@ -4,10 +4,11 @@ Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kali
 bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
-Status: **Fase 5 — Keuangan** selesai (perhitungan honor PRD 8.2/8.3 di `lib/calculations/`,
-penyesuaian, persetujuan dan pembayaran honor oleh owner dengan bukti transfer, invoice dan
-pembayaran klien, margin kotor, CPM, biaya per pendaftar). Fase 0–4: autentikasi, pengguna, klien,
-kreator, kampanye, penugasan, tautan pelacakan, konten dan review, metrik dan dasbor.
+Status: **Fase 6 — Laporan dan Waktu Operasional** selesai (laporan klien siap cetak A4 di
+`/print/campaigns/[id]` tanpa data keuangan, catatan penutup, ekspor CSV konten dan rekap kreator,
+catatan waktu kerja dengan rekap per aktivitas di tab Ringkasan). Fase 0–5: autentikasi, pengguna,
+klien, kreator, kampanye, penugasan, tautan pelacakan, konten dan review, metrik dan dasbor,
+keuangan.
 
 ## Prasyarat
 
@@ -59,7 +60,17 @@ riwayat review), serta metrik (snapshot untuk konten belum tayang, sebelum waktu
 bukti, checkpoint ganda; laporan dengan kode kampanye lain atau bukti tanpa konfirmasi bebas data
 pribadi; kode referal setelah ada laporan), serta keuangan (honor untuk kampanye belum selesai,
 persetujuan/pembayaran oleh manager, hitung ulang honor yang sudah disetujui, dibayar tanpa bukti,
-penyesuaian tanpa alasan, lompatan status) — masing-masing harus ditolak database.
+penyesuaian tanpa alasan, lompatan status), serta waktu operasional (mencatat atas nama orang lain,
+durasi di luar 1–1.440 menit, memindahkan catatan ke pengguna lain) — masing-masing harus ditolak
+database.
+
+## Laporan dan ekspor
+
+Tab **Laporan** menampilkan pratinjau, tombol ke versi cetak (buka lalu _Cetak → Simpan sebagai
+PDF_, ukuran A4), dan dua unduhan CSV. CSV memakai UTF-8 dengan BOM dan pemisah titik koma agar
+langsung terbaca rapi di Excel berbahasa Indonesia maupun Google Sheets. Laporan dan CSV dibangun dari
+model yang sama (`lib/calculations/campaign-report.ts`) yang sama sekali tidak memuat honor, harga
+paket, atau margin.
 
 ## Tautan pelacakan
 

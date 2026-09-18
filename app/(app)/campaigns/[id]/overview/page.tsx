@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DetailList } from "@/components/layout/detail-list";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { opsTimeRecap } from "@/lib/calculations/ops-time";
 import { CAMPAIGN_OBJECTIVE_LABELS } from "@/lib/constants/campaigns";
+import { listOpsTimeLogs } from "@/lib/data/ops-time";
 import { formatRupiah } from "@/lib/format/currency";
-import { formatCalendarDate, formatDateTime } from "@/lib/format/date";
+import { formatCalendarDate, formatDateInput, formatDateTime } from "@/lib/format/date";
 import { formatNumber } from "@/lib/format/number";
 import { loadCampaign } from "../data";
+import { OpsTimePanel } from "./ops-time-panel";
 
 export const metadata: Metadata = { title: "Ringkasan kampanye" };
 
@@ -16,8 +19,9 @@ export default async function CampaignOverviewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { campaign, session } = await loadCampaign(id);
+  const { supabase, campaign, session, isOwner } = await loadCampaign(id);
   const tz = session.profile.timezone;
+  const opsLogs = await listOpsTimeLogs(supabase, id);
   const rp = (value: number | null) => (value === null ? "Tanpa batas" : formatRupiah(value));
 
   return (
@@ -100,6 +104,15 @@ export default async function CampaignOverviewPage({
           />
         </CardContent>
       </Card>
+
+      <OpsTimePanel
+        campaignId={id}
+        currentUserId={session.user.id}
+        isOwner={isOwner}
+        today={formatDateInput(new Date(), tz)}
+        recap={opsTimeRecap(opsLogs)}
+        entries={opsLogs}
+      />
     </div>
   );
 }

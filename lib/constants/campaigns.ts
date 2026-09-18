@@ -48,7 +48,7 @@ export const CAMPAIGN_TABS = [
   { segment: "contents", label: "Konten" },
   { segment: "metrics", label: "Metrik" },
   { segment: "finance", label: "Keuangan" },
-  { segment: "report", label: "Laporan", phase: "Fase 6" },
+  { segment: "report", label: "Laporan" },
 ] as const;
 
 /** Upload limit for the `campaign-assets` bucket (PRD 7.1). */

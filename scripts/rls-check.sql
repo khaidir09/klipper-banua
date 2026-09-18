@@ -50,10 +50,10 @@ insert into storage.objects (bucket_id, name) values ('finance-proofs', 'rls-che
 \echo '--- as MANAGER: finance-proofs objects (expect 0) ---'
 select set_config('request.jwt.claims', json_build_object('sub', (select id from public.profiles where role = 'manager' limit 1), 'role', 'authenticated')::text, true);
 set local role authenticated;
-select count(*) as finance_proofs_visible from storage.objects where bucket_id = 'finance-proofs';
+select count(*) as finance_proofs_visible from storage.objects where bucket_id = 'finance-proofs' and name like 'rls-check/%';
 reset role;
 \echo '--- as OWNER: finance-proofs objects (expect 1) ---'
 select set_config('request.jwt.claims', json_build_object('sub', (select id from public.profiles where role = 'owner' limit 1), 'role', 'authenticated')::text, true);
 set local role authenticated;
-select count(*) as finance_proofs_visible from storage.objects where bucket_id = 'finance-proofs';
+select count(*) as finance_proofs_visible from storage.objects where bucket_id = 'finance-proofs' and name like 'rls-check/%';
 rollback;

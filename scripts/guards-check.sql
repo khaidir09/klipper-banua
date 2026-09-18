@@ -207,3 +207,40 @@ select status from public.client_payments where id='66666666-0000-0000-0000-0000
 savepoint h; insert into public.client_payments (campaign_id, invoice_number, amount, due_date, paid_amount) values ('66666666-0000-0000-0000-0000000000c1','INV-FIN-2',1000000,'2026-11-15',1000); rollback to savepoint h;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 6: operational time logs (PRD M12)
+-- ---------------------------------------------------------------------------
+begin;
+\set QUIET on
+insert into public.clients (id, name, type, province) values ('77777777-0000-0000-0000-000000000001','Ops Client','kampus_swasta','Kalimantan Selatan');
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status) values ('77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-000000000001','OPS-2026-01','Ops','awareness','2026-10-01','2026-10-31','selesai');
+\set QUIET off
+create temporary table p6_roles on commit drop as
+  select (select id from public.profiles where role='manager' limit 1) as manager_id,
+         (select id from public.profiles where role='owner' limit 1) as owner_id;
+grant select on p6_roles to authenticated;
+
+select set_config('request.jwt.claims', json_build_object('sub',(select manager_id from p6_roles),'role','authenticated')::text, true);
+set local role authenticated;
+\echo 'P6-1. manager logs time on a closed campaign (expect INSERT, user_id = manager)'
+insert into public.ops_time_logs (id, campaign_id, activity, minutes, log_date) values ('77777777-0000-0000-0000-0000000000e1','77777777-0000-0000-0000-0000000000c1','laporan',45,'2026-11-01');
+select activity, minutes, user_id = (select manager_id from p6_roles) as own from public.ops_time_logs where id='77777777-0000-0000-0000-0000000000e1';
+\echo 'P6-2. manager logs time for someone else (expect RLS violation)'
+savepoint a; insert into public.ops_time_logs (campaign_id, user_id, activity, minutes, log_date) values ('77777777-0000-0000-0000-0000000000c1',(select owner_id from p6_roles),'review',30,'2026-11-01'); rollback to savepoint a;
+\echo 'P6-3. zero or over a day of minutes (expect ops_time_logs_minutes_check twice)'
+savepoint b; insert into public.ops_time_logs (campaign_id, activity, minutes, log_date) values ('77777777-0000-0000-0000-0000000000c1','review',0,'2026-11-01'); rollback to savepoint b;
+savepoint c; insert into public.ops_time_logs (campaign_id, activity, minutes, log_date) values ('77777777-0000-0000-0000-0000000000c1','review',1441,'2026-11-01'); rollback to savepoint c;
+reset role;
+insert into public.ops_time_logs (id, campaign_id, user_id, activity, minutes, log_date) values ('77777777-0000-0000-0000-0000000000e2','77777777-0000-0000-0000-0000000000c1',(select owner_id from p6_roles),'review',60,'2026-11-01');
+set local role authenticated;
+\echo 'P6-4. manager edits and deletes the owner''s entry (expect UPDATE 0, DELETE 0)'
+update public.ops_time_logs set minutes=10 where id='77777777-0000-0000-0000-0000000000e2';
+delete from public.ops_time_logs where id='77777777-0000-0000-0000-0000000000e2';
+select set_config('request.jwt.claims', json_build_object('sub',(select owner_id from p6_roles),'role','authenticated')::text, true);
+\echo 'P6-5. owner edits the manager''s entry (expect UPDATE 1)'
+update public.ops_time_logs set minutes=50 where id='77777777-0000-0000-0000-0000000000e1';
+\echo 'P6-6. owner reassigns an entry to themselves (expect OPS_LOG_OWNER_FIXED)'
+savepoint d; update public.ops_time_logs set user_id=(select owner_id from p6_roles) where id='77777777-0000-0000-0000-0000000000e1'; rollback to savepoint d;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;
