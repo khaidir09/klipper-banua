@@ -51,3 +51,6 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /e2e/.auth/
+
+# per-server compose overrides (see DEPLOY.md section 5)
+docker-compose.override.yml

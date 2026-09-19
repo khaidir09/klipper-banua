@@ -55,9 +55,10 @@ Pengguna ──HTTPS──▶ Caddy (VPS :443) ──▶ app (Next.js :3000) ─
 
 ## 3. Akun owner pertama
 
-Jalankan dari komputer lokal. Variabel yang diberikan langsung di baris perintah menimpa
-`.env.local`. Kosongkan `SEED_MANAGER_EMAIL` agar akun manager uji **tidak** ikut dibuat di
-produksi.
+Jalankan dari komputer lokal di shell bash (di Windows: **Git Bash**). Variabel yang diberikan
+langsung di baris perintah menimpa `.env.local`. Kosongkan `SEED_MANAGER_EMAIL` agar akun
+manager uji **tidak** ikut dibuat di produksi. Jangan memakai PowerShell: variabel yang diisi
+string kosong dihapus, sehingga nilai manager dari `.env.local` justru terbaca.
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL="https://<project-ref>.supabase.co" \
@@ -67,6 +68,14 @@ SEED_OWNER_PASSWORD="<kata sandi kuat>" \
 SEED_OWNER_NAME="Nama Owner" \
 SEED_MANAGER_EMAIL="" \
 npm run seed:owner
+```
+
+Alternatif tanpa terminal: **Authentication → Users → Add user** (centang _Auto Confirm User_),
+lalu jadikan owner di **SQL Editor**:
+
+```sql
+update public.profiles set role = 'owner', is_active = true, full_name = 'Nama Owner'
+where email = 'owner@contoh.id';
 ```
 
 Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan menjalankan
@@ -91,21 +100,143 @@ Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan me
    APP_DOMAIN="app.contoh.id"
    ```
 
+   - Isi URL persis satu kali `https://`, tanpa `/` di akhir. Salah ketik seperti
+     `https://https://…` membuat setiap login gagal dengan pesan "Email atau kata sandi salah".
    - `NEXT_PUBLIC_*` ditanam ke bundle browser saat build. Jika diubah, build ulang.
    - `SUPABASE_SERVICE_ROLE_KEY` dan `CLICK_IP_HASH_SALT` hanya dibaca server saat runtime dan
      tidak masuk ke image.
    - **Jangan ganti `CLICK_IP_HASH_SALT`** setelah kampanye berjalan; hash IP klik lama tidak
      akan cocok lagi.
 
-5. Build dan jalankan:
+5. Tautkan `.env` ke berkas tadi agar Docker Compose selalu membacanya, tanpa perlu
+   `--env-file` di setiap perintah:
 
    ```bash
-   docker compose --env-file .env.production up -d --build
+   ln -s .env.production .env
+   docker compose config | grep -E "NEXT_PUBLIC_(APP_URL|SUPABASE_URL)"   # harus berisi URL, bukan kosong
+   ```
+
+   Tanpa tautan ini (atau `--env-file .env.production`), build gagal dengan pesan
+   `Invalid public environment variables`. `.env*` dikecualikan oleh `.dockerignore` dan
+   `.gitignore`, jadi tidak ikut ke image maupun Git.
+
+6. Build dan jalankan:
+
+   ```bash
+   docker compose up -d --build
    docker compose ps          # app harus "healthy", caddy "running"
    docker compose logs -f caddy   # tunggu "certificate obtained successfully"
    ```
 
-## 5. Verifikasi setelah rilis
+   Jika muncul `Bind for 0.0.0.0:80 failed: port is already allocated`, VPS sudah punya
+   proxy lain di port 80/443. Lanjutkan ke bagian 5.
+
+## 5. VPS yang sudah punya Caddy (mis. n8n)
+
+Jika port 80/443 sudah dipakai Caddy dari stack lain (misalnya n8n), jangan jalankan Caddy
+kedua. Caddy yang sudah ada cukup ditambah satu blok domain dan meneruskannya ke container
+`app` lewat jaringan Docker bersama.
+
+```
+Pengguna ──HTTPS──▶ Caddy n8n (:443) ──jaringan n8n──▶ app Klipper Banua (:3000)
+```
+
+1. Cari nama container Caddy, lokasi Caddyfile-nya di host, dan jaringannya:
+
+   ```bash
+   docker ps --format '{{.Names}}  {{.Ports}}' | grep -E ':(80|443)->'
+   docker inspect <container-caddy> --format '{{json .Mounts}}'
+   docker inspect <container-caddy> --format '{{json .NetworkSettings.Networks}}'
+   ```
+
+   Contoh hasil: container `n8n-docker-caddy-1`, Caddyfile
+   `/home/<user>/n8n-docker/Caddyfile -> /etc/caddy/Caddyfile`, jaringan `n8n-docker_default`.
+
+2. Hapus container Caddy Klipper Banua bila sempat dibuat oleh percobaan sebelumnya:
+
+   ```bash
+   cd /opt/klipper-banua
+   docker compose rm -sf caddy
+   ```
+
+3. Buat `/opt/klipper-banua/docker-compose.override.yml`. Compose membacanya otomatis; berkas ini
+   khusus server dan diabaikan Git. Ganti `n8n-docker_default` dengan nama jaringan dari
+   langkah 1.
+
+   ```yaml
+   # This VPS already runs Caddy (n8n stack) on ports 80/443; that Caddy proxies
+   # the Klipper Banua domain to the app container over its network.
+   services:
+     caddy:
+       profiles: ["disabled"]
+     app:
+       networks:
+         default:
+         edge:
+           aliases: [klipper-banua-app]
+
+   networks:
+     edge:
+       external: true
+       name: n8n-docker_default
+   ```
+
+4. Cadangkan Caddyfile yang ada, lalu tambahkan blok berikut di bagian paling bawah **tanpa
+   mengubah blok n8n**:
+
+   ```bash
+   cp /home/<user>/n8n-docker/Caddyfile /home/<user>/n8n-docker/Caddyfile.bak
+   nano /home/<user>/n8n-docker/Caddyfile
+   ```
+
+   ```
+   app.contoh.id {
+   	encode zstd gzip
+
+   	header {
+   		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+   		-Server
+   	}
+
+   	reverse_proxy klipper-banua-app:3000
+   }
+   ```
+
+   Sunting dengan `nano` (menulis ke berkas yang sama). Caddyfile di-mount sebagai berkas
+   tunggal; editor yang mengganti berkas, seperti `sed -i`, membuat container tetap membaca
+   versi lama.
+
+5. Jalankan aplikasi, lalu pastikan Caddy bisa menjangkaunya:
+
+   ```bash
+   docker compose up -d --build
+   docker compose ps                      # hanya "app", status healthy
+   docker exec n8n-docker-caddy-1 wget -qO- http://klipper-banua-app:3000/healthz
+   ```
+
+6. Validasi dan muat ulang Caddy. `reload` tidak memutus n8n.
+
+   ```bash
+   docker exec n8n-docker-caddy-1 caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+   docker exec n8n-docker-caddy-1 caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+   docker logs --tail 30 -f n8n-docker-caddy-1   # tunggu "certificate obtained successfully"
+   ```
+
+   Jika gagal, kembalikan cadangan dengan
+   `cat Caddyfile.bak > Caddyfile` (bukan `mv`, agar mount tetap sama), lalu `caddy reload`.
+
+Setelah itu lanjutkan ke verifikasi di bagian 6, dan pastikan n8n masih bisa dibuka.
+
+Catatan:
+
+- Bagian `header` di atas menggantikan `Caddyfile` repositori ini, yang tidak dipakai dalam
+  skenario ini; `APP_DOMAIN` di `.env.production` juga tidak berpengaruh.
+- Jika stack n8n dibuat ulang (`docker compose down` di folder n8n), jaringannya ikut dibuat
+  ulang. Jalankan `docker compose up -d` lagi di `/opt/klipper-banua` agar `app` tersambung
+  kembali.
+- Sertifikat domain Klipper Banua tersimpan di volume Caddy milik n8n.
+
+## 6. Verifikasi setelah rilis
 
 - [ ] `https://app.contoh.id/healthz` membalas `{"status":"ok"}` dengan gembok HTTPS valid.
 - [ ] `http://app.contoh.id` dialihkan otomatis ke HTTPS.
@@ -117,19 +248,19 @@ Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan me
       `strict-transport-security`, `x-frame-options: DENY`, `x-content-type-options: nosniff`.
 - [ ] Hapus atau batalkan data uji sebelum dipakai klien sungguhan.
 
-## 6. Pembaruan versi
+## 7. Pembaruan versi
 
 ```bash
 cd /opt/klipper-banua
 git pull
 npm run db:push        # dari komputer lokal yang sudah `supabase link`, jika ada migrasi baru
-docker compose --env-file .env.production up -d --build
+docker compose up -d --build
 ```
 
 Terapkan migrasi **sebelum** menjalankan kode baru. Migrasi selalu berupa berkas baru; migrasi
 lama tidak pernah diedit.
 
-## 7. Cadangan dan pemulihan
+## 8. Cadangan dan pemulihan
 
 - **Database:** paket Pro Supabase menyimpan backup harian (lihat _Database → Backups_). Sebagai
   tambahan, simpan dump mingguan di luar Supabase:
@@ -144,9 +275,10 @@ lama tidak pernah diedit.
 - **Operasional:** ekspor CSV di tab Laporan setiap kampanye selesai (PRD Bagian 9, cadangan
   manual).
 - **VPS:** tidak menyimpan data selain sertifikat Caddy (volume `caddy_data`). Server baru cukup
-  diulang dari langkah 4.
+  diulang dari bagian 4 (dan bagian 5 bila memakai Caddy bersama). Simpan salinan
+  `.env.production` di pengelola kata sandi; `CLICK_IP_HASH_SALT` harus sama seperti sebelumnya.
 
-## 8. Catatan operasional
+## 9. Catatan operasional
 
 - **Rate limit** `/r/[slug]`: 30 permintaan per menit per pengunjung, di memori proses. Hitungan
   kembali ke nol saat container restart. Cukup untuk satu VPS; jika kelak memakai lebih dari satu
