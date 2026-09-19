@@ -21,7 +21,7 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 - **Bahasa:** UI dalam Bahasa Indonesia. Kode, nama tabel/kolom, dan komentar dalam bahasa Inggris. Nilai enum mengikuti PRD.
 - **Database:** setiap perubahan skema lewat file migrasi baru di `supabase/migrations/`. Jangan mengedit migrasi yang sudah ada. Regenerasi `types/database.ts` setelah migrasi.
 - **RLS:** aktif di setiap tabel baru, lengkap dengan kebijakan untuk `owner` dan `manager`. `creator_bank_accounts` dan bukti keuangan hanya untuk `owner`.
-- **Rahasia:** `SUPABASE_SERVICE_ROLE_KEY` dan `CLICK_IP_HASH_SALT` hanya dipakai di kode server. Jangan pernah mengimpornya ke komponen client.
+- **Rahasia:** `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, dan `REMINDER_API_TOKEN` hanya dipakai di kode server. Jangan pernah mengimpornya ke komponen client.
 - **Validasi:** setiap Server Action memvalidasi input dengan Zod dan memeriksa peran pengguna di server, bukan hanya di UI.
 - **Uang:** nominal Rupiah disimpan sebagai `bigint` utuh. Jangan memakai float untuk uang.
 - **Waktu:** simpan `timestamptz` UTC; tampilkan dengan zona waktu pengguna (default `Asia/Makassar`).

@@ -69,6 +69,8 @@ insert into public.client_payments (id, campaign_id, invoice_number, amount, due
 values ('f1000000-0000-4000-8000-000000000017', 'f1000000-0000-4000-8000-000000000007', 'RLS-INV-1', 1000000, '2026-11-01');
 insert into public.ops_time_logs (id, campaign_id, user_id, activity, minutes, log_date)
 values ('f1000000-0000-4000-8000-000000000018', 'f1000000-0000-4000-8000-000000000007', (select owner_id from rls_ids), 'review', 30, '2026-10-02');
+insert into public.report_share_links (id, campaign_id, token_hash, created_by)
+values ('f1000000-0000-4000-8000-000000000021', 'f1000000-0000-4000-8000-000000000007', repeat('c', 64), (select owner_id from rls_ids));
 insert into public.activity_logs (id, actor_id, entity_type, entity_id, action)
 values ('f1000000-0000-4000-8000-000000000019', (select owner_id from rls_ids), 'client', 'f1000000-0000-4000-8000-000000000001', 'create');
 insert into storage.objects (bucket_id, name)
@@ -205,6 +207,12 @@ insert into rls_cases values
   ('ops_time_logs', 'update', $q$update public.ops_time_logs set notes = notes where id = 'f1000000-0000-4000-8000-000000000018'$q$),
   ('ops_time_logs', 'delete', $q$delete from public.ops_time_logs where id = 'f1000000-0000-4000-8000-000000000018'$q$),
 
+  -- The fixture link is open, so the insert adds an already revoked one (one open link per campaign).
+  ('report_share_links', 'select', $q$select count(*) from public.report_share_links where id = 'f1000000-0000-4000-8000-000000000021'$q$),
+  ('report_share_links', 'insert', $q$insert into public.report_share_links (campaign_id, token_hash, created_by, revoked_at, revoked_by) values ('f1000000-0000-4000-8000-000000000007', repeat('ab', 32), '%s', now(), '%s')$q$),
+  ('report_share_links', 'update', $q$update public.report_share_links set revoked_at = revoked_at where id = 'f1000000-0000-4000-8000-000000000021'$q$),
+  ('report_share_links', 'delete', $q$delete from public.report_share_links where id = 'f1000000-0000-4000-8000-000000000021'$q$),
+
   ('activity_logs', 'select', $q$select count(*) from public.activity_logs where id = 'f1000000-0000-4000-8000-000000000019'$q$),
   ('activity_logs', 'insert', $q$insert into public.activity_logs (actor_id, entity_type, action) values ('%s', 'client', 'update')$q$),
   ('activity_logs', 'update', $q$update public.activity_logs set details = details where id = 'f1000000-0000-4000-8000-000000000019'$q$),
@@ -298,6 +306,11 @@ insert into rls_expected values
   ('ops_time_logs', 'insert', 'a', 'a', 'd', 'd'),
   ('ops_time_logs', 'update', 'a', 'd', 'd', 'd'),
   ('ops_time_logs', 'delete', 'a', 'd', 'd', 'd'),
+  -- FR-M9-05: members create and revoke client links; none are ever deleted.
+  ('report_share_links', 'select', 'a', 'a', 'd', 'd'),
+  ('report_share_links', 'insert', 'a', 'a', 'd', 'd'),
+  ('report_share_links', 'update', 'a', 'a', 'd', 'd'),
+  ('report_share_links', 'delete', 'd', 'd', 'd', 'd'),
   -- Audit trail: members append as themselves; only the owner reads; no edits.
   ('activity_logs', 'select', 'a', 'd', 'd', 'd'),
   ('activity_logs', 'insert', 'a', 'a', 'd', 'd'),

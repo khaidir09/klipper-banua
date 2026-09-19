@@ -98,6 +98,8 @@ Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan me
    CLICK_IP_HASH_SALT="<hasil: openssl rand -hex 32>"
    DEFAULT_TIMEZONE="Asia/Makassar"
    APP_DOMAIN="app.contoh.id"
+   # Opsional (v1.1): token untuk pengingat Telegram via n8n, lihat bagian 10
+   REMINDER_API_TOKEN="<hasil: openssl rand -hex 32>"
    ```
 
    - Isi URL persis satu kali `https://`, tanpa `/` di akhir. Salah ketik seperti
@@ -198,6 +200,9 @@ Pengguna ──HTTPS──▶ Caddy n8n (:443) ──jaringan n8n──▶ app K
    		-Server
    	}
 
+   	# Endpoint internal pengingat (bagian 10) tidak boleh terbuka ke internet
+   	respond /api/reminders/* 404
+
    	reverse_proxy klipper-banua-app:3000
    }
    ```
@@ -246,6 +251,10 @@ Catatan:
       diarahkan ke URL tujuan kampanye dan klik tercatat di tab Metrik.
 - [ ] Header keamanan ada: `curl -sI https://app.contoh.id/login` menampilkan
       `strict-transport-security`, `x-frame-options: DENY`, `x-content-type-options: nosniff`.
+- [ ] Tab **Laporan** kampanye uji → **Buat tautan**, buka tautannya di jendela penyamaran: laporan
+      tampil tanpa login dan tanpa angka Rupiah. Setelah **Cabut**, tautan menampilkan "Tautan
+      laporan tidak berlaku".
+- [ ] `curl -sI https://app.contoh.id/api/reminders/due-snapshots` membalas `404` (diblokir Caddy).
 - [ ] Hapus atau batalkan data uji sebelum dipakai klien sungguhan.
 
 ## 7. Pembaruan versi
@@ -288,3 +297,60 @@ lama tidak pernah diedit.
 - **Log** container dibatasi 5 × 10 MB per layanan (`docker compose logs app`).
 - **Hapus data kreator** atas permintaan (UU PDP): owner membuka halaman kreator lalu memilih
   **Hapus** (belum pernah ditugaskan) atau **Anonimkan data** (sudah punya riwayat kampanye).
+- **Tautan laporan klien** (v1.1): hanya hash token yang disimpan, jadi tautan tampil sekali saat
+  dibuat. Bila klien kehilangan tautan, pakai **Buat ulang** (tautan lama otomatis dicabut). Siapa
+  pun yang memegang tautan dapat membuka laporan; cabut bila kerja sama selesai.
+
+## 10. Pengingat Telegram harian (n8n)
+
+Setiap pagi n8n mengambil daftar snapshot jatuh tempo dari aplikasi dan mengirimkannya ke Telegram
+owner (FR-M10-05). Aplikasi tidak menyimpan token bot; token bot dan chat ID hanya ada di n8n.
+
+```
+n8n (jadwal 08.00 WITA) ──jaringan Docker──▶ app /api/reminders/due-snapshots ──▶ n8n ──▶ Telegram owner
+```
+
+Panduan ini mengikuti skenario bagian 5 (app bergabung ke jaringan n8n dengan alias
+`klipper-banua-app`). Tanpa skenario itu, sambungkan n8n dan app ke jaringan Docker yang sama.
+
+1. **Bot Telegram.** Di Telegram, buka **@BotFather** → `/newbot` → catat token bot. Dari akun
+   Telegram owner, buka bot baru itu lalu kirim `/start` (bot tidak bisa mengirim pesan duluan).
+2. **Chat ID owner.** Buka `https://api.telegram.org/bot<TOKEN_BOT>/getUpdates` di browser dan
+   catat angka `"chat":{"id": …}`. Jangan membagikan URL ini; isinya memuat token bot.
+3. **Token endpoint.** Di VPS, isi `REMINDER_API_TOKEN` di `.env.production` dengan hasil
+   `openssl rand -hex 32`, lalu jalankan ulang container (tidak perlu build ulang):
+
+   ```bash
+   cd /opt/klipper-banua
+   docker compose up -d
+   ```
+
+   Tanpa nilai ini endpoint membalas `503` (fitur nonaktif).
+
+4. **Blokir dari internet.** Pastikan blok domain di Caddyfile memuat
+   `respond /api/reminders/* 404` (sudah ada di contoh bagian 5 dan `Caddyfile` repositori), lalu
+   `caddy reload`.
+5. **Uji dari jaringan internal** (nama container n8n bisa berbeda, cek `docker ps`):
+
+   ```bash
+   read -rsp "REMINDER_API_TOKEN: " T; echo
+   docker exec n8n-docker-n8n-1 wget -qO- --header "Authorization: Bearer $T" \
+     http://klipper-banua-app:3000/api/reminders/due-snapshots
+   unset T
+   ```
+
+   Hasilnya JSON berisi `count`, `text`, dan `items`.
+
+6. **Kredensial di n8n** (menu _Credentials_):
+   - _Telegram API_, beri nama `Klipper Banua bot`, isi token bot.
+   - _Header Auth_, beri nama `Klipper Banua reminder token`: Name `Authorization`, Value
+     `Bearer <REMINDER_API_TOKEN>`.
+7. **Impor workflow** dari `docs/n8n/due-snapshot-reminder.json` (_Workflows → Import from File_).
+   Pilih kedua kredensial di node HTTP Request dan Telegram, lalu ganti `GANTI_DENGAN_CHAT_ID_OWNER`
+   dengan chat ID dari langkah 2. Zona waktu workflow sudah `Asia/Makassar`; jam kirim diubah di
+   node _Setiap hari 08.00_.
+8. Klik **Execute workflow** untuk uji kirim (pesan hanya terkirim bila ada snapshot jatuh tempo),
+   lalu aktifkan workflow.
+
+Isi pesan: kode dan nama kampanye, nama panggung kreator, platform, checkpoint, dan jumlah hari
+terlambat. Tidak ada nomor HP, rekening, atau nama lengkap kreator.

@@ -22,7 +22,9 @@ function creatorName(row: Joined) {
 export type DueItem = DueSnapshot & {
   campaign: CampaignRef;
   creatorName: string;
-  platform: string;
+  /** Empty when the creator has no stage name (the reminder never uses legal names). */
+  stageName: string;
+  platform: Database["public"]["Enums"]["social_platform"];
 };
 export type PendingItem = {
   contentId: string;
@@ -41,61 +43,32 @@ export type EarlyRemovalItem = {
   removedAt: string;
 };
 
-/** FR-M10-01 … FR-M10-04. Only open (draft/aktif) campaigns need action. */
-export async function getDashboard(
+const JOIN = `assignment:campaign_creators!inner(campaign:campaigns(id, code, name, status, min_live_days), creator:creators(full_name, stage_name))`;
+
+function openRows<T extends Joined>(rows: T[]) {
+  return rows.filter(
+    (row) => row.assignment.campaign && OPEN_STATUSES.has(row.assignment.campaign.status),
+  );
+}
+
+/**
+ * FR-M10-02: snapshots due on open campaigns, most overdue first. Shared by
+ * the dashboard and the Telegram reminder (FR-M10-05) so both always agree.
+ */
+export async function getDueSnapshotItems(
   supabase: SupabaseClient<Database>,
   now: Date,
   timezone: string,
-) {
-  const join = `assignment:campaign_creators!inner(campaign:campaigns(id, code, name, status, min_live_days), creator:creators(full_name, stage_name))`;
+): Promise<DueItem[]> {
+  const { data, error } = await supabase
+    .from("contents")
+    .select(`id, platform, posted_at, live_status, snapshots:metric_snapshots(checkpoint), ${JOIN}`)
+    .eq("live_status", "tayang");
+  if (error) throw new Error(error.message);
 
-  const [active, pending, live, removed, unpaidPayouts, openInvoices] = await Promise.all([
-    supabase.from("campaigns").select("id", { count: "exact", head: true }).eq("status", "aktif"),
-    supabase
-      .from("contents")
-      .select(`id, platform, revision_count, updated_at, ${join}`)
-      .eq("review_status", "menunggu_review")
-      .order("updated_at", { ascending: true }),
-    supabase
-      .from("contents")
-      .select(
-        `id, platform, posted_at, live_status, snapshots:metric_snapshots(checkpoint), ${join}`,
-      )
-      .eq("live_status", "tayang"),
-    supabase
-      .from("contents")
-      .select(`id, posted_at, removed_at, ${join}`)
-      .eq("live_status", "dihapus")
-      .order("removed_at", { ascending: false }),
-    // FR-M10-01: payouts not yet paid, invoices not yet settled.
-    supabase.from("payouts").select("total_amount").neq("status", "dibayar"),
-    supabase.from("client_payments").select("amount, paid_amount").neq("status", "lunas"),
-  ]);
-
-  for (const result of [active, pending, live, removed, unpaidPayouts, openInvoices]) {
-    if (result.error) throw new Error(result.error.message);
-  }
-
-  const open = <T extends Joined>(rows: T[]) =>
-    rows.filter(
-      (row) => row.assignment.campaign && OPEN_STATUSES.has(row.assignment.campaign.status),
-    );
-
-  // FR-M10-03: oldest waiting first. `updated_at` moves when a new draft is
-  // submitted, i.e. when the content (re)entered the queue.
-  const pendingItems: PendingItem[] = open(pending.data ?? []).map((row) => ({
-    contentId: row.id,
-    campaign: row.assignment.campaign!,
-    creatorName: creatorName(row),
-    platform: row.platform,
-    revisionCount: row.revision_count,
-    waitingSince: row.updated_at,
-  }));
-
-  // FR-M10-02
-  const liveRows = open(live.data ?? []);
+  const liveRows = openRows(data ?? []);
   const byContent = new Map(liveRows.map((row) => [row.id, row]));
-  const dueItems: DueItem[] = dueSnapshots(
+  return dueSnapshots(
     liveRows.map((row) => ({
       id: row.id,
       posted_at: row.posted_at,
@@ -110,12 +83,53 @@ export async function getDashboard(
       ...due,
       campaign: row.assignment.campaign!,
       creatorName: creatorName(row),
+      stageName: row.assignment.creator?.stage_name ?? "",
       platform: row.platform,
     };
   });
+}
+
+/** FR-M10-01 … FR-M10-04. Only open (draft/aktif) campaigns need action. */
+export async function getDashboard(
+  supabase: SupabaseClient<Database>,
+  now: Date,
+  timezone: string,
+) {
+  const [active, pending, dueItems, removed, unpaidPayouts, openInvoices] = await Promise.all([
+    supabase.from("campaigns").select("id", { count: "exact", head: true }).eq("status", "aktif"),
+    supabase
+      .from("contents")
+      .select(`id, platform, revision_count, updated_at, ${JOIN}`)
+      .eq("review_status", "menunggu_review")
+      .order("updated_at", { ascending: true }),
+    getDueSnapshotItems(supabase, now, timezone),
+    supabase
+      .from("contents")
+      .select(`id, posted_at, removed_at, ${JOIN}`)
+      .eq("live_status", "dihapus")
+      .order("removed_at", { ascending: false }),
+    // FR-M10-01: payouts not yet paid, invoices not yet settled.
+    supabase.from("payouts").select("total_amount").neq("status", "dibayar"),
+    supabase.from("client_payments").select("amount, paid_amount").neq("status", "lunas"),
+  ]);
+
+  for (const result of [active, pending, removed, unpaidPayouts, openInvoices]) {
+    if (result.error) throw new Error(result.error.message);
+  }
+
+  // FR-M10-03: oldest waiting first. `updated_at` moves when a new draft is
+  // submitted, i.e. when the content (re)entered the queue.
+  const pendingItems: PendingItem[] = openRows(pending.data ?? []).map((row) => ({
+    contentId: row.id,
+    campaign: row.assignment.campaign!,
+    creatorName: creatorName(row),
+    platform: row.platform,
+    revisionCount: row.revision_count,
+    waitingSince: row.updated_at,
+  }));
 
   // FR-M10-04
-  const earlyRemovals: EarlyRemovalItem[] = open(removed.data ?? [])
+  const earlyRemovals: EarlyRemovalItem[] = openRows(removed.data ?? [])
     .filter(
       (row) =>
         row.posted_at &&

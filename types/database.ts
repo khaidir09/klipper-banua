@@ -1090,6 +1090,67 @@ export type Database = {
           },
         ]
       }
+      report_share_links: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          last_viewed_at: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          token_hash: string
+          view_count: number
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          token_hash: string
+          view_count?: number
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          token_hash?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_share_links_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_share_links_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_share_links_revoked_by_fkey"
+            columns: ["revoked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1117,6 +1178,10 @@ export type Database = {
       }
       is_active_member: { Args: never; Returns: boolean }
       is_owner: { Args: never; Returns: boolean }
+      open_report_share_link: {
+        Args: { p_token_hash: string }
+        Returns: string
+      }
     }
     Enums: {
       asset_type: "video" | "foto" | "dokumen" | "tautan"

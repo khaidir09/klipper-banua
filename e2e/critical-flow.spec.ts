@@ -35,7 +35,7 @@ async function tickChecklist(page: Page) {
 
 test.describe.configure({ mode: "serial" });
 
-test("owner runs the demo campaign from assignment to final report", async ({ page }) => {
+test("owner runs the demo campaign from assignment to final report", async ({ page, browser }) => {
   await test.step("assign two verified creators", async () => {
     await page.goto(campaign("creators"));
     await assign(page, 1, "2");
@@ -181,6 +181,41 @@ test("owner runs the demo campaign from assignment to final report", async ({ pa
     expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
     // A4 is 595 × 842 points (Chrome writes e.g. 594.96 × 841.92).
     expect(pdf.toString("latin1")).toMatch(/MediaBox\s*\[0 0 59[45](\.\d+)? 84[12](\.\d+)?\]/);
+  });
+
+  await test.step("the client opens a read-only link without login, until it is revoked", async () => {
+    await page.goto(campaign("report"));
+    await page.getByRole("button", { name: "Buat tautan" }).click();
+    await expectToast(page, "Tautan laporan dibuat.");
+    const url = await page.locator("#share-link-url").inputValue();
+    expect(url).toMatch(/\/laporan\/[A-Za-z0-9_-]{43}$/);
+
+    // A fresh context has no session cookie: this is what the client sees.
+    const client = await browser.newContext();
+    const clientPage = await client.newPage();
+    const response = await clientPage.goto(url);
+    expect(response?.status()).toBe(200);
+    expect(response?.headers()["referrer-policy"]).toBe("no-referrer");
+    expect(response?.headers()["x-robots-tag"]).toContain("noindex");
+    const report = clientPage.locator(".report-document");
+    await expect(
+      report.getByRole("heading", { name: "PMB Universitas Demo Borneo" }),
+    ).toBeVisible();
+    await expect(report).toContainText("12.000");
+    await expect(report).not.toContainText("Rp");
+
+    await page.reload();
+    await expect(page.getByText("Dilihat 1 kali")).toBeVisible();
+    await page.getByRole("button", { name: "Cabut" }).click();
+    await alertDialog(page).getByRole("button", { name: "Cabut tautan" }).click();
+    await expectToast(page, "Tautan dicabut");
+
+    const revoked = await clientPage.goto(url);
+    expect(revoked?.status()).toBe(404);
+    await expect(
+      clientPage.getByRole("heading", { name: "Tautan laporan tidak berlaku" }),
+    ).toBeVisible();
+    await client.close();
   });
 
   await test.step("CSV exports open in spreadsheets (UTF-8 BOM, semicolons)", async () => {

@@ -2,7 +2,13 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { buildCampaignReport } from "@/lib/calculations/campaign-report";
-import type { CampaignDetail } from "./campaigns";
+import type { CampaignRow } from "./campaigns";
+
+/** The campaign fields the report needs; the public link loads only these. */
+export type ReportCampaignRef = Pick<
+  CampaignRow,
+  "id" | "target_contents" | "target_views" | "target_registrants"
+>;
 
 /**
  * Loads the client report (FR-M9-02). It deliberately reads no finance tables
@@ -10,7 +16,7 @@ import type { CampaignDetail } from "./campaigns";
  */
 export async function getCampaignReport(
   supabase: SupabaseClient<Database>,
-  campaign: CampaignDetail,
+  campaign: ReportCampaignRef,
 ) {
   const [assignmentsResult, contentsResult, clicksResult, reportsResult] = await Promise.all([
     supabase

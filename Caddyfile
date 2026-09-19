@@ -7,6 +7,10 @@
 		-Server
 	}
 
+	# Internal endpoints (the n8n reminder, FR-M10-05) are reachable only
+	# inside the Docker network, never from the internet.
+	respond /api/reminders/* 404
+
 	# Caddy replaces any X-Forwarded-For sent by the client with the real
 	# address, so the app's click hashing and rate limit see the true IP.
 	reverse_proxy app:3000

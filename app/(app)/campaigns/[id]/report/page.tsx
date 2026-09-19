@@ -11,15 +11,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getCampaignReport } from "@/lib/data/report";
+import { getOpenShareLink } from "@/lib/data/share-links";
+import { SHAREABLE_CAMPAIGN_STATUSES } from "@/lib/validation/share-links";
 import { loadCampaign } from "../data";
 import { ClosingNotesForm } from "./closing-notes-form";
+import { ShareLinkCard } from "./share-link-card";
 
 export const metadata: Metadata = { title: "Laporan kampanye" };
 
 export default async function CampaignReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { supabase, campaign, session, canEdit } = await loadCampaign(id);
-  const report = await getCampaignReport(supabase, campaign);
+  const [report, shareLink] = await Promise.all([
+    getCampaignReport(supabase, campaign),
+    getOpenShareLink(supabase, id),
+  ]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
@@ -59,6 +65,13 @@ export default async function CampaignReportPage({ params }: { params: Promise<{
       </Card>
 
       <div className="order-1 space-y-6 lg:order-2">
+        <ShareLinkCard
+          campaignId={id}
+          shareable={(SHAREABLE_CAMPAIGN_STATUSES as readonly string[]).includes(campaign.status)}
+          link={shareLink}
+          timezone={session.profile.timezone}
+        />
+
         <Card>
           <CardHeader>
             <CardTitle>Ekspor</CardTitle>

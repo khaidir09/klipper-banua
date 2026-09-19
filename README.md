@@ -4,12 +4,12 @@ Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kali
 bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
-Status: **Fase 7 — Pengerasan dan Rilis Pilot** selesai di sisi kode: log aktivitas untuk owner
-(`/activity`), anonimisasi data kreator, rate limit `/r/[slug]`, data demo, matriks uji RLS
-seluruh tabel, halaman error/404, header keamanan, image Docker + Caddy, dan uji E2E Playwright.
-Deploy ke domain produksi mengikuti [`DEPLOY.md`](./DEPLOY.md). Fase 0–6: autentikasi, pengguna,
-klien, kreator, kampanye, penugasan, tautan pelacakan, konten dan review, metrik dan dasbor,
-keuangan, laporan dan waktu operasional.
+Status: **Fase 8 — v1.1** selesai: tautan laporan baca-saja untuk klien (`/laporan/<token>`,
+dibuat dari tab Laporan kampanye) dan pengingat Telegram harian snapshot jatuh tempo lewat n8n
+(`/api/reminders/due-snapshots`, workflow di `docs/n8n/`). Fase 0–7 (MVP pilot): autentikasi,
+pengguna, klien, kreator, kampanye, penugasan, tautan pelacakan, konten dan review, metrik dan
+dasbor, keuangan, laporan, waktu operasional, log aktivitas, anonimisasi, rate limit, data demo,
+uji RLS, Docker + Caddy, dan uji E2E Playwright. Deploy mengikuti [`DEPLOY.md`](./DEPLOY.md).
 
 ## Prasyarat
 
@@ -29,14 +29,15 @@ npm run dev               # http://localhost:3000
 
 Nilai yang dipakai di `.env.local`:
 
-| Variabel                                       | Sumber                                               |
-| ---------------------------------------------- | ---------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`                     | `API URL` dari `npm run db:start`                    |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`                | `anon key`                                           |
-| `SUPABASE_SERVICE_ROLE_KEY`                    | `service_role key` (hanya dipakai di server)         |
-| `CLICK_IP_HASH_SALT`                           | string acak bebas, mis. hasil `openssl rand -hex 32` |
-| `SEED_OWNER_EMAIL` / `SEED_OWNER_PASSWORD`     | akun owner yang akan dibuat                          |
-| `SEED_MANAGER_EMAIL` / `SEED_MANAGER_PASSWORD` | (opsional) akun manager untuk menguji RLS            |
+| Variabel                                       | Sumber                                                 |
+| ---------------------------------------------- | ------------------------------------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`                     | `API URL` dari `npm run db:start`                      |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`                | `anon key`                                             |
+| `SUPABASE_SERVICE_ROLE_KEY`                    | `service_role key` (hanya dipakai di server)           |
+| `CLICK_IP_HASH_SALT`                           | string acak bebas, mis. hasil `openssl rand -hex 32`   |
+| `SEED_OWNER_EMAIL` / `SEED_OWNER_PASSWORD`     | akun owner yang akan dibuat                            |
+| `SEED_MANAGER_EMAIL` / `SEED_MANAGER_PASSWORD` | (opsional) akun manager untuk menguji RLS              |
+| `REMINDER_API_TOKEN`                           | (opsional) token n8n untuk pengingat, min. 32 karakter |
 
 Email lokal (undangan, lupa kata sandi) dapat dibaca di Mailpit: <http://127.0.0.1:55324>.
 

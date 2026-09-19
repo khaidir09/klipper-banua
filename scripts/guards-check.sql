@@ -283,3 +283,60 @@ savepoint c; insert into public.creator_bank_accounts (creator_id, bank_name, ac
 savepoint d; select public.anonymize_creator('88888888-0000-0000-0000-0000000000a1'); rollback to savepoint d;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 8 (v1.1): client report links (PRD FR-M9-05)
+-- ---------------------------------------------------------------------------
+begin;
+\set QUIET on
+insert into public.clients (id, name, type, province) values ('99999999-0000-0000-0000-000000000001','Share Client','kampus_swasta','Kalimantan Selatan');
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status) values
+ ('99999999-0000-0000-0000-0000000000c1','99999999-0000-0000-0000-000000000001','SHARE-2026-01','Share done','awareness','2026-10-01','2026-10-31','selesai'),
+ ('99999999-0000-0000-0000-0000000000c2','99999999-0000-0000-0000-000000000001','SHARE-2026-02','Share draft','awareness','2026-10-01','2026-10-31','draft'),
+ ('99999999-0000-0000-0000-0000000000c3','99999999-0000-0000-0000-000000000001','SHARE-2026-03','Share live','awareness','2026-10-01','2026-10-31','aktif');
+\set QUIET off
+create temporary table p8_roles on commit drop as
+  select (select id from public.profiles where role='manager' limit 1) as manager_id,
+         (select id from public.profiles where role='owner' limit 1) as owner_id;
+grant select on p8_roles to authenticated;
+
+select set_config('request.jwt.claims', json_build_object('sub',(select manager_id from p8_roles),'role','authenticated')::text, true);
+set local role authenticated;
+\echo 'P8-1. link for a draft campaign (expect SHARE_LINK_CAMPAIGN_STATUS)'
+savepoint a; insert into public.report_share_links (campaign_id, token_hash) values ('99999999-0000-0000-0000-0000000000c2', repeat('a',64)); rollback to savepoint a;
+\echo 'P8-2. manager shares a closed campaign (expect INSERT, created_by = manager)'
+insert into public.report_share_links (id, campaign_id, token_hash) values ('99999999-0000-0000-0000-0000000000e1','99999999-0000-0000-0000-0000000000c1', repeat('b',64));
+select created_by = (select manager_id from p8_roles) as own, view_count from public.report_share_links where id='99999999-0000-0000-0000-0000000000e1';
+\echo 'P8-3. a second open link for the same campaign (expect unique violation report_share_links_one_open_idx)'
+savepoint b; insert into public.report_share_links (campaign_id, token_hash) values ('99999999-0000-0000-0000-0000000000c1', repeat('c',64)); rollback to savepoint b;
+\echo 'P8-4. changing the expiry (expect SHARE_LINK_FIXED)'
+savepoint c; update public.report_share_links set expires_at = now() + interval '1 day' where id='99999999-0000-0000-0000-0000000000e1'; rollback to savepoint c;
+\echo 'P8-5. a member inflates the view counter (expect SHARE_LINK_FIXED)'
+savepoint d; update public.report_share_links set view_count = 99 where id='99999999-0000-0000-0000-0000000000e1'; rollback to savepoint d;
+\echo 'P8-6. calling the public resolver as a member (expect permission denied)'
+savepoint e; select public.open_report_share_link(repeat('b',64)); rollback to savepoint e;
+\echo 'P8-7. deleting a link (expect DELETE 0)'
+delete from public.report_share_links where id='99999999-0000-0000-0000-0000000000e1';
+reset role;
+\echo 'P8-8. service path opens the link and counts the view (expect campaign c1, then 1)'
+select set_config('request.jwt.claims', '', true) is not null as claims_cleared;
+select public.open_report_share_link(repeat('b',64)) as campaign_id;
+select view_count, last_viewed_at is not null as viewed from public.report_share_links where id='99999999-0000-0000-0000-0000000000e1';
+\echo 'P8-9. unknown token and expired link (expect null twice)'
+insert into public.report_share_links (campaign_id, token_hash, created_by, created_at, expires_at) values ('99999999-0000-0000-0000-0000000000c3', repeat('d',64), (select owner_id from p8_roles), now() - interval '10 days', now() - interval '1 day');
+select public.open_report_share_link(repeat('0',64)) as unknown, public.open_report_share_link(repeat('d',64)) as expired;
+select set_config('request.jwt.claims', json_build_object('sub',(select owner_id from p8_roles),'role','authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+\echo 'P8-10. owner revokes, naming someone else (expect UPDATE 1, revoked_by = owner)'
+update public.report_share_links set revoked_at = now(), revoked_by = (select manager_id from p8_roles) where id='99999999-0000-0000-0000-0000000000e1';
+select revoked_by = (select owner_id from p8_roles) as revoked_by_owner from public.report_share_links where id='99999999-0000-0000-0000-0000000000e1';
+\echo 'P8-11. restoring a revoked link (expect SHARE_LINK_REVOKED)'
+savepoint f; update public.report_share_links set revoked_at = null, revoked_by = null where id='99999999-0000-0000-0000-0000000000e1'; rollback to savepoint f;
+reset role;
+select set_config('request.jwt.claims', '', true) is not null as claims_cleared;
+\echo 'P8-12. revoked link and cancelled campaign (expect null twice)'
+insert into public.report_share_links (campaign_id, token_hash, created_by) values ('99999999-0000-0000-0000-0000000000c1', repeat('e',64), (select owner_id from p8_roles));
+update public.campaigns set status = 'dibatalkan' where id='99999999-0000-0000-0000-0000000000c1';
+select public.open_report_share_link(repeat('b',64)) as revoked, public.open_report_share_link(repeat('e',64)) as cancelled;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;

@@ -56,6 +56,10 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   PAYOUT_OWNER_ONLY: "Hanya owner yang dapat menyetujui atau menandai honor dibayar.",
   INVALID_PAYOUT_TRANSITION: "Perubahan status honor tersebut tidak diizinkan.",
   FINANCE_OWNER_ONLY: "Bukti keuangan hanya dapat dikelola owner.",
+  SHARE_LINK_CAMPAIGN_STATUS:
+    "Tautan laporan hanya dapat dibuat untuk kampanye berstatus aktif atau selesai.",
+  SHARE_LINK_FIXED: "Tautan laporan tidak dapat diubah; cabut lalu buat tautan baru.",
+  SHARE_LINK_REVOKED: "Tautan yang sudah dicabut tidak dapat diaktifkan kembali.",
   CREATOR_ANONYMIZED: "Data pribadi kreator ini sudah dianonimkan dan tidak dapat diubah lagi.",
   CREATOR_NOT_FOUND: "Kreator tidak ditemukan.",
   OWNER_ONLY: "Hanya owner yang dapat melakukan tindakan ini.",

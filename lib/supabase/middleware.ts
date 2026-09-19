@@ -7,8 +7,11 @@ import type { Database } from "@/types/database";
 /** Routes reachable without a session. Everything else requires login (FR-M1-03). */
 const PUBLIC_PATHS = ["/login", "/lupa-sandi", "/atur-sandi", "/auth/callback"];
 
-/** Public tracking redirect, implemented in phase 2 (FR-M5-05). */
-const PUBLIC_PREFIXES = ["/r/"];
+/**
+ * Public tracking redirect (FR-M5-05), the client report link (FR-M9-05) and
+ * the token-protected reminder endpoint for n8n (FR-M10-05).
+ */
+const PUBLIC_PREFIXES = ["/r/", "/laporan/", "/api/reminders/"];
 
 function isPublicPath(pathname: string) {
   return (

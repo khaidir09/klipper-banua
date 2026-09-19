@@ -43,6 +43,8 @@ export const ACTIVITY_ACTION_LABELS = {
   paid: "Menandai dibayar",
   payment_recorded: "Mencatat pembayaran",
   anonymize: "Menganonimkan data",
+  share_link_create: "Membuat tautan laporan klien",
+  share_link_revoke: "Mencabut tautan laporan klien",
 } as const;
 
 export type ActivityAction = keyof typeof ACTIVITY_ACTION_LABELS;

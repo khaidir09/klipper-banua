@@ -30,7 +30,20 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      {
+        // Client report links (FR-M9-05): the token is in the URL, so it must
+        // not leak through the Referer header, and the page stays unindexed.
+        // A later entry overrides the same key from the one above.
+        source: "/laporan/:path*",
+        headers: [
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Cache-Control", value: "private, no-store" },
+        ],
+      },
+    ];
   },
 };
 

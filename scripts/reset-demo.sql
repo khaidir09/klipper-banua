@@ -23,6 +23,7 @@ delete from public.payouts where campaign_creator_id in (select id from demo_ass
 delete from public.registrant_reports where campaign_id = 'de300000-0000-4000-8000-0000000000c1';
 delete from public.client_payments where campaign_id = 'de300000-0000-4000-8000-0000000000c1';
 delete from public.ops_time_logs where campaign_id = 'de300000-0000-4000-8000-0000000000c1';
+delete from public.report_share_links where campaign_id = 'de300000-0000-4000-8000-0000000000c1';
 delete from public.campaign_assets where campaign_id = 'de300000-0000-4000-8000-0000000000c1';
 delete from public.campaign_creators where id in (select id from demo_assignments);
 delete from public.campaigns where id = 'de300000-0000-4000-8000-0000000000c1';

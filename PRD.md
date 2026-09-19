@@ -2,7 +2,7 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi              | 0.1 (draf awal, disusun paralel dengan pilot)                                               |
+| Versi              | 0.2 (MVP rilis pilot; tambahan v1.1: tautan laporan klien dan pengingat Telegram)           |
 | Tanggal            | 17 September 2026                                                                           |
 | Status             | Siap dipakai untuk memulai pengembangan Fase 0–2; bagian lain direvisi setelah temuan pilot |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
@@ -107,7 +107,7 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 - Marketplace terbuka (kreator melamar kampanye sendiri).
 - Payment gateway, top-up saldo, atau transfer honor otomatis.
 - Integrasi API TikTok, Instagram, YouTube, atau Facebook untuk menarik metrik otomatis.
-- Notifikasi WhatsApp/email otomatis.
+- Notifikasi WhatsApp/email otomatis. Pengecualian sejak v1.1: pengingat Telegram harian **untuk owner internal** (FR-M10-05).
 - Penyimpanan data pribadi calon mahasiswa/pendaftar.
 - Aplikasi mobile native, multi-bahasa, multi-tenant.
 - Fitur AI.
@@ -227,6 +227,12 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 - **FR-M9-02** Isi laporan: identitas kampanye dan klien, periode, ringkasan capaian vs target, grafik views, tabel per kreator (nama panggung, platform, jumlah konten, views, klik, pendaftar), daftar tautan konten tayang, dan catatan penutup yang dapat diedit.
 - **FR-M9-03** Laporan untuk klien **tidak menampilkan** data keuangan internal (honor kreator, margin).
 - **FR-M9-04** Ekspor CSV: daftar konten beserta metrik terbaru, serta rekap per kreator.
+- **FR-M9-05** _(v1.1)_ Tautan laporan baca-saja untuk klien, tanpa login:
+  - dibuat dan dicabut oleh `owner` atau `manager` dari tab Laporan, untuk kampanye berstatus `aktif` atau `selesai`; satu tautan aktif per kampanye;
+  - token acak 32 byte; database hanya menyimpan hash SHA-256, sehingga tautan ditampilkan sekali saat dibuat ("Buat ulang" mencabut tautan lama);
+  - berlaku sampai dicabut, dengan tanggal kedaluwarsa opsional; tautan dicabut, kedaluwarsa, salah, atau kampanye dibatalkan menampilkan halaman tidak ditemukan yang sama;
+  - isi sama dengan laporan cetak (FR-M9-02) dan tetap tanpa data keuangan (FR-M9-03); halaman `noindex`, tanpa referrer, dengan rate limit per IP;
+  - mencatat jumlah dan waktu terakhir dilihat tanpa menyimpan IP; pembuatan dan pencabutan tercatat di log aktivitas.
 
 ### M10 — Dasbor dan Pengingat
 
@@ -234,6 +240,11 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 - **FR-M10-02** Daftar **snapshot jatuh tempo**: konten tayang yang sudah melewati H+1, H+3, atau H+7 dari `posted_at` tetapi belum memiliki snapshot untuk checkpoint tersebut. Diurutkan dari yang paling lama terlambat.
 - **FR-M10-03** Daftar konten `menunggu_review` diurutkan dari yang paling lama menunggu.
 - **FR-M10-04** Peringatan konten `dihapus` sebelum memenuhi minimal hari tayang.
+- **FR-M10-05** _(v1.1)_ Pengingat harian snapshot jatuh tempo ke akun Telegram `owner`:
+  - aplikasi menyediakan endpoint internal yang dilindungi token (`REMINDER_API_TOKEN`) dan mengembalikan daftar FR-M10-02 beserta teks pesan siap kirim;
+  - jadwal dan pengiriman diatur di n8n (Schedule → HTTP Request → Telegram); token bot dan chat ID hanya disimpan di n8n;
+  - pesan hanya berisi kode kampanye, nama panggung kreator, platform, checkpoint, dan jumlah hari terlambat; dikirim hanya bila ada item;
+  - endpoint tidak dapat diakses dari internet (diblokir di reverse proxy; n8n memanggilnya lewat jaringan Docker internal).
 
 ### M11 — Log Aktivitas
 
@@ -270,6 +281,7 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 | `payouts`                 | `campaign_creator_id` (unik), `base_amount`, `views_bonus`, `registrant_bonus`, `adjustment_amount`, `adjustment_reason`, `total_amount`, `calculation_snapshot jsonb`, `status`, `approved_by`, `approved_at`, `paid_at`, `transfer_proof_path`                                                                                                                                                               | `calculation_snapshot` menyimpan input perhitungan                                 |
 | `client_payments`         | `campaign_id`, `invoice_number` (unik), `amount`, `due_date`, `status`, `paid_amount`, `paid_at`, `proof_path`                                                                                                                                                                                                                                                                                                 |                                                                                    |
 | `ops_time_logs`           | `campaign_id`, `user_id`, `activity`, `minutes`, `log_date`, `notes`                                                                                                                                                                                                                                                                                                                                           |                                                                                    |
+| `report_share_links`      | `campaign_id`, `token_hash` (unik), `expires_at`, `created_by`, `revoked_at`, `revoked_by`, `last_viewed_at`, `view_count` | v1.1 (FR-M9-05); satu tautan aktif per kampanye; tidak dapat dihapus |
 | `activity_logs`           | `actor_id`, `entity_type`, `entity_id`, `action`, `details jsonb`                                                                                                                                                                                                                                                                                                                                              | Append-only                                                                        |
 
 ### 7.1 Penyimpanan berkas (Supabase Storage)
@@ -404,7 +416,7 @@ types/database.ts
 
 ### 10.3 Variabel lingkungan
 
-`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, `DEFAULT_TIMEZONE=Asia/Makassar`.
+`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, `DEFAULT_TIMEZONE=Asia/Makassar`, dan sejak v1.1 `REMINDER_API_TOKEN` (opsional; tanpa nilai ini endpoint pengingat nonaktif).
 
 ---
 
@@ -487,6 +499,16 @@ Kerjakan berurutan. Satu fase = satu atau beberapa sesi Claude Code = satu commi
 - [ ] Setiap tabel memiliki kebijakan RLS yang teruji untuk `owner`, `manager`, dan pengguna anonim.
 - [ ] Aplikasi berjalan di domain produksi dengan HTTPS.
 
+### Fase 8 — v1.1: Tautan Laporan Klien dan Pengingat Telegram
+
+**Cakupan:** FR-M9-05 dan FR-M10-05. Pengingat WhatsApp ditunda ke versi berikutnya.
+**Kriteria penerimaan:**
+
+- [ ] Klien dapat membuka laporan lewat tautan tanpa login dan tidak melihat data keuangan internal.
+- [ ] Tautan yang dicabut atau kedaluwarsa langsung tidak dapat dibuka.
+- [ ] Tabel `report_share_links` tercakup dalam pemeriksaan RLS untuk `owner`, `manager`, dan anonim.
+- [ ] Owner menerima pesan Telegram harian berisi snapshot yang jatuh tempo, lewat workflow n8n.
+
 ---
 
 ## 12. Peta Jalan Setelah Pilot (Indikatif)
@@ -495,7 +517,8 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 
 | Versi | Fitur                                                                                                                            |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------- |
-| 1.1   | Tautan laporan baca-saja untuk klien (token rahasia, tanpa login); pengingat WhatsApp otomatis ke tim untuk snapshot jatuh tempo |
+| 1.1   | Tautan laporan baca-saja untuk klien (token rahasia, tanpa login); pengingat Telegram harian ke owner via n8n untuk snapshot jatuh tempo (Fase 8) |
+| 1.2   | Pengingat WhatsApp otomatis ke tim (ditunda dari 1.1) |
 | 2.0   | Portal kreator: login, lihat brief, kirim draf, unggah bukti metrik, lihat status honor                                          |
 | 3.0   | Portal klien: pantau kampanye berjalan, setujui konten, unduh laporan                                                            |
 | 4.0   | Integrasi API resmi platform media sosial untuk metrik otomatis (bergantung persetujuan akses API)                               |
@@ -533,3 +556,4 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | Versi | Tanggal     | Perubahan                                  |
 | ----- | ----------- | ------------------------------------------ |
 | 0.1   | 17 Sep 2026 | Draf awal berdasarkan diskusi validasi ide |
+| 0.2   | 19 Sep 2026 | v1.1: FR-M9-05 (tautan laporan klien), FR-M10-05 (pengingat Telegram via n8n menggantikan WhatsApp), tabel `report_share_links`, Fase 8 |
