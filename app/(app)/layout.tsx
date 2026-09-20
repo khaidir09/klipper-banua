@@ -1,14 +1,14 @@
 import { AppShell } from "@/components/layout/app-shell";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { publicEnv } from "@/lib/env";
 import { timezoneLabel } from "@/lib/format/timezone";
 
 /**
- * Guards every authenticated route: no session or a deactivated account never
- * reaches the pages below (FR-M1-03).
+ * Guards every authenticated route: no session, a deactivated account or a
+ * creator portal account never reaches the pages below (FR-M1-03, FR-M13-02).
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, profile } = await requireSession();
+  const { user, profile } = await requireInternal();
 
   return (
     <AppShell
@@ -16,6 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       fullName={profile.full_name}
       email={user.email ?? ""}
       role={profile.role}
+      area="app"
       timezoneLabel={timezoneLabel(profile.timezone)}
     >
       {children}

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/guards";
+import { getSession, isInternalRole } from "@/lib/auth/guards";
 import { getCampaign } from "@/lib/data/campaigns";
 import { getCampaignReport } from "@/lib/data/report";
 import { csvFileName } from "@/lib/export/csv";
@@ -20,7 +20,7 @@ export async function GET(
   }
 
   const session = await getSession();
-  if (!session?.profile.is_active) {
+  if (!session?.profile.is_active || !isInternalRole(session.profile.role)) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 

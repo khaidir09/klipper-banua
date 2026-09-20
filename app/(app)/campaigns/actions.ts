@@ -13,7 +13,7 @@ import {
   type ActionResult,
 } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
-import { requireRole, requireSession } from "@/lib/auth/guards";
+import { requireInternal, requireRole } from "@/lib/auth/guards";
 import { activationBlockers, canTransition } from "@/lib/campaigns/status";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/constants/campaigns";
 import { CAMPAIGN_ASSET_BUCKET } from "@/lib/data/campaigns";
@@ -48,7 +48,7 @@ function duplicateCode<T>(): ActionResult<T> {
 }
 
 export async function createCampaignAction(values: unknown): Promise<ActionResult<{ id: string }>> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = campaignSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
 
@@ -76,7 +76,7 @@ export async function createCampaignAction(values: unknown): Promise<ActionResul
 }
 
 export async function updateCampaignAction(id: string, values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!uuidField.safeParse(id).success) return fail("ID kampanye tidak valid.");
   const parsed = campaignSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -102,7 +102,7 @@ export async function updateCampaignAction(id: string, values: unknown): Promise
 
 /** Status changes are validated here and again by the database trigger. */
 export async function changeCampaignStatusAction(values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = campaignStatusChangeSchema.safeParse(values);
   if (!parsed.success) return fail("Permintaan tidak valid.");
   const { id, status } = parsed.data;
@@ -206,7 +206,7 @@ const assetRecordSchema = assetSchema.extend({
  * Next.js server.
  */
 export async function addAssetAction(values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = assetRecordSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
   const { campaign_id, file_path, external_url, ...rest } = parsed.data;
@@ -243,7 +243,7 @@ export async function addAssetAction(values: unknown): Promise<ActionResult> {
 }
 
 export async function deleteAssetAction(values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = z.object({ campaign_id: uuidField, asset_id: uuidField }).safeParse(values);
   if (!parsed.success) return fail("ID tidak valid.");
 
@@ -290,7 +290,7 @@ export async function addAssignmentAction(
   campaignId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!uuidField.safeParse(campaignId).success) return fail("ID kampanye tidak valid.");
   const parsed = assignmentCreateSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -372,7 +372,7 @@ export async function updateAssignmentAction(
   assignmentId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!uuidField.safeParse(campaignId).success || !uuidField.safeParse(assignmentId).success) {
     return fail("ID tidak valid.");
   }
@@ -434,7 +434,7 @@ export async function updateAssignmentAction(
 
 /** Removing is only possible before any click exists (FK restrict on link_clicks). */
 export async function removeAssignmentAction(values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = z.object({ campaign_id: uuidField, assignment_id: uuidField }).safeParse(values);
   if (!parsed.success) return fail("ID tidak valid.");
 

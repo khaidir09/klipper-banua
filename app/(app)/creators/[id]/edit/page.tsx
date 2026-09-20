@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { PageHeader } from "@/components/layout/page-header";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { NICHES, type Niche } from "@/lib/constants/creators";
 import { isProvince } from "@/lib/constants/regions";
 import { getCreator } from "@/lib/data/creators";
@@ -12,7 +12,7 @@ import { CreatorForm } from "../../creator-form";
 export const metadata: Metadata = { title: "Ubah kreator" };
 
 export default async function EditCreatorPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireSession();
+  await requireInternal();
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
   const creator = await getCreator(supabase, id);

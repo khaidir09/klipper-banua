@@ -13,14 +13,18 @@ import {
   type ActionResult,
 } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
-import { requireRole, requireSession } from "@/lib/auth/guards";
+import { requireInternal, requireRole } from "@/lib/auth/guards";
 import { AUDIENCE_PROOF_BUCKET } from "@/lib/data/creators";
+import { publicEnv } from "@/lib/env";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { uuidField } from "@/lib/validation/common";
 import {
   anonymizeCreatorSchema,
   bankAccountSchema,
   creatorSchema,
+  invitePortalSchema,
+  portalAccessSchema,
   socialAccountSchema,
   termsSchema,
   verificationBlockers,
@@ -42,7 +46,7 @@ const PROOF_MIME_EXT: Record<string, string> = {
 
 /** FR-M3-01, FR-M3-02 (age is validated inside `creatorSchema`). */
 export async function createCreatorAction(values: unknown): Promise<ActionResult<{ id: string }>> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = creatorSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
 
@@ -67,7 +71,7 @@ export async function createCreatorAction(values: unknown): Promise<ActionResult
 }
 
 export async function updateCreatorAction(id: string, values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!uuidField.safeParse(id).success) return fail("ID kreator tidak valid.");
   const parsed = creatorSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -185,7 +189,7 @@ export async function saveSocialAccountAction(
   accountId: string | null,
   formData: FormData,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!uuidField.safeParse(creatorId).success) return fail("ID kreator tidak valid.");
   if (accountId && !uuidField.safeParse(accountId).success) return fail("ID akun tidak valid.");
 
@@ -299,7 +303,7 @@ function uniqueOrFail(code: string | undefined, fallback: string): ActionResult 
 }
 
 export async function deleteSocialAccountAction(values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = accountIdSchema.safeParse(values);
   if (!parsed.success) return fail("ID tidak valid.");
 
@@ -343,7 +347,7 @@ export async function deleteSocialAccountAction(values: unknown): Promise<Action
 /* ------------------------------------------------------------------ */
 
 export async function recordTermsAction(creatorId: string, values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!uuidField.safeParse(creatorId).success) return fail("ID kreator tidak valid.");
   const parsed = termsSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -372,7 +376,7 @@ export async function recordTermsAction(creatorId: string, values: unknown): Pro
 
 /** The prerequisites are re-checked here, never trusted from the UI. */
 export async function verifyCreatorAction(values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = idSchema.safeParse(values);
   if (!parsed.success) return fail("ID kreator tidak valid.");
 
@@ -505,4 +509,128 @@ export async function deleteBankAccountAction(values: unknown): Promise<ActionRe
 
   revalidatePath(`/creators/${parsed.data.id}`);
   return ok("Rekening dihapus.");
+}
+
+/* ------------------------------------------------------------------ */
+/* Creator portal access (FR-M13-01, FR-M13-08)                        */
+/* ------------------------------------------------------------------ */
+
+const PORTAL_REDIRECT = `${publicEnv.NEXT_PUBLIC_APP_URL}/auth/callback?next=/atur-sandi`;
+
+/**
+ * Invites a creator to the portal, or sends a fresh password link when the
+ * account already exists. Mirrors `inviteUserAction` for internal members.
+ */
+export async function invitePortalAccessAction(values: unknown): Promise<ActionResult> {
+  const session = await requireInternal();
+  const parsed = invitePortalSchema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error);
+  const { creator_id: creatorId, email } = parsed.data;
+
+  const supabase = await createSupabaseServerClient();
+  const { data: creator } = await supabase
+    .from("creators")
+    .select("id, status, anonymized_at, profile_id")
+    .eq("id", creatorId)
+    .maybeSingle();
+  if (!creator) return fail("Kreator tidak ditemukan.");
+  if (creator.anonymized_at) return fail("Data kreator ini sudah dianonimkan.");
+  if (!["terverifikasi", "aktif"].includes(creator.status)) {
+    return fail("Hanya kreator terverifikasi atau aktif yang dapat diundang ke portal.");
+  }
+
+  // The account exists: send a password link instead of a second invitation.
+  if (creator.profile_id) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: PORTAL_REDIRECT,
+    });
+    if (error) return fail("Tautan masuk gagal dikirim. Coba lagi beberapa saat lagi.");
+
+    await supabase
+      .from("creators")
+      .update({ portal_invited_at: new Date().toISOString() })
+      .eq("id", creatorId);
+
+    await logActivity(supabase, {
+      actorId: session.user.id,
+      entityType: "creator",
+      entityId: creatorId,
+      action: "portal_invite",
+      details: { email, resent: true },
+    });
+
+    revalidatePath(`/creators/${creatorId}`);
+    return ok(`Tautan masuk dikirim ulang ke ${email}.`);
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+    data: { full_name: "", role: "creator" },
+    redirectTo: PORTAL_REDIRECT,
+  });
+
+  if (inviteError) {
+    if (/already|exists|registered/i.test(inviteError.message)) {
+      return fail("Email tersebut sudah dipakai akun lain.");
+    }
+    return fail(`Undangan gagal dikirim: ${inviteError.message}`);
+  }
+
+  const { error } = await supabase
+    .from("creators")
+    .update({
+      profile_id: invited.user.id,
+      portal_invited_at: new Date().toISOString(),
+      email,
+    })
+    .eq("id", creatorId);
+  if (error) {
+    // The account exists but the link failed: remove it so a retry is clean.
+    await admin.auth.admin.deleteUser(invited.user.id);
+    return fail(dbRuleMessage(error, "Akun portal gagal ditautkan ke kreator."));
+  }
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "creator",
+    entityId: creatorId,
+    action: "portal_invite",
+    details: { email, resent: false },
+  });
+
+  revalidatePath(`/creators/${creatorId}`);
+  return ok(`Undangan portal dikirim ke ${email}.`);
+}
+
+/** FR-M13-08. Owner only, like every other access decision. */
+export async function setPortalAccessAction(values: unknown): Promise<ActionResult> {
+  const session = await requireRole("owner");
+  const parsed = portalAccessSchema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error);
+  const { creator_id: creatorId, is_active: isActive } = parsed.data;
+
+  const supabase = await createSupabaseServerClient();
+  const { data: creator } = await supabase
+    .from("creators")
+    .select("profile_id")
+    .eq("id", creatorId)
+    .maybeSingle();
+  if (!creator?.profile_id) return fail("Kreator ini belum punya akun portal.");
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ is_active: isActive })
+    .eq("id", creator.profile_id);
+  if (error) return fail("Akses portal gagal diperbarui.");
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "creator",
+    entityId: creatorId,
+    action: "portal_access",
+    details: { is_active: isActive },
+  });
+
+  revalidatePath(`/creators/${creatorId}`);
+  return ok(isActive ? "Akses portal diaktifkan." : "Akses portal dicabut.");
 }

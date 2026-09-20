@@ -4,7 +4,8 @@
 --   npm run db:rls-check
 --
 -- Each table is exercised with SELECT / INSERT / UPDATE / DELETE as `owner`,
--- `manager`, an inactive member and `anon`, and compared with the expected
+-- `manager`, a creator portal account, an inactive member and `anon`, and
+-- compared with the expected
 -- outcome. Triggers are switched off (session_replication_role = replica) so
 -- only grants, RLS policies and CHECK constraints decide; business rules are
 -- covered by scripts/guards-check.sql. Everything runs in one transaction and
@@ -19,7 +20,8 @@ create temporary table rls_ids on commit drop as
 select
   (select id from public.profiles where role = 'owner' and is_active limit 1) as owner_id,
   (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id,
-  'f1000000-0000-4000-8000-000000000099'::uuid as inactive_id;
+  'f1000000-0000-4000-8000-000000000099'::uuid as inactive_id,
+  'f1000000-0000-4000-8000-000000000098'::uuid as creator_user_id;
 
 do $$
 begin
@@ -76,6 +78,20 @@ values ('f1000000-0000-4000-8000-000000000019', (select owner_id from rls_ids), 
 insert into storage.objects (bucket_id, name)
 select bucket, 'rls-check/' || bucket || '.png'
 from unnest(array['audience-proofs', 'campaign-assets', 'content-drafts', 'metric-proofs', 'finance-proofs']) as bucket;
+
+-- Creator portal account (M13), linked to "RLS Creator" (f1…03), who is
+-- assigned to campaign f1…07 but not to f1…22.
+insert into public.profiles (id, full_name, role, is_active)
+values ('f1000000-0000-4000-8000-000000000098', 'RLS Portal Creator', 'creator', true);
+update public.creators
+  set profile_id = 'f1000000-0000-4000-8000-000000000098'
+  where id = 'f1000000-0000-4000-8000-000000000003';
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status)
+values ('f1000000-0000-4000-8000-000000000022', 'f1000000-0000-4000-8000-000000000001', 'RLS-FIX-02', 'RLS Lain', 'awareness', '2026-10-01', '2026-10-31', 'aktif');
+-- Campaign material is stored as `<campaign_id>/<file>` (lib/storage/upload.ts).
+insert into storage.objects (bucket_id, name) values
+  ('campaign-assets', 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'),
+  ('campaign-assets', 'f1000000-0000-4000-8000-000000000022/rls-unassigned.png');
 
 -- ---------------------------------------------------------------------------
 -- Probe: runs one statement as a role and reports allow / deny / error.
@@ -218,6 +234,17 @@ insert into rls_cases values
   ('activity_logs', 'update', $q$update public.activity_logs set details = details where id = 'f1000000-0000-4000-8000-000000000019'$q$),
   ('activity_logs', 'delete', $q$delete from public.activity_logs where id = 'f1000000-0000-4000-8000-000000000019'$q$);
 
+-- Creator portal (M13): the portal reads through views, and a creator may
+-- edit their own profile row and append their own audit entries.
+insert into rls_cases values
+  ('profiles_self', 'update', $q$update public.profiles set full_name = full_name where id = '%s'$q$),
+  ('creator_portal_profile', 'select', $q$select count(*) from public.creator_portal_profile$q$),
+  ('creator_portal_assignments', 'select', $q$select count(*) from public.creator_portal_assignments$q$),
+  ('creator_portal_assignments_other', 'select', $q$select count(*) from public.creator_portal_assignments where id = 'f1000000-0000-4000-8000-000000000010'$q$),
+  ('creator_portal_assets', 'select', $q$select count(*) from public.creator_portal_assets$q$),
+  ('storage:campaign-assets-assigned', 'select', $q$select count(*) from storage.objects where bucket_id = 'campaign-assets' and name = 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'$q$),
+  ('storage:campaign-assets-unassigned', 'select', $q$select count(*) from storage.objects where bucket_id = 'campaign-assets' and name = 'f1000000-0000-4000-8000-000000000022/rls-unassigned.png'$q$);
+
 -- Storage buckets: list, upload, remove.
 insert into rls_cases
 select 'storage:' || bucket, op, sql
@@ -229,9 +256,14 @@ lateral (values
 ) as ops(op, sql);
 
 -- ---------------------------------------------------------------------------
--- Expected outcome: owner / manager / inactive member / anon (a = allow).
+-- Expected outcome: owner / manager / inactive member / anon / creator
+-- (a = allow). `creator` defaults to deny: the portal role must stay out of
+-- every internal table, so only the rows listed at the end may open up.
 -- ---------------------------------------------------------------------------
-create temporary table rls_expected (tbl text, op text, owner text, manager text, inactive text, anon text) on commit drop;
+create temporary table rls_expected (
+  tbl text, op text, owner text, manager text, inactive text, anon text,
+  creator text not null default 'd'
+) on commit drop;
 insert into rls_expected values
   -- Everyone signed in sees their own profile (to learn they were deactivated).
   ('profiles', 'select', 'a', 'a', 'a', 'd'),
@@ -333,6 +365,20 @@ insert into rls_expected values
   ('storage:finance-proofs', 'insert', 'a', 'd', 'd', 'd'),
   ('storage:finance-proofs', 'delete', 'a', 'd', 'd', 'd');
 
+-- Creator portal cases (M13). Everything else stays at the 'd' default.
+insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) values
+  ('profiles_self', 'update', 'a', 'a', 'd', 'd', 'a'),
+  ('creator_portal_profile', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_assignments', 'select', 'd', 'd', 'd', 'd', 'a'),
+  -- Another creator's assignment stays invisible, portal account or not.
+  ('creator_portal_assignments_other', 'select', 'd', 'd', 'd', 'd', 'd'),
+  ('creator_portal_assets', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('storage:campaign-assets-assigned', 'select', 'a', 'a', 'd', 'd', 'a'),
+  ('storage:campaign-assets-unassigned', 'select', 'a', 'a', 'd', 'd', 'd');
+
+-- Portal actions must stay in the audit trail (FR-M11-01); reading it does not.
+update rls_expected set creator = 'a' where tbl = 'activity_logs' and op = 'insert';
+
 -- ---------------------------------------------------------------------------
 -- Run every case for every role.
 -- ---------------------------------------------------------------------------
@@ -345,6 +391,7 @@ select
     when 'owner' then e.owner
     when 'manager' then e.manager
     when 'inactive' then e.inactive
+    when 'creator' then e.creator
     else e.anon
   end as expected,
   pg_temp.probe(
@@ -359,18 +406,19 @@ cross join lateral (values
   ('owner', (select owner_id from rls_ids)),
   ('manager', (select manager_id from rls_ids)),
   ('inactive', (select inactive_id from rls_ids)),
+  ('creator', (select creator_user_id from rls_ids)),
   ('anon', null::uuid)
 ) as r(role_name, sub);
 
 \set QUIET off
-\echo '--- RLS matrix (a = allow, d = deny; owner / manager / inactive / anon) ---'
+\echo '--- RLS matrix (a = allow, d = deny; owner / manager / inactive / creator / anon) ---'
 select
   tbl as "table",
   op,
   string_agg(
     case when left(actual, 1) = expected then upper(expected) else '✗' || left(actual, 5) end,
-    ' / ' order by array_position(array['owner', 'manager', 'inactive', 'anon'], role_name)
-  ) as "owner / manager / inactive / anon"
+    ' / ' order by array_position(array['owner', 'manager', 'inactive', 'creator', 'anon'], role_name)
+  ) as "owner / manager / inactive / creator / anon"
 from rls_results
 group by tbl, op
 order by tbl, array_position(array['select', 'insert', 'update', 'delete'], op);
@@ -382,20 +430,28 @@ where left(actual, 1) <> expected
 order by 1, 2, 3;
 
 -- Every public table must have RLS on, at least one policy, and a row in the
--- matrix above, so a new table cannot slip through untested.
-\echo '--- Tables without RLS, policies or matrix coverage (expect 0 rows) ---'
-select c.relname as "table",
+-- matrix above, so a new table cannot slip through untested. Views (the
+-- creator portal's read surface) carry no RLS of their own, so for them only
+-- matrix coverage is required.
+\echo '--- Tables and views without RLS, policies or matrix coverage (expect 0 rows) ---'
+select c.relname as "relation",
+       c.relkind as kind,
        c.relrowsecurity as rls_enabled,
        (select count(*) from pg_policies p where p.schemaname = 'public' and p.tablename = c.relname) as policies,
        exists (select 1 from rls_expected e where e.tbl = c.relname) as in_matrix
 from pg_class c
 join pg_namespace n on n.oid = c.relnamespace
 where n.nspname = 'public'
-  and c.relkind = 'r'
+  and c.relkind in ('r', 'v')
   and (
-    not c.relrowsecurity
-    or not exists (select 1 from pg_policies p where p.schemaname = 'public' and p.tablename = c.relname)
-    or not exists (select 1 from rls_expected e where e.tbl = c.relname)
+    not exists (select 1 from rls_expected e where e.tbl = c.relname)
+    or (
+      c.relkind = 'r'
+      and (
+        not c.relrowsecurity
+        or not exists (select 1 from pg_policies p where p.schemaname = 'public' and p.tablename = c.relname)
+      )
+    )
   );
 
 \echo '--- Manager reads bank details only masked (expect bank + ******7890) ---'
@@ -412,10 +468,11 @@ begin
   select count(*) into failures from rls_results where left(actual, 1) <> expected;
   failures := failures + (
     select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace
-    where n.nspname = 'public' and c.relkind = 'r'
-      and (not c.relrowsecurity
-        or not exists (select 1 from pg_policies p where p.schemaname = 'public' and p.tablename = c.relname)
-        or not exists (select 1 from rls_expected e where e.tbl = c.relname))
+    where n.nspname = 'public' and c.relkind in ('r', 'v')
+      and (not exists (select 1 from rls_expected e where e.tbl = c.relname)
+        or (c.relkind = 'r'
+          and (not c.relrowsecurity
+            or not exists (select 1 from pg_policies p where p.schemaname = 'public' and p.tablename = c.relname))))
   );
   if failures > 0 then
     raise exception 'RLS check failed: % problem(s), see above', failures;

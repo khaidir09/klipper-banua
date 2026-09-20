@@ -4,7 +4,7 @@ import { addDays, format, parseISO } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { dbRuleMessage, fail, invalid, ok, type ActionResult } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { appUrl } from "@/lib/app-url";
 import { zonedInputToUtc } from "@/lib/format/date";
 import { generateShareToken, hashShareToken } from "@/lib/share/token";
@@ -25,7 +25,7 @@ import {
 export async function createReportShareLinkAction(
   values: unknown,
 ): Promise<ActionResult<{ url: string }>> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = createShareLinkSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
   const { campaign_id, expires_on } = parsed.data;
@@ -96,7 +96,7 @@ export async function createReportShareLinkAction(
 
 /** Revokes a link at once; the public page then answers "not found". */
 export async function revokeReportShareLinkAction(values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = revokeShareLinkSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
   const { campaign_id, link_id } = parsed.data;

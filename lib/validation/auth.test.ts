@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { passwordSchema, safeNextPath } from "@/lib/validation/auth";
+import { homePathForRole, passwordSchema, safeNextPath } from "@/lib/validation/auth";
 
 describe("safeNextPath", () => {
   it("keeps relative in-app paths", () => {
@@ -19,6 +19,21 @@ describe("safeNextPath", () => {
   it("avoids redirect loops back to the auth routes", () => {
     expect(safeNextPath("/login?next=/x")).toBe("/dashboard");
     expect(safeNextPath("/keluar")).toBe("/dashboard");
+  });
+});
+
+describe("homePathForRole", () => {
+  it("sends the team to the app and a creator to the portal (FR-M13-02)", () => {
+    expect(homePathForRole("owner")).toBe("/dashboard");
+    expect(homePathForRole("manager")).toBe("/dashboard");
+    expect(homePathForRole("creator")).toBe("/portal");
+  });
+
+  it("is used as the fallback destination after login", () => {
+    expect(safeNextPath(null, homePathForRole("creator"))).toBe("/portal");
+    expect(safeNextPath("https://evil.example", "/portal")).toBe("/portal");
+    expect(safeNextPath("/login", "/portal")).toBe("/portal");
+    expect(safeNextPath("/portal/penugasan", "/portal")).toBe("/portal/penugasan");
   });
 });
 

@@ -152,6 +152,24 @@ export function verificationBlockers(input: {
   return blockers;
 }
 
+/* ------------------------------------------------------------------ */
+/* Creator portal (M13, v2.0)                                          */
+/* ------------------------------------------------------------------ */
+
+/** FR-M13-01: an invitation needs an email address to send it to. */
+export const invitePortalSchema = z.object({
+  creator_id: uuidField,
+  email: z.email({ message: "Format email tidak valid." }).transform((v) => v.toLowerCase()),
+});
+
+export type InvitePortalInput = z.infer<typeof invitePortalSchema>;
+
+/** FR-M13-08: owner switches a creator's portal access on or off. */
+export const portalAccessSchema = z.object({
+  creator_id: uuidField,
+  is_active: z.boolean(),
+});
+
 /** PRD section 9: the owner types the word to confirm an irreversible erasure. */
 export const ANONYMIZE_CONFIRMATION = "ANONIMKAN";
 

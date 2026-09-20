@@ -7,7 +7,7 @@ import { ListPagination } from "@/components/tables/list-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import {
   CREATOR_STATUSES,
   CREATOR_STATUS_LABELS,
@@ -28,7 +28,7 @@ export const metadata: Metadata = { title: "Kreator" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function CreatorsPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireSession();
+  await requireInternal();
   const raw = await searchParams;
   const query = creatorListQuerySchema.parse(raw);
 

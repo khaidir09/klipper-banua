@@ -5,6 +5,7 @@ import { publicEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   forgotPasswordSchema,
+  homePathForRole,
   loginSchema,
   newPasswordSchema,
   safeNextPath,
@@ -37,7 +38,7 @@ export async function signInAction(values: unknown): Promise<ActionResult> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("is_active")
+    .select("is_active, role")
     .eq("id", data.user.id)
     .maybeSingle();
 
@@ -49,7 +50,7 @@ export async function signInAction(values: unknown): Promise<ActionResult> {
     };
   }
 
-  redirect(safeNextPath(parsed.data.next));
+  redirect(safeNextPath(parsed.data.next, homePathForRole(profile.role)));
 }
 
 /** FR-M1-04. Always answers the same way, whether or not the email exists. */
@@ -103,5 +104,11 @@ export async function updatePasswordAction(values: unknown): Promise<ActionResul
     return { status: "error", message: "Kata sandi gagal diperbarui. Coba lagi." };
   }
 
-  redirect("/dashboard");
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  redirect(homePathForRole(profile?.role ?? "manager"));
 }

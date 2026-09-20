@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { isCampaignLocked } from "@/lib/campaigns/status";
 import { getCampaign } from "@/lib/data/campaigns";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -11,7 +11,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  * `canEdit` mirrors the database lock: closed campaigns are owner-only.
  */
 export const loadCampaign = cache(async (id: string) => {
-  const session = await requireSession();
+  const session = await requireInternal();
   const supabase = await createSupabaseServerClient();
   const campaign = await getCampaign(supabase, id);
   if (!campaign) notFound();

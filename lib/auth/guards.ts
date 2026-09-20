@@ -12,6 +12,17 @@ export type Session = {
   profile: Profile;
 };
 
+/** The team. `creator` is a portal account (PRD M13), never an internal role. */
+export const INTERNAL_ROLES = ["owner", "manager"] as const;
+export type InternalRole = (typeof INTERNAL_ROLES)[number];
+
+export function isInternalRole(role: UserRole): role is InternalRole {
+  return (INTERNAL_ROLES as readonly UserRole[]).includes(role);
+}
+
+/** A signed-in creator, together with the creator record behind the account. */
+export type CreatorSession = Session & { creatorId: string };
+
 /** Returns the signed-in member, or null. Does not redirect. */
 export async function getSession(): Promise<Session | null> {
   const supabase = await createSupabaseServerClient();
@@ -51,15 +62,48 @@ export async function requireSession(): Promise<Session> {
   return session;
 }
 
-/** Server-side role check. UI state alone is never enough (see CLAUDE.md). */
-export async function requireRole(...roles: UserRole[]): Promise<Session> {
+/** Guard for the internal app: creators belong in the portal (FR-M13-02). */
+export async function requireInternal(): Promise<Session> {
   const session = await requireSession();
 
-  if (!roles.includes(session.profile.role)) {
+  if (!isInternalRole(session.profile.role)) {
+    redirect("/portal");
+  }
+
+  return session;
+}
+
+/** Server-side role check. UI state alone is never enough (see CLAUDE.md). */
+export async function requireRole(...roles: InternalRole[]): Promise<Session> {
+  const session = await requireInternal();
+
+  if (!roles.includes(session.profile.role as InternalRole)) {
     redirect("/dashboard?akses=ditolak");
   }
 
   return session;
+}
+
+/**
+ * Guard for every route inside the `(portal)` group (FR-M13-02). The creator
+ * id comes from `creator_portal_profile`, the same view the portal reads
+ * everything else from, so a revoked or blocked account never gets past here.
+ */
+export async function requireCreator(): Promise<CreatorSession> {
+  const session = await requireSession();
+
+  if (isInternalRole(session.profile.role)) {
+    redirect("/dashboard");
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.from("creator_portal_profile").select("id").maybeSingle();
+
+  if (!data?.id) {
+    redirect("/keluar?alasan=portal");
+  }
+
+  return { ...session, creatorId: data.id };
 }
 
 export function isOwner(profile: Profile): boolean {

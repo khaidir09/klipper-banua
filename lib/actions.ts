@@ -64,6 +64,7 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   CREATOR_NOT_FOUND: "Kreator tidak ditemukan.",
   OWNER_ONLY: "Hanya owner yang dapat melakukan tindakan ini.",
   OPS_LOG_OWNER_FIXED: "Kampanye dan pencatat waktu tidak dapat diubah.",
+  PORTAL_LINK_INTERNAL_ONLY: "Akses portal kreator hanya dapat diubah oleh tim internal.",
 };
 
 /** Check constraints whose violation deserves a specific message. */

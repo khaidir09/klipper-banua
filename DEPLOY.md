@@ -39,7 +39,8 @@ Pengguna ──HTTPS──▶ Caddy (VPS :443) ──▶ app (Next.js :3000) ─
    Migrasi membuat semua tabel, kebijakan RLS, trigger aturan bisnis, dan bucket Storage privat.
 
 4. **Authentication → Sign In / Providers**
-   - Matikan **Allow new users to sign up** (akun hanya lewat undangan owner).
+   - Matikan **Allow new users to sign up** (akun hanya lewat undangan: tim oleh `owner`,
+     kreator dari halaman kreator).
    - Biarkan provider **Email** aktif (dibutuhkan untuk login dengan email dan kata sandi).
 5. **Authentication → URL Configuration**
    - Site URL: `https://app.contoh.id`
@@ -49,6 +50,8 @@ Pengguna ──HTTPS──▶ Caddy (VPS :443) ──▶ app (Next.js :3000) ─
    - _Reset password_ ← `supabase/templates/recovery.html`
 
    Tanpa langkah ini, tautan undangan tidak membuat sesi di server dan pengguna gagal masuk.
+   Templat undangan yang sama dipakai untuk anggota tim dan akun portal kreator (v2.0), jadi
+   perbarui juga teksnya di dashboard setelah mengubahnya di repositori.
 
 7. **Authentication → SMTP Settings**: aktifkan _Custom SMTP_ dengan kredensial layanan email
    Anda. Pengirim, misalnya `Klipper Banua <no-reply@contoh.id>`.

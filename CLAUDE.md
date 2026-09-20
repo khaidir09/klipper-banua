@@ -4,7 +4,7 @@ Sumber kebenaran kebutuhan produk ada di `PRD.md`. Baca bagian yang relevan sebe
 
 ## Konteks singkat
 
-Aplikasi web internal untuk mengelola kampanye promosi instansi regional (dimulai dari kampus swasta di Kalimantan) menggunakan kreator lokal. Pengguna hanya tim internal (`owner`, `manager`).
+Aplikasi web internal untuk mengelola kampanye promosi instansi regional (dimulai dari kampus swasta di Kalimantan) menggunakan kreator lokal. Pengguna inti adalah tim internal (`owner`, `manager`); sejak v2.0 kreator memiliki portal terbatas di `/portal` dengan peran `creator`.
 
 ## Stack
 
@@ -21,6 +21,8 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 - **Bahasa:** UI dalam Bahasa Indonesia. Kode, nama tabel/kolom, dan komentar dalam bahasa Inggris. Nilai enum mengikuti PRD.
 - **Database:** setiap perubahan skema lewat file migrasi baru di `supabase/migrations/`. Jangan mengedit migrasi yang sudah ada. Regenerasi `types/database.ts` setelah migrasi.
 - **RLS:** aktif di setiap tabel baru, lengkap dengan kebijakan untuk `owner` dan `manager`. `creator_bank_accounts` dan bukti keuangan hanya untuk `owner`.
+- **Peran `creator` (portal, M13):** `public.is_active_member()` berarti **anggota internal** (`owner`/`manager`) saja. Jangan pernah memberi peran `creator` kebijakan RLS atas tabel dasar; seluruh bacaan portal lewat view `creator_portal_*` yang memfilter `public.current_creator_id()` dan hanya memuat kolom aman. Tulisan dari portal lewat Server Action + RLS + trigger, bukan service role.
+- **Guard rute:** rute `(app)` memakai `requireInternal()` / `requireRole()`, rute `(portal)` memakai `requireCreator()`. `requireSession()` hanya untuk yang dipakai kedua area (mis. profil sendiri).
 - **Rahasia:** `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, dan `REMINDER_API_TOKEN` hanya dipakai di kode server. Jangan pernah mengimpornya ke komponen client.
 - **Validasi:** setiap Server Action memvalidasi input dengan Zod dan memeriksa peran pengguna di server, bukan hanya di UI.
 - **Uang:** nominal Rupiah disimpan sebagai `bigint` utuh. Jangan memakai float untuk uang.
@@ -44,6 +46,7 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 | `npm run db:push`                      | Terapkan migrasi ke proyek Supabase terhubung |
 | `npm run db:types`                     | Regenerasi `types/database.ts`                |
 | `npm run seed:owner`                   | Buat/perbarui akun `owner` (+ `manager` bila `SEED_MANAGER_*` diisi) |
+| `npm run seed:demo` (`SEED_CREATOR_*`) | Ikut membuat akun portal kreator untuk data demo |
 | `npm run db:rls-check`                 | Uji kebijakan RLS di database lokal (`scripts/rls-check.sql`) |
 | `npm run db:guards-check`              | Uji trigger aturan kampanye/penugasan (`scripts/guards-check.sql`) |
 | `npm run seed:demo` / `seed:demo:reset` | Data demo lokal / kembalikan kampanye demo ke draft |
@@ -51,7 +54,7 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 
 Sebelum menyelesaikan fase, jalankan: `npm run lint && npm run typecheck && npm run test && npm run build`.
 
-Tabel baru wajib ditambahkan ke matriks `scripts/rls-check.sql`; skrip gagal bila ada tabel yang belum tercakup. Deploy produksi: lihat `DEPLOY.md`.
+Tabel **dan view** baru wajib ditambahkan ke matriks `scripts/rls-check.sql` (termasuk kolom persona `creator`); skrip gagal bila ada yang belum tercakup. Deploy produksi: lihat `DEPLOY.md`.
 
 ## Catatan framework
 
@@ -63,3 +66,4 @@ Tabel baru wajib ditambahkan ke matriks `scripts/rls-check.sql`; skrip gagal bil
 - Tautan email Supabase (undangan, pemulihan) memakai templat `supabase/templates/*.html` → `/auth/callback?token_hash=…`; templat yang sama wajib dipasang di dashboard proyek hosted.
 - Server Action dibatasi 6 MB (`next.config.ts`); berkas besar (materi kampanye) diunggah langsung dari browser ke Storage, lalu action hanya mencatat path.
 - Aturan status kampanye dan penugasan ditegakkan dua kali: di action (pesan ramah) dan trigger database (`dbRuleMessage` di `lib/actions.ts` memetakan kode error trigger).
+- Satu templat undangan Supabase dipakai untuk anggota tim dan kreator, jadi teksnya netral.

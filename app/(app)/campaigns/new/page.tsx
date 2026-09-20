@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/page-header";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { listClientOptions } from "@/lib/data/campaigns";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CampaignForm } from "../campaign-form";
@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Buat kampanye" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function NewCampaignPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireSession();
+  await requireInternal();
   const params = await searchParams;
   const supabase = await createSupabaseServerClient();
   const clients = await listClientOptions(supabase);

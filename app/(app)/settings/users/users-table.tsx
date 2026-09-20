@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { UserRole } from "@/lib/auth/guards";
+import type { InternalRole } from "@/lib/auth/guards";
 import { formatDate } from "@/lib/format/date";
 import { setUserActiveAction, updateUserRoleAction } from "../actions";
 
@@ -21,7 +21,7 @@ type UserRow = {
   id: string;
   email: string;
   full_name: string;
-  role: UserRole;
+  role: InternalRole;
   is_active: boolean;
   created_at: string;
 };
@@ -37,7 +37,7 @@ export function UsersTable({
 }) {
   const [isPending, startTransition] = useTransition();
 
-  function changeRole(userId: string, role: UserRole) {
+  function changeRole(userId: string, role: InternalRole) {
     startTransition(async () => {
       const result = await updateUserRoleAction({ user_id: userId, role });
       if (result.status === "success") toast.success(result.message);
@@ -89,7 +89,9 @@ export function UsersTable({
                       aria-label={`Peran ${profile.email}`}
                       value={profile.role}
                       disabled={isPending}
-                      onChange={(event) => changeRole(profile.id, event.target.value as UserRole)}
+                      onChange={(event) =>
+                        changeRole(profile.id, event.target.value as InternalRole)
+                      }
                     >
                       <NativeSelectOption value="manager">Manager</NativeSelectOption>
                       <NativeSelectOption value="owner">Owner</NativeSelectOption>

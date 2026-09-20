@@ -246,9 +246,10 @@ otp_expiry = 3600
 # Uncomment to customize email template
 # Email links carry token_hash to the server-side callback so the session is
 # created in cookies (invite/recovery). Mirror these templates in the hosted
-# project dashboard before going live.
+# project dashboard before going live. One invite template serves both internal
+# members and creator portal accounts (M13), so the wording stays neutral.
 [auth.email.template.invite]
-subject = "Undangan bergabung ke tim kampanye"
+subject = "Undangan membuat akun"
 content_path = "./supabase/templates/invite.html"
 
 [auth.email.template.recovery]

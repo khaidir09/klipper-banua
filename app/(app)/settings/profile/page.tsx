@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { resolveTimezone } from "@/lib/format/timezone";
-import { ProfileForm } from "./profile-form";
+import { ProfileForm } from "@/components/forms/profile-form";
 
 export const metadata: Metadata = { title: "Profil saya" };
 
 export default async function ProfilePage() {
-  const { user, profile } = await requireSession();
+  const { user, profile } = await requireInternal();
 
   return (
     <Card className="max-w-xl">

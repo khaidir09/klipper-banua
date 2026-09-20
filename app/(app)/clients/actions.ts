@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { PG_FOREIGN_KEY_VIOLATION, fail, invalid, ok, type ActionResult } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
-import { requireRole, requireSession } from "@/lib/auth/guards";
+import { requireInternal, requireRole } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { clientContactSchema, clientSchema } from "@/lib/validation/clients";
 import { uuidField } from "@/lib/validation/common";
@@ -15,7 +15,7 @@ const contactIdSchema = z.object({ client_id: uuidField, contact_id: uuidField }
 
 /** FR-M2-01 */
 export async function createClientAction(values: unknown): Promise<ActionResult<{ id: string }>> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = clientSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
 
@@ -40,7 +40,7 @@ export async function createClientAction(values: unknown): Promise<ActionResult<
 }
 
 export async function updateClientAction(id: string, values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const idParsed = idSchema.safeParse({ id });
   if (!idParsed.success) return fail("ID klien tidak valid.");
   const parsed = clientSchema.safeParse(values);
@@ -104,7 +104,7 @@ export async function saveContactAction(
   contactId: string | null,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!uuidField.safeParse(clientId).success) return fail("ID klien tidak valid.");
   if (contactId && !uuidField.safeParse(contactId).success) return fail("ID kontak tidak valid.");
   const parsed = clientContactSchema.safeParse(values);
@@ -150,7 +150,7 @@ export async function saveContactAction(
 }
 
 export async function deleteContactAction(values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = contactIdSchema.safeParse(values);
   if (!parsed.success) return fail("ID tidak valid.");
 

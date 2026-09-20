@@ -1,14 +1,19 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { INTERNAL_ROLES } from "@/lib/auth/guards";
 import type { Database } from "@/types/database";
 
 export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 
-/** Every internal member, owners first. Visible to owners only through RLS. */
+/**
+ * Every internal member, owners first. Visible to owners only through RLS.
+ * Creator portal accounts are managed on the creator page, not here (M13).
+ */
 export async function listProfiles(supabase: SupabaseClient<Database>): Promise<ProfileRow[]> {
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
+    .in("role", INTERNAL_ROLES)
     .order("role", { ascending: true })
     .order("created_at", { ascending: true });
 

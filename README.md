@@ -4,8 +4,10 @@ Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kali
 bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
-Status: **Fase 8 — v1.1** selesai: tautan laporan baca-saja untuk klien (`/laporan/<token>`,
-dibuat dari tab Laporan kampanye) dan pengingat Telegram harian snapshot jatuh tempo lewat n8n
+Status: **Fase 9 — v2.0** selesai: portal kreator (`/portal`) dengan peran `creator`, undangan
+akun dari halaman kreator, dasbor penugasan, brief, materi, kode referal, dan skema honor.
+Fase 8 (v1.1): tautan laporan baca-saja untuk klien (`/laporan/<token>`, dibuat dari tab Laporan
+kampanye) dan pengingat Telegram harian snapshot jatuh tempo lewat n8n
 (`/api/reminders/due-snapshots`, workflow di `docs/n8n/`). Fase 0–7 (MVP pilot): autentikasi,
 pengguna, klien, kreator, kampanye, penugasan, tautan pelacakan, konten dan review, metrik dan
 dasbor, keuangan, laporan, waktu operasional, log aktivitas, anonimisasi, rate limit, data demo,
@@ -37,6 +39,7 @@ Nilai yang dipakai di `.env.local`:
 | `CLICK_IP_HASH_SALT`                           | string acak bebas, mis. hasil `openssl rand -hex 32`   |
 | `SEED_OWNER_EMAIL` / `SEED_OWNER_PASSWORD`     | akun owner yang akan dibuat                            |
 | `SEED_MANAGER_EMAIL` / `SEED_MANAGER_PASSWORD` | (opsional) akun manager untuk menguji RLS              |
+| `SEED_CREATOR_EMAIL` / `SEED_CREATOR_PASSWORD` | (opsional) akun portal kreator untuk data demo         |
 | `REMINDER_API_TOKEN`                           | (opsional) token n8n untuk pengingat, min. 32 karakter |
 
 Email lokal (undangan, lupa kata sandi) dapat dibaca di Mailpit: <http://127.0.0.1:55324>.
@@ -51,10 +54,11 @@ templat yang sama ke _Authentication → Email Templates_ di dashboard proyek Su
 ## Uji RLS dan aturan bisnis
 
 `npm run db:rls-check` menjalankan `scripts/rls-check.sql`: matriks SELECT/INSERT/UPDATE/DELETE
-untuk **setiap tabel dan bucket Storage** sebagai `owner`, `manager`, anggota nonaktif, dan `anon`,
-dibandingkan dengan hasil yang diharapkan (348 kasus). Skrip gagal (exit code bukan 0) bila ada
+untuk **setiap tabel, view, dan bucket Storage** sebagai `owner`, `manager`, anggota nonaktif,
+akun portal `creator`, dan `anon`, dibandingkan dengan hasil yang diharapkan (490 kasus). Skrip gagal (exit code bukan 0) bila ada
 yang tidak cocok atau bila ada tabel `public` tanpa RLS, tanpa kebijakan, atau belum masuk
-matriks, sehingga tabel baru tidak bisa lolos tanpa diuji. Juga memeriksa bahwa manager hanya
+matriks (view wajib masuk matriks juga), sehingga tabel atau view baru tidak bisa lolos tanpa
+diuji. Juga memeriksa bahwa manager hanya
 melihat nomor rekening tersamar.
 
 `npm run db:guards-check` menjalankan `scripts/guards-check.sql`: aktivasi tanpa URL tujuan/kreator,
@@ -70,17 +74,33 @@ durasi di luar 1–1.440 menit, memindahkan catatan ke pengguna lain), serta ano
 (oleh manager, mengubah atau menambah rekening setelah dianonimkan, anonimisasi ganda) —
 masing-masing harus ditolak database.
 
+## Portal kreator (v2.0)
+
+Kreator memakai halaman login yang sama lalu masuk ke `/portal`: daftar penugasan, brief lengkap,
+materi kampanye, kode referal dan tautan pelacakan, serta skema honor yang berlaku baginya.
+Undangan dikirim dari tab **Portal** di halaman kreator (status wajib terverifikasi atau aktif);
+`owner` dapat mencabut atau mengaktifkan kembali aksesnya.
+
+Peran `creator` tidak punya kebijakan RLS atas tabel mana pun. Semua bacaan portal lewat view
+`creator_portal_profile`, `creator_portal_assignments`, dan `creator_portal_assets` yang memfilter
+`current_creator_id()` dan hanya memuat kolom aman — harga paket, target, margin, data klien, dan
+data kreator lain tidak pernah keluar. `public.is_active_member()` sejak Fase 9 berarti anggota
+internal saja, sehingga seluruh kebijakan lama otomatis menolak akun portal.
+
 ## Data demo dan uji E2E
 
 `npm run seed:demo` mengisi Universitas Demo Borneo (fiktif), 8 kreator dengan status beragam,
-dan kampanye draft `DEMO-PMB-2026`, sehingga alur PRD Bagian 5.2 bisa dilatih dari awal. Skrip
-menolak URL Supabase non-lokal. `npm run seed:demo:reset` mengembalikan kampanye demo ke draft.
+dan kampanye draft `DEMO-PMB-2026`, sehingga alur PRD Bagian 5.2 bisa dilatih dari awal. Bila
+`SEED_CREATOR_EMAIL`/`SEED_CREATOR_PASSWORD` diisi, kreator pertama juga mendapat akun portal.
+Skrip menolak URL Supabase non-lokal. `npm run seed:demo:reset` mengembalikan kampanye demo ke draft.
 
 `npm run test:e2e` (Playwright, memakai Chrome terpasang) menjalankan alur kritis sebagai owner:
 tugaskan kreator → aktifkan → draf, revisi, setujui → tayang → snapshot dengan bukti, laporan
 pendaftar, klik tautan → selesaikan → hitung, setujui, bayar honor → invoice lunas → laporan
-cetak A4 dan CSV → log aktivitas. Lalu memeriksa batas akses manager. Data demo di-reset otomatis
-sebelum setiap run. Butuh `npm run db:start` dan akun dari `seed:owner` (termasuk manager).
+cetak A4 dan CSV → log aktivitas. Lalu memeriksa batas akses manager, dan portal kreator (brief
+miliknya sendiri, tanpa harga paket, tanpa akses ke rute internal). Data demo di-reset otomatis
+sebelum setiap run. Butuh `npm run db:start` dan akun dari `seed:owner` (termasuk manager) serta
+`seed:demo` (akun portal kreator).
 
 ## Laporan dan ekspor
 
@@ -123,9 +143,10 @@ tidak pernah dibaca. Slug tak dikenal atau kampanye dibatalkan → 404. Rute ini
 
 ```
 app/(auth)/     halaman masuk, lupa & atur kata sandi
-app/(app)/      halaman yang wajib login: dashboard, clients, creators, settings
+app/(app)/      halaman internal: dashboard, clients, creators, campaigns, settings
+app/(portal)/   portal kreator (v2.0): beranda, penugasan, profil
 components/     ui (shadcn), layout, tables (TanStack), forms, creators
-lib/data/       query daftar/detail per modul (server-only)
+lib/data/       query daftar/detail per modul (server-only; portal.ts = view portal kreator)
 lib/activity/   penulisan log aktivitas (M11)
 lib/calculations/ fungsi murni honor & metrik (+ unit test)
 lib/referral/   generator kode referal & slug

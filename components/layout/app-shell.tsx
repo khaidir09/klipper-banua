@@ -16,21 +16,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { visibleNavItems, type NavItem } from "@/components/layout/nav-items";
-import type { UserRole } from "@/lib/auth/guards";
+import {
+  PORTAL_NAV_ITEMS,
+  ROLE_LABELS,
+  visibleNavItems,
+  type NavItem,
+} from "@/components/layout/nav-items";
+import type { InternalRole, UserRole } from "@/lib/auth/guards";
 
+/**
+ * Shell for both signed-in areas: the internal app and the creator portal
+ * (M13). `area` picks the menu, so the portal can never render an internal
+ * entry. Menu items hold icon components, which cannot cross the server /
+ * client boundary as props: the list is built here instead.
+ */
 type AppShellProps = {
   appName: string;
   fullName: string;
   email: string;
   role: UserRole;
+  area: "app" | "portal";
   timezoneLabel: string;
   children: React.ReactNode;
-};
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  owner: "Owner",
-  manager: "Manager",
 };
 
 function initials(name: string, email: string) {
@@ -42,12 +49,12 @@ function initials(name: string, email: string) {
     .join("");
 }
 
-function NavLinks({ role, onNavigate }: { role: UserRole; onNavigate?: () => void }) {
+function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
     <nav className="flex flex-col gap-1" aria-label="Navigasi utama">
-      {visibleNavItems(role).map((item: NavItem) => {
+      {items.map((item: NavItem) => {
         const Icon = item.icon;
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
@@ -78,10 +85,13 @@ export function AppShell({
   fullName,
   email,
   role,
+  area,
   timezoneLabel,
   children,
 }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const navItems =
+    area === "portal" ? PORTAL_NAV_ITEMS : visibleNavItems(role as InternalRole);
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">
@@ -91,7 +101,7 @@ export function AppShell({
           <p className="text-xs text-muted-foreground">Zona waktu {timezoneLabel}</p>
         </div>
         <div className="flex-1 overflow-y-auto p-3">
-          <NavLinks role={role} />
+          <NavLinks items={navItems} />
         </div>
       </aside>
 
@@ -108,7 +118,7 @@ export function AppShell({
                 <SheetTitle>{appName}</SheetTitle>
               </SheetHeader>
               <div className="p-3">
-                <NavLinks role={role} onNavigate={() => setMobileNavOpen(false)} />
+                <NavLinks items={navItems} onNavigate={() => setMobileNavOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>

@@ -7,8 +7,14 @@ export const DEMO_CAMPAIGN_ID = "de300000-0000-4000-8000-0000000000c1";
 export const demoCreatorId = (n: number) => `de300000-0000-4000-8000-0000000000a${n}`;
 export const PROOF_FILE = "scripts/assets/demo-audience-proof.png";
 
-export function account(role: "owner" | "manager") {
-  const prefix = role === "owner" ? "SEED_OWNER" : "SEED_MANAGER";
+const ACCOUNT_PREFIXES = {
+  owner: "SEED_OWNER",
+  manager: "SEED_MANAGER",
+  creator: "SEED_CREATOR",
+} as const;
+
+export function account(role: keyof typeof ACCOUNT_PREFIXES) {
+  const prefix = ACCOUNT_PREFIXES[role];
   const email = process.env[`${prefix}_EMAIL`];
   const password = process.env[`${prefix}_PASSWORD`];
   if (!email || !password) throw new Error(`${prefix}_EMAIL/PASSWORD missing in .env.local`);

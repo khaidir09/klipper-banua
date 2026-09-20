@@ -10,7 +10,7 @@ import {
   type ActionResult,
 } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { viewsWarnings, type ViewsWarning } from "@/lib/calculations/campaign-metrics";
 import { METRIC_PROOF_BUCKET } from "@/lib/constants/metrics";
 import { zonedInputToUtc } from "@/lib/format/date";
@@ -49,7 +49,7 @@ export async function addSnapshotAction(
   campaignId: string,
   values: unknown,
 ): Promise<ActionResult<{ warnings: ViewsWarning[] }>> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId)) return fail("ID kampanye tidak valid.");
   const parsed = snapshotSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -128,7 +128,7 @@ export async function deleteSnapshotAction(
   campaignId: string,
   snapshotId: string,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId, snapshotId)) return fail("ID tidak valid.");
 
   const supabase = await createSupabaseServerClient();
@@ -168,7 +168,7 @@ export async function addRegistrantReportAction(
   campaignId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId)) return fail("ID kampanye tidak valid.");
   const parsed = registrantReportSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -206,7 +206,7 @@ export async function deleteRegistrantReportAction(
   campaignId: string,
   reportId: string,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId, reportId)) return fail("ID tidak valid.");
 
   const supabase = await createSupabaseServerClient();

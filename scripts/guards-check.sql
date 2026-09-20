@@ -340,3 +340,74 @@ update public.campaigns set status = 'dibatalkan' where id='99999999-0000-0000-0
 select public.open_report_share_link(repeat('b',64)) as revoked, public.open_report_share_link(repeat('e',64)) as cancelled;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 9 (v2.0): creator portal access (PRD M13)
+-- ---------------------------------------------------------------------------
+begin;
+create temporary table p9_roles on commit drop as
+select
+  (select id from public.profiles where role = 'owner' and is_active limit 1) as owner_id,
+  (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id,
+  '88888888-0000-0000-0000-0000000000f1'::uuid as creator_user_id;
+
+-- The account is created the way an invitation creates it: `handle_new_user`
+-- turns the auth user into a profile with the role from its metadata.
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values (
+  '88888888-0000-0000-0000-0000000000f1',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated',
+  'authenticated',
+  'guard.portal@example.test',
+  '{}'::jsonb,
+  jsonb_build_object('full_name', 'Guard Portal Creator', 'role', 'creator'),
+  now(),
+  now()
+);
+insert into public.creators (id, full_name, birth_date, province, status, profile_id) values
+ ('88888888-0000-0000-0000-0000000000a1','Portal C','1995-01-01','Kalimantan Selatan','terverifikasi','88888888-0000-0000-0000-0000000000f1'),
+ ('88888888-0000-0000-0000-0000000000a2','Other C','1995-01-01','Kalimantan Selatan','terverifikasi',null);
+insert into public.clients (id, name, type, province) values ('88888888-0000-0000-0000-000000000001','Portal Client','kampus_swasta','Kalimantan Selatan');
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, package_price, landing_url) values
+ ('88888888-0000-0000-0000-0000000000c1','88888888-0000-0000-0000-000000000001','PORTAL-2026-01','Portal','awareness','2026-10-01','2026-10-31','aktif', 9000000, 'https://pmb.example.ac.id/daftar'),
+ ('88888888-0000-0000-0000-0000000000c2','88888888-0000-0000-0000-000000000001','PORTAL-2026-02','Draft','awareness','2026-10-01','2026-10-31','draft', 5000000, null);
+insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values
+ ('88888888-0000-0000-0000-0000000000b1','88888888-0000-0000-0000-0000000000c1','88888888-0000-0000-0000-0000000000a1','PRTLAA','portal-a'),
+ ('88888888-0000-0000-0000-0000000000b2','88888888-0000-0000-0000-0000000000c1','88888888-0000-0000-0000-0000000000a2','PRTLBB','portal-b'),
+ ('88888888-0000-0000-0000-0000000000b3','88888888-0000-0000-0000-0000000000c2','88888888-0000-0000-0000-0000000000a1','PRTLCC','portal-c');
+
+select set_config('request.jwt.claims', json_build_object('sub',(select creator_user_id from p9_roles),'role','authenticated')::text, true) is not null as creator_claims;
+set local role authenticated;
+\echo 'P9-1. is_active_member() and current_creator_id() for a creator (expect f, then the creator id)'
+select public.is_active_member() as internal_member, public.current_creator_id() = '88888888-0000-0000-0000-0000000000a1' as own_creator;
+\echo 'P9-2. the portal only shows the creator''s own assignment on a launched campaign (expect 1 row: PORTAL-2026-01 / PRTLAA)'
+select campaign_code, referral_code, client_name from public.creator_portal_assignments;
+\echo 'P9-3. the view carries no package price (expect column "package_price" does not exist)'
+savepoint a; select package_price from public.creator_portal_assignments; rollback to savepoint a;
+\echo 'P9-4. internal tables stay empty for a creator (expect 0 / 0 / 0 / 0)'
+select
+  (select count(*) from public.campaigns) as campaigns,
+  (select count(*) from public.creators) as creators,
+  (select count(*) from public.creator_bank_accounts) as bank_accounts,
+  (select count(*) from public.payouts) as payouts;
+\echo 'P9-5. creator grants themselves portal access (expect UPDATE 0: no policy on creators)'
+update public.creators set profile_id = '88888888-0000-0000-0000-0000000000f1' where id='88888888-0000-0000-0000-0000000000a2';
+reset role;
+
+\echo 'P9-6. the team links an account (expect UPDATE 1)'
+select set_config('request.jwt.claims', json_build_object('sub',(select manager_id from p9_roles),'role','authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+update public.creators set portal_invited_at = now() where id='88888888-0000-0000-0000-0000000000a1';
+reset role;
+
+\echo 'P9-7. anonymizing removes the portal account (expect profile_id null and the auth user gone)'
+select set_config('request.jwt.claims', json_build_object('sub',(select owner_id from p9_roles),'role','authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+select public.anonymize_creator('88888888-0000-0000-0000-0000000000a1') is not null as anonymized;
+reset role;
+select
+  (select profile_id is null from public.creators where id='88888888-0000-0000-0000-0000000000a1') as unlinked,
+  (select count(*) from public.profiles where id='88888888-0000-0000-0000-0000000000f1') as profile_rows;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;

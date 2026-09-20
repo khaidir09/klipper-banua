@@ -31,7 +31,7 @@ export default defineConfig({
     { name: "setup", testMatch: /auth\.setup\.ts/ },
     {
       name: "owner",
-      testMatch: /critical-flow\.spec\.ts/,
+      testMatch: /(critical-flow|portal-access)\.spec\.ts/,
       dependencies: ["setup"],
       use: { storageState: "e2e/.auth/owner.json" },
     },
@@ -41,6 +41,13 @@ export default defineConfig({
       // Runs after the owner flow so it sees a closed campaign with payouts.
       dependencies: ["owner"],
       use: { storageState: "e2e/.auth/manager.json" },
+    },
+    {
+      name: "creator",
+      testMatch: /portal\.spec\.ts/,
+      // Runs after the owner flow so the demo campaign is live with a brief.
+      dependencies: ["owner"],
+      use: { storageState: "e2e/.auth/creator.json" },
     },
   ],
   webServer: {

@@ -11,10 +11,15 @@ import { Button } from "@/components/ui/button";
 import { CreatorCampaignHistory } from "@/components/campaigns/campaign-history";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { CREATOR_TIER_LABELS, nicheLabel } from "@/lib/constants/creators";
 import { listCreatorAssignments } from "@/lib/data/campaigns";
-import { getCreator, getMaskedBankAccount, signProofUrl } from "@/lib/data/creators";
+import {
+  getCreator,
+  getMaskedBankAccount,
+  getPortalAccount,
+  signProofUrl,
+} from "@/lib/data/creators";
 import { formatCalendarDate, formatDateTime } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { verificationBlockers } from "@/lib/validation/creators";
@@ -22,13 +27,14 @@ import { formatWhatsapp, whatsappLink } from "@/lib/validation/phone";
 import { AnonymizeCreatorButton } from "./anonymize-creator-button";
 import { BankAccountPanel } from "./bank-account-panel";
 import { DeleteCreatorButton } from "./delete-creator-button";
+import { PortalAccess } from "./portal-access";
 import { SocialAccounts } from "./social-accounts";
 import { TermsVerification } from "./terms-verification";
 
 export const metadata: Metadata = { title: "Detail kreator" };
 
 export default async function CreatorDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { profile } = await requireSession();
+  const { profile } = await requireInternal();
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
   const creator = await getCreator(supabase, id);
@@ -38,10 +44,11 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
   const anonymized = creator.anonymized_at !== null;
   const tz = profile.timezone;
 
-  const [proofUrls, maskedBank, history] = await Promise.all([
+  const [proofUrls, maskedBank, history, portalAccount] = await Promise.all([
     Promise.all(creator.social_accounts.map((a) => signProofUrl(supabase, a.audience_proof_path))),
     getMaskedBankAccount(supabase, id),
     listCreatorAssignments(supabase, id),
+    getPortalAccount(supabase, creator.profile_id),
   ]);
 
   const blockers = verificationBlockers({
@@ -110,6 +117,7 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
               </TabsTrigger>
               <TabsTrigger value="verifikasi">Persetujuan & verifikasi</TabsTrigger>
               <TabsTrigger value="rekening">Rekening</TabsTrigger>
+              <TabsTrigger value="portal">Portal</TabsTrigger>
             </>
           )}
           <TabsTrigger value="riwayat">Riwayat</TabsTrigger>
@@ -178,6 +186,18 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
 
         <TabsContent value="rekening">
           <BankAccountPanel creatorId={id} isOwner={isOwner} masked={maskedBank} />
+        </TabsContent>
+
+        <TabsContent value="portal">
+          <PortalAccess
+            creatorId={id}
+            creatorEmail={creator.email}
+            status={creator.status}
+            account={portalAccount}
+            portalInvitedAt={creator.portal_invited_at}
+            isOwner={isOwner}
+            timezone={tz}
+          />
         </TabsContent>
 
         <TabsContent value="riwayat">

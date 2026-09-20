@@ -1,19 +1,22 @@
 import {
   Building2,
+  ClipboardList,
+  Home,
   LayoutDashboard,
   Megaphone,
   ScrollText,
   Settings,
+  User,
   Users,
   type LucideIcon,
 } from "lucide-react";
-import type { UserRole } from "@/lib/auth/guards";
+import type { InternalRole, UserRole } from "@/lib/auth/guards";
 
 export type NavItem = {
   label: string;
   href: string;
   icon: LucideIcon;
-  roles?: UserRole[];
+  roles?: InternalRole[];
 };
 
 export const NAV_ITEMS: NavItem[] = [
@@ -25,6 +28,19 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Pengaturan", href: "/settings", icon: Settings },
 ];
 
-export function visibleNavItems(role: UserRole): NavItem[] {
+/** Creator portal (M13). Creators never see an internal menu entry. */
+export const PORTAL_NAV_ITEMS: NavItem[] = [
+  { label: "Beranda", href: "/portal", icon: Home },
+  { label: "Penugasan", href: "/portal/penugasan", icon: ClipboardList },
+  { label: "Profil", href: "/portal/profil", icon: User },
+];
+
+export function visibleNavItems(role: InternalRole): NavItem[] {
   return NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role));
 }
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  owner: "Owner",
+  manager: "Manager",
+  creator: "Kreator",
+};

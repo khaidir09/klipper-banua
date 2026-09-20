@@ -7,7 +7,7 @@ import { ListPagination } from "@/components/tables/list-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { CLIENT_TYPES, CLIENT_TYPE_LABELS } from "@/lib/constants/clients";
 import { listClients } from "@/lib/data/clients";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -19,7 +19,7 @@ export const metadata: Metadata = { title: "Klien" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function ClientsPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireSession();
+  await requireInternal();
   const raw = await searchParams;
   const query = clientListQuerySchema.parse(raw);
 

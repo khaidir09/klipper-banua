@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/constants/creators";
 import { CHECKPOINT_LABELS } from "@/lib/constants/metrics";
 import { getDashboard } from "@/lib/data/dashboard";
@@ -104,7 +104,7 @@ function Row({ href, children }: { href: string; children: React.ReactNode }) {
 }
 
 export default async function DashboardPage() {
-  const { profile } = await requireSession();
+  const { profile } = await requireInternal();
   const tz = profile.timezone;
   const supabase = await createSupabaseServerClient();
   const data = await getDashboard(supabase, new Date(), tz);

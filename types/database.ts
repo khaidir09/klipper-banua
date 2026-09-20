@@ -197,6 +197,13 @@ export type Database = {
             foreignKeyName: "campaign_creators_creator_id_fkey"
             columns: ["creator_id"]
             isOneToOne: false
+            referencedRelation: "creator_portal_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
             referencedRelation: "creators"
             referencedColumns: ["id"]
           },
@@ -567,6 +574,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "contents_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_assignments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "contents_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -604,6 +618,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "creator_bank_accounts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "creator_portal_profile"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "creator_bank_accounts_creator_id_fkey"
             columns: ["creator_id"]
@@ -661,6 +682,13 @@ export type Database = {
             foreignKeyName: "creator_social_accounts_creator_id_fkey"
             columns: ["creator_id"]
             isOneToOne: false
+            referencedRelation: "creator_portal_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_social_accounts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
             referencedRelation: "creators"
             referencedColumns: ["id"]
           },
@@ -679,6 +707,8 @@ export type Database = {
           niches: string[]
           notes: string
           phone_wa: string
+          portal_invited_at: string | null
+          profile_id: string | null
           province: string
           stage_name: string
           status: Database["public"]["Enums"]["creator_status"]
@@ -701,6 +731,8 @@ export type Database = {
           niches?: string[]
           notes?: string
           phone_wa?: string
+          portal_invited_at?: string | null
+          profile_id?: string | null
           province?: string
           stage_name?: string
           status?: Database["public"]["Enums"]["creator_status"]
@@ -723,6 +755,8 @@ export type Database = {
           niches?: string[]
           notes?: string
           phone_wa?: string
+          portal_invited_at?: string | null
+          profile_id?: string | null
           province?: string
           stage_name?: string
           status?: Database["public"]["Enums"]["creator_status"]
@@ -738,6 +772,13 @@ export type Database = {
             foreignKeyName: "creators_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creators_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -787,6 +828,13 @@ export type Database = {
             columns: ["campaign_creator_id"]
             isOneToOne: false
             referencedRelation: "campaign_creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "link_clicks_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_assignments"
             referencedColumns: ["id"]
           },
         ]
@@ -982,6 +1030,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "payouts_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: true
+            referencedRelation: "creator_portal_assignments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payouts_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -1075,6 +1130,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "registrant_reports_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_assignments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "registrant_reports_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
@@ -1153,7 +1215,132 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      creator_portal_assets: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          external_url: string | null
+          file_path: string | null
+          id: string | null
+          notes: string | null
+          title: string | null
+          type: Database["public"]["Enums"]["asset_type"] | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          external_url?: string | null
+          file_path?: string | null
+          id?: string | null
+          notes?: string | null
+          title?: string | null
+          type?: Database["public"]["Enums"]["asset_type"] | null
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          external_url?: string | null
+          file_path?: string | null
+          id?: string | null
+          notes?: string | null
+          title?: string | null
+          type?: Database["public"]["Enums"]["asset_type"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_portal_assignments: {
+        Row: {
+          base_fee: number | null
+          bonus_per_1000_views: number | null
+          bonus_per_registrant: number | null
+          brief: string | null
+          campaign_code: string | null
+          campaign_id: string | null
+          campaign_name: string | null
+          campaign_objective:
+            | Database["public"]["Enums"]["campaign_objective"]
+            | null
+          campaign_status: Database["public"]["Enums"]["campaign_status"] | null
+          client_name: string | null
+          contents_committed: number | null
+          end_date: string | null
+          hashtags: string[] | null
+          id: string | null
+          joined_at: string | null
+          landing_url: string | null
+          min_live_days: number | null
+          must_do: string[] | null
+          must_not: string[] | null
+          paid_label_required: boolean | null
+          referral_code: string | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["assignment_status"] | null
+          tracking_slug: string | null
+          views_bonus_cap: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_portal_profile: {
+        Row: {
+          city: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          phone_wa: string | null
+          portal_invited_at: string | null
+          province: string | null
+          stage_name: string | null
+          status: Database["public"]["Enums"]["creator_status"] | null
+          terms_agreed_at: string | null
+          terms_version: string | null
+          tier: Database["public"]["Enums"]["creator_tier"] | null
+        }
+        Insert: {
+          city?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          phone_wa?: string | null
+          portal_invited_at?: string | null
+          province?: string | null
+          stage_name?: string | null
+          status?: Database["public"]["Enums"]["creator_status"] | null
+          terms_agreed_at?: string | null
+          terms_version?: string | null
+          tier?: Database["public"]["Enums"]["creator_tier"] | null
+        }
+        Update: {
+          city?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          phone_wa?: string | null
+          portal_invited_at?: string | null
+          province?: string | null
+          stage_name?: string | null
+          status?: Database["public"]["Enums"]["creator_status"] | null
+          terms_agreed_at?: string | null
+          terms_version?: string | null
+          tier?: Database["public"]["Enums"]["creator_tier"] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       anonymize_creator: { Args: { target_id: string }; Returns: string[] }
@@ -1165,6 +1352,11 @@ export type Database = {
         Args: { p_campaign_creator_id: string }
         Returns: string
       }
+      creator_assigned_to_campaign: {
+        Args: { target_campaign_id: string }
+        Returns: boolean
+      }
+      current_creator_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
@@ -1219,7 +1411,7 @@ export type Database = {
       review_decision: "disetujui" | "revisi" | "ditolak"
       review_status: "menunggu_review" | "disetujui" | "revisi" | "ditolak"
       social_platform: "tiktok" | "instagram" | "youtube" | "facebook"
-      user_role: "owner" | "manager"
+      user_role: "owner" | "manager" | "creator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1388,7 +1580,7 @@ export const Constants = {
       review_decision: ["disetujui", "revisi", "ditolak"],
       review_status: ["menunggu_review", "disetujui", "revisi", "ditolak"],
       social_platform: ["tiktok", "instagram", "youtube", "facebook"],
-      user_role: ["owner", "manager"],
+      user_role: ["owner", "manager", "creator"],
     },
   },
 } as const

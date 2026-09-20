@@ -6,7 +6,7 @@ import { ListPagination } from "@/components/tables/list-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { CAMPAIGN_STATUSES, CAMPAIGN_STATUS_LABELS } from "@/lib/constants/campaigns";
 import { listCampaigns, listClientOptions } from "@/lib/data/campaigns";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: "Kampanye" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function CampaignsPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireSession();
+  await requireInternal();
   const query = campaignListQuerySchema.parse(await searchParams);
 
   const supabase = await createSupabaseServerClient();

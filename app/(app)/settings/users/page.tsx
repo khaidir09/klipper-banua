@@ -16,7 +16,8 @@ export default async function UsersPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">
-          Akun hanya dibuat lewat undangan. Penerima memilih kata sandi sendiri dari tautan email.
+          Akun tim hanya dibuat lewat undangan. Penerima memilih kata sandi sendiri dari tautan
+          email. Akun portal kreator dikelola dari halaman kreator masing-masing.
         </p>
         <InviteUserDialog />
       </div>
@@ -25,7 +26,7 @@ export default async function UsersPage() {
           id: p.id,
           email: p.email,
           full_name: p.full_name,
-          role: p.role,
+          role: p.role as "owner" | "manager",
           is_active: p.is_active,
           created_at: p.created_at,
         }))}

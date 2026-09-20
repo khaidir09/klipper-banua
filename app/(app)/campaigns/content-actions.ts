@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { dbRuleMessage, fail, invalid, ok, type ActionResult } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { CONTENT_DRAFT_BUCKET } from "@/lib/constants/contents";
 import {
   canDeleteContent,
@@ -64,7 +64,7 @@ export async function createContentAction(
   campaignId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId)) return fail("ID kampanye tidak valid.");
   const parsed = contentCreateSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -114,7 +114,7 @@ export async function updateDraftAction(
   contentId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId, contentId)) return fail("ID tidak valid.");
   const parsed = draftUpdateSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -180,7 +180,7 @@ export async function reviewContentAction(
   contentId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId, contentId)) return fail("ID tidak valid.");
   const parsed = reviewSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -241,7 +241,7 @@ export async function markPostedAction(
   contentId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId, contentId)) return fail("ID tidak valid.");
   const parsed = postedSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -281,7 +281,7 @@ export async function markRemovedAction(
   contentId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId, contentId)) return fail("ID tidak valid.");
   const parsed = removedSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -325,7 +325,7 @@ export async function deleteContentAction(
   campaignId: string,
   contentId: string,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId, contentId)) return fail("ID tidak valid.");
 
   const supabase = await createSupabaseServerClient();

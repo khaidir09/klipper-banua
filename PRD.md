@@ -2,11 +2,11 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi              | 0.2 (MVP rilis pilot; tambahan v1.1: tautan laporan klien dan pengingat Telegram)           |
-| Tanggal            | 17 September 2026                                                                           |
-| Status             | Siap dipakai untuk memulai pengembangan Fase 0–2; bagian lain direvisi setelah temuan pilot |
+| Versi              | 0.3 (MVP rilis pilot; v1.1: tautan laporan klien dan pengingat Telegram; v2.0: portal kreator) |
+| Tanggal            | 20 September 2026                                                                           |
+| Status             | Fase 0–8 selesai; v2.0 (portal kreator) sedang dikerjakan di Fase 9–10                      |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
-| Pengguna versi ini | Tim internal saja (admin)                                                                   |
+| Pengguna versi ini | Tim internal (`owner`, `manager`); sejak v2.0 kreator memakai portal terbatas                |
 
 ---
 
@@ -76,9 +76,11 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 | --------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `owner`   | Founder / direktur | Semua fitur, termasuk kelola pengguna internal, data rekening kreator, persetujuan dan status pembayaran honor                                                                               |
 | `manager` | Pengelola kampanye | Semua fitur operasional (klien, kreator, kampanye, konten, metrik, laporan). **Tidak bisa** melihat nomor rekening lengkap (tampil tersamar), mengelola pengguna, atau menyetujui pembayaran |
+| `creator` | Kreator mitra _(v2.0)_ | Hanya portal kreator di `/portal`, hanya data penugasannya sendiri. **Tidak punya akses** ke aplikasi internal, data klien, kreator lain, harga paket, margin, atau log aktivitas |
 
-- Pendaftaran publik **dinonaktifkan**. Akun hanya dibuat lewat undangan oleh `owner`.
+- Pendaftaran publik **dinonaktifkan**. Akun tim dibuat lewat undangan oleh `owner`; akun kreator lewat undangan dari halaman kreator (v2.0).
 - Pengguna yang dinonaktifkan (`is_active = false`) tidak bisa mengakses data apa pun.
+- Peran `creator` bukan anggota internal: setiap pemeriksaan "anggota internal" di database (`is_active_member()`) menolaknya.
 
 ---
 
@@ -100,10 +102,11 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 | M10  | Dasbor dan pengingat                                | Wajib         |
 | M11  | Log aktivitas (audit)                               | Wajib         |
 | M12  | Catatan waktu operasional                           | Sebaiknya ada |
+| M13  | Portal kreator (akses, brief, kiriman, honor)       | v2.0          |
 
 ### 4.2 Di luar cakupan (JANGAN dibangun di MVP)
 
-- Login dan portal untuk kreator maupun klien.
+- Login dan portal untuk klien. Portal **kreator** masuk cakupan sejak v2.0 (M13).
 - Marketplace terbuka (kreator melamar kampanye sendiri).
 - Payment gateway, top-up saldo, atau transfer honor otomatis.
 - Integrasi API TikTok, Instagram, YouTube, atau Facebook untuk menarik metrik otomatis.
@@ -256,6 +259,30 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 - **FR-M12-01** Pengguna mencatat waktu kerja per kampanye: aktivitas (`review`, `rekap_metrik`, `koordinasi_kreator`, `koordinasi_klien`, `pembayaran`, `laporan`, `lainnya`), durasi (menit), tanggal, catatan.
 - **FR-M12-02** Rekap total jam per aktivitas per kampanye, untuk menentukan fitur yang paling perlu diotomasi berikutnya.
 
+### M13 — Portal Kreator _(v2.0)_
+
+Portal memindahkan pekerjaan input yang sekarang dikerjakan tim lewat WhatsApp kepada kreator. **Keputusan tetap di tim**: review konten, verifikasi metrik, dan persetujuan honor tidak pernah dilakukan dari portal.
+
+**Fase 9 — akses dan brief**
+
+- **FR-M13-01** `owner` atau `manager` mengundang kreator ke portal dari halaman detail kreator. Email kreator wajib terisi. Undangan memakai Supabase Auth (`invite`) dan tercatat di log aktivitas. Undangan dapat dikirim ulang.
+- **FR-M13-02** Kreator login di halaman login yang sama, lalu diarahkan ke `/portal`. Kreator tidak dapat membuka satu pun rute internal; anggota internal yang membuka `/portal` diarahkan kembali ke `/dashboard`.
+- **FR-M13-03** Dasbor portal: daftar penugasan kreator tersebut beserta status penugasan, status kampanye, periode, dan jumlah konten yang disepakati.
+- **FR-M13-04** Halaman penugasan menampilkan: brief kampanye (isi brief, wajib dilakukan, larangan, hashtag, kewajiban label berbayar), materi kampanye (unduh lewat signed URL), kode referal dan tautan pelacakan `/r/<slug>` yang dapat disalin, skema honor yang berlaku baginya (honor dasar, bonus per 1.000 views, bonus per pendaftar, batas bonus views), serta minimal hari tayang.
+- **FR-M13-08** `owner` dapat mencabut atau mengaktifkan kembali akses portal seorang kreator (`profiles.is_active`). Akses yang dicabut langsung memutus sesi berikutnya.
+
+**Fase 10 — kiriman kreator**
+
+- **FR-M13-05** Kreator mengirim draf konten (tautan atau berkas + draf caption) untuk penugasannya; draf masuk sebagai `contents` berstatus `menunggu_review`. Kreator melihat keputusan review dan catatan revisi, lalu dapat mengirim draf perbaikan.
+- **FR-M13-06** Kreator mengunggah bukti metrik (checkpoint, waktu pengambilan, views, likes, komentar, share, simpan, tangkapan layar wajib) sebagai **usulan**. Tim memverifikasi (terima/tolak dengan alasan); hanya usulan yang diterima menjadi `metric_snapshots` resmi. Angka yang memengaruhi honor tidak pernah masuk tanpa verifikasi tim.
+- **FR-M13-07** Kreator melihat rincian honornya sendiri: honor dasar, bonus views, bonus pendaftar, penyesuaian beserta alasannya, total, dan status (`draf` ditampilkan sebagai "sedang dihitung", `disetujui`, `dibayar` beserta tanggal bayar). **Bukti transfer tetap hanya untuk `owner`.**
+
+**Aturan keamanan M13 (berlaku untuk kedua fase)**
+
+- Kreator tidak pernah diberi kebijakan RLS atas tabel dasar. Seluruh bacaan portal lewat view `creator_portal_*` yang memfilter kreator yang sedang login dan hanya memuat kolom yang aman.
+- Harga paket, target kampanye, margin, data klien, data kreator lain, catatan internal, dan rekening bank tidak pernah keluar lewat portal.
+- Setiap tulisan dari portal lewat Server Action yang memvalidasi Zod, memeriksa kepemilikan penugasan di server, lalu ditegakkan ulang oleh RLS dan trigger database.
+
 ---
 
 ## 7. Model Data
@@ -264,10 +291,10 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 
 | Tabel                     | Kolom utama                                                                                                                                                                                                                                                                                                                                                                                                    | Catatan                                                                            |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `profiles`                | `id` (= `auth.users.id`), `full_name`, `role` (`owner`/`manager`), `is_active`                                                                                                                                                                                                                                                                                                                                 | Dibuat saat undangan diterima                                                      |
+| `profiles`                | `id` (= `auth.users.id`), `full_name`, `email`, `role` (`owner`/`manager`/`creator`), `is_active`, `timezone`                                                                                                                                                                                                                                                                                                  | Dibuat saat undangan diterima. `creator` = akun portal (v2.0), bukan anggota internal |
 | `clients`                 | `name`, `type`, `city`, `province`, `address`, `notes`                                                                                                                                                                                                                                                                                                                                                         |                                                                                    |
 | `client_contacts`         | `client_id`, `name`, `position`, `phone_wa`, `email`, `is_primary`                                                                                                                                                                                                                                                                                                                                             |                                                                                    |
-| `creators`                | `full_name`, `stage_name`, `phone_wa`, `email`, `city`, `province`, `birth_date`, `niches text[]`, `tier`, `status`, `terms_version`, `terms_agreed_at`, `verified_at`, `verified_by`, `notes`                                                                                                                                                                                                                 | Constraint usia ≥ 18 divalidasi di aplikasi                                        |
+| `creators`                | `full_name`, `stage_name`, `phone_wa`, `email`, `city`, `province`, `birth_date`, `niches text[]`, `tier`, `status`, `terms_version`, `terms_agreed_at`, `verified_at`, `verified_by`, `notes`, `profile_id`, `portal_invited_at`                                                                                                                                                                                                            | Usia ≥ 18 divalidasi di aplikasi. `profile_id` (unik) = akun portal v2.0           |
 | `creator_bank_accounts`   | `creator_id` (unik), `bank_name`, `account_number`, `account_holder`                                                                                                                                                                                                                                                                                                                                           | **RLS: hanya `owner`**. `manager` membaca lewat view/fungsi yang menyamarkan nomor |
 | `creator_social_accounts` | `creator_id`, `platform`, `handle`, `profile_url`, `followers_count`, `kalimantan_audience_pct numeric(5,2)`, `top_cities`, `audience_proof_path`, `last_verified_at`                                                                                                                                                                                                                                          | Unik (`platform`, `handle`)                                                        |
 | `campaigns`               | `client_id`, `code` (unik), `name`, `objective`, `brief`, `must_do`, `must_not`, `hashtags`, `paid_label_required`, `landing_url`, `start_date`, `end_date`, `min_live_days`, `status`, `package_price`, `target_contents`, `target_views`, `target_registrants`, `default_base_fee`, `default_bonus_per_1000_views`, `default_bonus_per_registrant`, `default_views_bonus_cap`, `closing_notes`, `created_by` |                                                                                    |
@@ -283,6 +310,19 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 | `ops_time_logs`           | `campaign_id`, `user_id`, `activity`, `minutes`, `log_date`, `notes`                                                                                                                                                                                                                                                                                                                                           |                                                                                    |
 | `report_share_links`      | `campaign_id`, `token_hash` (unik), `expires_at`, `created_by`, `revoked_at`, `revoked_by`, `last_viewed_at`, `view_count` | v1.1 (FR-M9-05); satu tautan aktif per kampanye; tidak dapat dihapus |
 | `activity_logs`           | `actor_id`, `entity_type`, `entity_id`, `action`, `details jsonb`                                                                                                                                                                                                                                                                                                                                              | Append-only                                                                        |
+| `metric_submissions`      | `content_id`, `checkpoint`, `captured_at`, `views`, `likes`, `comments`, `shares`, `saves`, `proof_path`, `status` (`menunggu`/`diterima`/`ditolak`), `review_notes`, `submitted_by`, `reviewed_by`, `reviewed_at`, `snapshot_id`                                                                                                                                                                              | v2.0 Fase 10 (FR-M13-06); usulan metrik dari kreator, resmi hanya setelah diterima |
+
+**View portal kreator (v2.0).** Kreator tidak memiliki kebijakan RLS atas tabel mana pun. Portal membaca lewat view berikut; semuanya memfilter kreator yang sedang login (`current_creator_id()`), hanya memuat kolom yang aman, dan hanya dapat dibaca oleh peran `authenticated` (bukan `anon`).
+
+| View                          | Isi                                                                                                          |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `creator_portal_profile`      | Data diri kreator sendiri, tanpa `notes` internal                                                            |
+| `creator_portal_assignments`  | Penugasan miliknya + kolom kampanye yang aman + skema honor efektif. Tanpa `package_price`, target, dan margin |
+| `creator_portal_assets`       | Materi kampanye untuk kampanye yang ditugaskan kepadanya                                                     |
+| `creator_portal_contents`     | Konten miliknya beserta status review (Fase 10)                                                              |
+| `creator_portal_reviews`      | Riwayat keputusan review atas kontennya (Fase 10)                                                            |
+| `creator_portal_metrics`      | Snapshot resmi dan usulan metriknya sendiri (Fase 10)                                                        |
+| `creator_portal_payouts`      | Rincian honornya sendiri, tanpa `transfer_proof_path` (Fase 10)                                              |
 
 ### 7.1 Penyimpanan berkas (Supabase Storage)
 
@@ -398,6 +438,7 @@ app/
   (app)/campaigns/[id]/{overview,brief,creators,contents,metrics,finance,report}/
   (app)/settings/{users,profile}/
   (app)/activity/
+  (portal)/portal/{penugasan,profil}/   # v2.0, peran `creator`
   r/[slug]/route.ts
   api/export/[type]/route.ts
 components/{ui,forms,tables,charts,layout}/
@@ -509,6 +550,29 @@ Kerjakan berurutan. Satu fase = satu atau beberapa sesi Claude Code = satu commi
 - [ ] Tabel `report_share_links` tercakup dalam pemeriksaan RLS untuk `owner`, `manager`, dan anonim.
 - [ ] Owner menerima pesan Telegram harian berisi snapshot yang jatuh tempo, lewat workflow n8n.
 
+### Fase 9 — v2.0: Akses Portal Kreator dan Brief
+
+**Cakupan:** FR-M13-01 sampai FR-M13-04 dan FR-M13-08. Peran `creator` pada `user_role`; `public.is_active_member()` diperketat menjadi anggota internal saja; `creators.profile_id` dan `portal_invited_at`; view `creator_portal_profile`, `creator_portal_assignments`, `creator_portal_assets`; kebijakan storage `campaign-assets` untuk kreator yang ditugaskan; undangan dan pencabutan akses dari halaman kreator; rute `(portal)` beserta dasbor, daftar penugasan, halaman brief, dan halaman profil.
+**Kriteria penerimaan:**
+
+- [ ] Kreator yang diundang dapat menetapkan kata sandi lalu masuk ke `/portal`.
+- [ ] Kreator tidak dapat membuka rute internal mana pun; anggota internal yang membuka `/portal` diarahkan ke `/dashboard`.
+- [ ] Dengan sesi `creator`, kueri langsung ke `campaigns`, `creators`, `creator_bank_accounts`, `payouts`, dan `activity_logs` mengembalikan nol baris.
+- [ ] `creator_portal_assignments` tidak memuat `package_price`, target kampanye, maupun data kreator lain; diuji di `scripts/rls-check.sql`.
+- [ ] Kreator hanya dapat mengunduh materi kampanye yang ditugaskan kepadanya.
+- [ ] Akses portal yang dicabut `owner` langsung menutup akses kreator.
+
+### Fase 10 — v2.0: Kiriman Draf, Bukti Metrik, dan Status Honor
+
+**Cakupan:** FR-M13-05 sampai FR-M13-07. Tabel `metric_submissions` beserta alur verifikasi tim; view `creator_portal_contents`, `creator_portal_reviews`, `creator_portal_metrics`, `creator_portal_payouts`; kebijakan storage `content-drafts` dan `metric-proofs` untuk kreator; halaman kiriman di portal dan panel verifikasi di aplikasi internal.
+**Kriteria penerimaan:**
+
+- [ ] Draf yang dikirim kreator muncul di antrean review tim sebagai `menunggu_review`.
+- [ ] Kreator tidak dapat mengubah draf yang sudah direview, menyetujui kontennya sendiri, atau mengisi URL tayang.
+- [ ] Usulan metrik tidak memengaruhi metrik kampanye maupun honor sebelum diterima tim.
+- [ ] Kreator melihat rincian honornya sendiri tanpa bukti transfer, dan tidak melihat honor kreator lain.
+- [ ] Setiap tabel dan view baru tercakup di `scripts/rls-check.sql` untuk `owner`, `manager`, `creator`, dan anonim.
+
 ---
 
 ## 12. Peta Jalan Setelah Pilot (Indikatif)
@@ -519,7 +583,7 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | ----- | -------------------------------------------------------------------------------------------------------------------------------- |
 | 1.1   | Tautan laporan baca-saja untuk klien (token rahasia, tanpa login); pengingat Telegram harian ke owner via n8n untuk snapshot jatuh tempo (Fase 8) |
 | 1.2   | Pengingat WhatsApp otomatis ke tim (ditunda dari 1.1) |
-| 2.0   | Portal kreator: login, lihat brief, kirim draf, unggah bukti metrik, lihat status honor                                          |
+| 2.0   | Portal kreator: login, lihat brief, kirim draf, unggah bukti metrik, lihat status honor (M13; Fase 9 dan Fase 10) — **sedang dikerjakan** |
 | 3.0   | Portal klien: pantau kampanye berjalan, setujui konten, unduh laporan                                                            |
 | 4.0   | Integrasi API resmi platform media sosial untuk metrik otomatis (bergantung persetujuan akses API)                               |
 | 5.0   | Pembayaran honor terintegrasi; perluasan ke segmen bank daerah, BUMD, dan Pemda (invoice, dokumen pengadaan)                     |
@@ -557,3 +621,4 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | ----- | ----------- | ------------------------------------------ |
 | 0.1   | 17 Sep 2026 | Draf awal berdasarkan diskusi validasi ide |
 | 0.2   | 19 Sep 2026 | v1.1: FR-M9-05 (tautan laporan klien), FR-M10-05 (pengingat Telegram via n8n menggantikan WhatsApp), tabel `report_share_links`, Fase 8 |
+| 0.3   | 20 Sep 2026 | v2.0: modul M13 (portal kreator), peran `creator`, view `creator_portal_*`, tabel `metric_submissions`, Fase 9 dan Fase 10. Portal kreator keluar dari daftar "di luar cakupan"; portal klien tetap di luar cakupan |

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { dbRuleMessage, fail, invalid, ok, type ActionResult } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
-import { requireRole, requireSession } from "@/lib/auth/guards";
+import { requireInternal, requireRole } from "@/lib/auth/guards";
 import { effectiveFeeScheme } from "@/lib/calculations/fee-scheme";
 import { payoutTotal } from "@/lib/calculations/payout";
 import { FINANCE_PROOF_BUCKET } from "@/lib/constants/finance";
@@ -63,7 +63,7 @@ async function loadPayout(supabase: Supabase, campaignId: string, payoutId: stri
  * assignment. Approved or paid payouts are skipped, never overwritten.
  */
 async function calculate(campaignId: string, assignmentIds: string[] | "all") {
-  const session = await requireSession();
+  const session = await requireInternal();
   const supabase = await createSupabaseServerClient();
   const campaign = await loadCampaign(supabase, campaignId);
   if (!campaign) return fail("Kampanye tidak ditemukan.");
@@ -164,7 +164,7 @@ export async function adjustPayoutAction(
   payoutId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId, payoutId)) return fail("ID tidak valid.");
   const parsed = adjustmentSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -309,7 +309,7 @@ export async function createClientPaymentAction(
   campaignId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId)) return fail("ID kampanye tidak valid.");
   const parsed = clientPaymentSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -348,7 +348,7 @@ export async function recordClientPaymentAction(
   paymentId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!validIds(campaignId, paymentId)) return fail("ID tidak valid.");
   const parsed = clientPaymentReceiptSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);

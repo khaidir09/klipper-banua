@@ -1,7 +1,9 @@
 /**
  * Demo data for local development, staging and the end-to-end test
  * (PRD section 11, phase 7): 1 campus with a contact, 8 creators and 1 draft
- * campaign, so the whole flow of section 5.2 can be run from the start.
+ * campaign, so the whole flow of section 5.2 can be run from the start. With
+ * SEED_CREATOR_EMAIL/PASSWORD set, the first creator also gets a portal
+ * account (phase 9, M13).
  *
  *   npm run seed:demo
  *
@@ -11,7 +13,7 @@
  */
 import { readFileSync } from "node:fs";
 import { config } from "dotenv";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../types/database";
 
 config({ path: ".env.local", quiet: true });
@@ -182,6 +184,62 @@ function isLocal(url: string) {
   return host === "localhost" || host === "127.0.0.1" || host === "::1";
 }
 
+/**
+ * Portal account for the first demo creator (M13, FR-M13-01), so the portal
+ * and the end-to-end test have a creator to sign in as. Skipped when
+ * SEED_CREATOR_EMAIL/PASSWORD are unset.
+ */
+async function seedPortalAccount(
+  admin: SupabaseClient<Database>,
+  creatorRowId: string,
+  fullName: string,
+): Promise<string | null> {
+  const email = process.env.SEED_CREATOR_EMAIL;
+  const password = process.env.SEED_CREATOR_PASSWORD;
+  if (!email || !password) return null;
+
+  const { data: list, error: listError } = await admin.auth.admin.listUsers({ perPage: 1000 });
+  if (listError) throw new Error(`portal account: ${listError.message}`);
+
+  const existing = list.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
+  const metadata = { full_name: fullName, role: "creator" };
+
+  let userId: string;
+  if (existing) {
+    const { error } = await admin.auth.admin.updateUserById(existing.id, {
+      password,
+      user_metadata: metadata,
+    });
+    if (error) throw new Error(`portal account: ${error.message}`);
+    userId = existing.id;
+  } else {
+    const { data, error } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: metadata,
+    });
+    if (error || !data.user) throw new Error(`portal account: ${error?.message ?? "unknown"}`);
+    userId = data.user.id;
+  }
+
+  // The auth trigger created the profile; make sure the role stuck and the
+  // account is active, then link it to the creator.
+  const { error: profileError } = await admin
+    .from("profiles")
+    .update({ full_name: fullName, role: "creator", is_active: true })
+    .eq("id", userId);
+  if (profileError) throw new Error(`portal profile: ${profileError.message}`);
+
+  const { error: linkError } = await admin
+    .from("creators")
+    .update({ profile_id: userId, portal_invited_at: new Date().toISOString() })
+    .eq("id", creatorRowId);
+  if (linkError) throw new Error(`portal link: ${linkError.message}`);
+
+  return email;
+}
+
 const iso = (date: Date) => date.toISOString().slice(0, 10);
 const addDays = (date: Date, days: number) => new Date(date.getTime() + days * 86_400_000);
 
@@ -323,6 +381,8 @@ async function main() {
     }
   }
 
+  const portalEmail = await seedPortalAccount(admin, creatorId(1), CREATORS[0]!.full_name);
+
   // Draft campaign starting today: the E2E flow assigns creators, activates it
   // and runs it to the final report.
   const { data: existing } = await admin
@@ -379,6 +439,11 @@ async function main() {
 
   console.log(
     `Demo data ready: 1 client, ${CREATORS.length} creators, campaign ${DEMO.campaignCode}.`,
+  );
+  console.log(
+    portalEmail
+      ? `Creator portal account: ${portalEmail} (${CREATORS[0]!.full_name}).`
+      : "No creator portal account: set SEED_CREATOR_EMAIL/PASSWORD in .env.local.",
   );
 }
 

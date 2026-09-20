@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { dbRuleMessage, fail, invalid, ok, type ActionResult } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
-import { isOwner, requireSession } from "@/lib/auth/guards";
+import { isOwner, requireInternal } from "@/lib/auth/guards";
 import { isCampaignLocked } from "@/lib/campaigns/status";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { closingNotesSchema } from "@/lib/validation/campaigns";
@@ -18,7 +18,7 @@ import { opsTimeLogSchema } from "@/lib/validation/ops";
 
 /** FR-M9-02: the editable closing notes printed at the end of the report. */
 export async function updateClosingNotesAction(values: unknown): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   const parsed = closingNotesSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
   const { id, closing_notes } = parsed.data;
@@ -54,7 +54,7 @@ export async function createOpsTimeLogAction(
   campaignId: string,
   values: unknown,
 ): Promise<ActionResult> {
-  const session = await requireSession();
+  const session = await requireInternal();
   if (!uuidField.safeParse(campaignId).success) return fail("ID kampanye tidak valid.");
   const parsed = opsTimeLogSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error);
@@ -76,7 +76,7 @@ export async function deleteOpsTimeLogAction(
   campaignId: string,
   logId: string,
 ): Promise<ActionResult> {
-  await requireSession();
+  await requireInternal();
   if (!uuidField.safeParse(campaignId).success || !uuidField.safeParse(logId).success) {
     return fail("Permintaan tidak valid.");
   }

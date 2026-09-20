@@ -3,7 +3,9 @@ import {
   UNDERAGE_MESSAGE,
   bankAccountSchema,
   creatorSchema,
+  invitePortalSchema,
   isAdult,
+  portalAccessSchema,
   socialAccountSchema,
   verificationBlockers,
 } from "@/lib/validation/creators";
@@ -135,5 +137,35 @@ describe("normalizeWhatsapp", () => {
   it("formats for display", () => {
     expect(formatWhatsapp("6281234567890")).toBe("0812-3456-7890");
     expect(formatWhatsapp("")).toBe("");
+  });
+});
+
+describe("invitePortalSchema", () => {
+  const creatorId = "de300000-0000-4000-8000-0000000000a1";
+
+  it("lowercases the email address", () => {
+    const parsed = invitePortalSchema.safeParse({ creator_id: creatorId, email: "Rina@Contoh.ID" });
+    expect(parsed.success && parsed.data.email).toBe("rina@contoh.id");
+  });
+
+  it("needs a valid creator and email", () => {
+    expect(
+      invitePortalSchema.safeParse({ creator_id: creatorId, email: "bukan-email" }).success,
+    ).toBe(false);
+    expect(invitePortalSchema.safeParse({ creator_id: "x", email: "rina@contoh.id" }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe("portalAccessSchema", () => {
+  it("only accepts a boolean switch", () => {
+    const creatorId = "de300000-0000-4000-8000-0000000000a1";
+    expect(portalAccessSchema.safeParse({ creator_id: creatorId, is_active: false }).success).toBe(
+      true,
+    );
+    expect(portalAccessSchema.safeParse({ creator_id: creatorId, is_active: "ya" }).success).toBe(
+      false,
+    );
   });
 });

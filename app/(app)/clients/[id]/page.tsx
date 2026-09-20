@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ClientCampaignHistory } from "@/components/campaigns/campaign-history";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireSession } from "@/lib/auth/guards";
+import { requireInternal } from "@/lib/auth/guards";
 import { totalContractValue } from "@/lib/calculations/contract";
 import { CLIENT_TYPE_LABELS } from "@/lib/constants/clients";
 import { listClientCampaigns } from "@/lib/data/campaigns";
@@ -21,7 +21,7 @@ import { DeleteClientButton } from "./delete-client-button";
 export const metadata: Metadata = { title: "Detail klien" };
 
 export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { profile } = await requireSession();
+  const { profile } = await requireInternal();
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
   const client = await getClient(supabase, id);

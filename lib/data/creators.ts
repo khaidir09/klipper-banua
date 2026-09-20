@@ -82,6 +82,25 @@ export async function getCreator(
   return data;
 }
 
+export type PortalAccount = { id: string; email: string; is_active: boolean };
+
+/** FR-M13-01: the portal account linked to a creator, when there is one. */
+export async function getPortalAccount(
+  supabase: SupabaseClient<Database>,
+  profileId: string | null,
+): Promise<PortalAccount | null> {
+  if (!profileId) return null;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, email, is_active")
+    .eq("id", profileId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 /** Managers get the masked view through a security-definer function. */
 export async function getMaskedBankAccount(supabase: SupabaseClient<Database>, creatorId: string) {
   const { data, error } = await supabase.rpc("get_masked_bank_account", {

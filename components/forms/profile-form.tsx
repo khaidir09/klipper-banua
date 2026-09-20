@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { TIMEZONES } from "@/lib/format/timezone";
 import { profileSchema, type ProfileInput } from "@/lib/validation/users";
-import { updateProfileAction } from "../actions";
+import { updateProfileAction } from "@/app/(app)/settings/actions";
 
+/** Name and timezone form, shared by the internal settings page and the creator portal. */
 export function ProfileForm({ defaultValues }: { defaultValues: ProfileInput }) {
   const [isPending, startTransition] = useTransition();
   const form = useForm<ProfileInput>({ resolver: zodResolver(profileSchema), defaultValues });
