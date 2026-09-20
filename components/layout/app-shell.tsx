@@ -57,7 +57,8 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
     <nav className="flex flex-col gap-1" aria-label="Navigasi utama">
       {items.map((item: NavItem) => {
         const Icon = item.icon;
-        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const isActive =
+          pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`));
 
         return (
           <Link
