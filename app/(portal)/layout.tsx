@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/layout/app-shell";
+import { sidebarDefaultOpen } from "@/components/layout/sidebar-state";
 import { requireCreator } from "@/lib/auth/guards";
 import { publicEnv } from "@/lib/env";
 import { timezoneLabel } from "@/lib/format/timezone";
@@ -18,6 +19,7 @@ export default async function PortalLayout({ children }: { children: React.React
       role={profile.role}
       area="portal"
       timezoneLabel={timezoneLabel(profile.timezone)}
+      defaultOpen={await sidebarDefaultOpen()}
     >
       {children}
     </AppShell>

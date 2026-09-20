@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { LogOut, Menu } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,30 +13,48 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
 import {
-  CLIENT_NAV_ITEMS,
-  PORTAL_NAV_ITEMS,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
+import {
+  AREA_CHROME,
+  navItemsFor,
   ROLE_LABELS,
-  visibleNavItems,
   type NavItem,
+  type ShellArea,
 } from "@/components/layout/nav-items";
-import type { InternalRole, UserRole } from "@/lib/auth/guards";
+import type { UserRole } from "@/lib/auth/guards";
 
 /**
  * Shell for every signed-in area: the internal app, the creator portal (M13)
- * and the client portal (M14). `area` picks the menu, so a portal can never
- * render an internal entry. Menu items hold icon components, which cannot
- * cross the server / client boundary as props: the list is built here.
+ * and the client portal (M14). `area` picks both the menu and the accent, so a
+ * portal can never render an internal entry, and the operator can always tell
+ * which area they are in. Menu items hold icon components, which cannot cross
+ * the server / client boundary as props: the list is built here.
  */
 type AppShellProps = {
   appName: string;
   fullName: string;
   email: string;
   role: UserRole;
-  area: "app" | "portal" | "client";
+  area: ShellArea;
   timezoneLabel: string;
+  /** Persisted sidebar state, read from the `sidebar_state` cookie server-side. */
+  defaultOpen?: boolean;
   children: React.ReactNode;
 };
 
@@ -50,35 +67,35 @@ function initials(name: string, email: string) {
     .join("");
 }
 
-function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
+function NavLinks({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-1" aria-label="Navigasi utama">
-      {items.map((item: NavItem) => {
+    <SidebarMenu>
+      {items.map((item) => {
         const Icon = item.icon;
         const isActive =
           pathname === item.href || (!item.exact && pathname.startsWith(`${item.href}/`));
 
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            aria-current={isActive ? "page" : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-              isActive
-                ? "bg-accent font-medium text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
-            )}
-          >
-            <Icon className="size-4" aria-hidden />
-            {item.label}
-          </Link>
+          <SidebarMenuItem key={item.href}>
+            {/* h-11 on phones clears the 44px touch target that the default h-8
+                misses; desktop keeps the denser row. */}
+            <SidebarMenuButton
+              asChild
+              isActive={isActive}
+              tooltip={item.label}
+              className="h-11 md:h-8"
+            >
+              <Link href={item.href} aria-current={isActive ? "page" : undefined}>
+                <Icon aria-hidden />
+                <span>{item.label}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         );
       })}
-    </nav>
+    </SidebarMenu>
   );
 }
 
@@ -89,85 +106,109 @@ export function AppShell({
   role,
   area,
   timezoneLabel,
+  defaultOpen = true,
   children,
 }: AppShellProps) {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const navItems =
-    area === "portal"
-      ? PORTAL_NAV_ITEMS
-      : area === "client"
-        ? CLIENT_NAV_ITEMS
-        : visibleNavItems(role as InternalRole);
+  const navItems = navItemsFor(area, role);
+  const chrome = AREA_CHROME[area];
+  const AreaIcon = chrome.icon;
 
   return (
-    <div className="flex min-h-svh flex-col md:flex-row">
-      <aside className="hidden w-60 shrink-0 border-r bg-card md:flex md:flex-col">
-        <div className="border-b px-4 py-4">
-          <p className="font-semibold tracking-tight">{appName}</p>
-          <p className="text-xs text-muted-foreground">Zona waktu {timezoneLabel}</p>
-        </div>
-        <div className="flex-1 overflow-y-auto p-3">
-          <NavLinks items={navItems} />
-        </div>
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur">
-          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Buka navigasi">
-                <Menu className="size-5" aria-hidden />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0">
-              <SheetHeader className="border-b">
-                <SheetTitle>{appName}</SheetTitle>
-              </SheetHeader>
-              <div className="p-3">
-                <NavLinks items={navItems} onNavigate={() => setMobileNavOpen(false)} />
+    // The sidebar shows tooltips for its icons once collapsed, and Tooltip here
+    // does not carry its own provider.
+    <TooltipProvider delayDuration={300}>
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <Sidebar collapsible="icon" style={chrome.sidebarVars}>
+          <SidebarHeader>
+            <div className="flex items-center gap-2 px-1 py-1.5">
+              <span
+                aria-hidden
+                className={`flex size-8 shrink-0 items-center justify-center rounded-md ${chrome.markClass}`}
+              >
+                <AreaIcon className="size-4" />
+              </span>
+              <div className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
+                <span className="truncate text-sm font-semibold tracking-tight">{appName}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {chrome.label ?? `Zona waktu ${timezoneLabel}`}
+                </span>
               </div>
-            </SheetContent>
-          </Sheet>
+            </div>
+          </SidebarHeader>
 
-          <p className="font-semibold md:hidden">{appName}</p>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <NavLinks items={navItems} />
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
 
-          <div className="ml-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2 px-2" aria-label="Menu pengguna">
-                  <Avatar className="size-7">
-                    <AvatarFallback className="text-xs">{initials(fullName, email)}</AvatarFallback>
-                  </Avatar>
-                  <span className="hidden text-sm sm:inline">{fullName || email}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <span className="block truncate font-medium">{fullName || "Tanpa nama"}</span>
-                  <span className="block truncate text-xs font-normal text-muted-foreground">
-                    {email}
-                  </span>
-                  <span className="mt-1 block text-xs font-normal text-muted-foreground">
-                    Peran: {ROLE_LABELS[role]}
-                  </span>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  {/* POST so that a prefetch or link preview can never sign the user out. */}
-                  <form action="/keluar" method="post" className="w-full">
-                    <button type="submit" className="flex w-full items-center gap-2">
-                      <LogOut className="size-4" aria-hidden />
-                      Keluar
-                    </button>
-                  </form>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
+          {chrome.label ? (
+            <SidebarFooter>
+              <p className="px-2 pb-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                Zona waktu {timezoneLabel}
+              </p>
+            </SidebarFooter>
+          ) : null}
 
-        <main className="flex-1 p-4 md:p-6">{children}</main>
-      </div>
-    </div>
+          <SidebarRail />
+        </Sidebar>
+
+        <SidebarInset>
+          <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SidebarTrigger className="-ml-1" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Buka/tutup menu (Ctrl+B)</TooltipContent>
+            </Tooltip>
+
+            {chrome.label ? (
+              <span className="truncate text-sm font-medium sm:hidden">{chrome.label}</span>
+            ) : null}
+
+            <div className="ml-auto flex items-center gap-1">
+              <ThemeToggle />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2 px-2" aria-label="Menu pengguna">
+                    <Avatar className="size-7">
+                      <AvatarFallback className="text-xs">
+                        {initials(fullName, email)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden text-sm sm:inline">{fullName || email}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <span className="block truncate font-medium">{fullName || "Tanpa nama"}</span>
+                    <span className="block truncate text-xs font-normal text-muted-foreground">
+                      {email}
+                    </span>
+                    <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                      Peran: {ROLE_LABELS[role]}
+                    </span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    {/* POST so that a prefetch or link preview can never sign the user out. */}
+                    <form action="/keluar" method="post" className="w-full">
+                      <button type="submit" className="flex w-full items-center gap-2">
+                        <LogOut className="size-4" aria-hidden />
+                        Keluar
+                      </button>
+                    </form>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </header>
+
+          <main className="flex-1 p-4 md:p-6">{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

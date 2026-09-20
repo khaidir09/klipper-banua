@@ -3,7 +3,8 @@
 Sumber acuan global untuk redesign UI/UX. Aturan produk tetap di `PRD.md`;
 aturan teknis tetap di `CLAUDE.md`. Dokumen ini hanya mengatur tampilan.
 
-Status: **Langkah 0 dan 1 selesai** (token + halaman auth). Langkah 2–9 belum.
+Status: **Langkah 0, 1, dan 2 selesai** (token, halaman auth, app shell).
+Langkah 3–9 belum.
 
 ## 1. Posisi produk
 
@@ -161,11 +162,30 @@ di seluruh transisi.
 Kerangka, komponen, dan spasi identik. Yang berbeda hanya aksen sidebar dan
 label header:
 
-| Area           | Rute       | Aksen             | Label header     |
-| -------------- | ---------- | ----------------- | ---------------- |
-| Internal       | `(app)`    | navy `--primary`  | nama aplikasi    |
-| Portal kreator | `(portal)` | biru `--info`     | "Portal Kreator" |
-| Portal klien   | `(client)` | hijau `--success` | "Portal Klien"   |
+Pembeda dipasang lewat **override token**, bukan kelas khusus per area: tiap
+area menimpa `--sidebar-accent` dan `--sidebar-accent-foreground` pada
+`<Sidebar>`. Dengan begitu setiap item menu tetap distyle aturan yang sama dan
+portal tidak bisa menyimpang lebih jauh dari sekadar aksennya.
+
+| Area           | Rute       | Tile merek  | Aksen sidebar     | Label            |
+| -------------- | ---------- | ----------- | ----------------- | ---------------- |
+| Internal       | `(app)`    | `--primary` | `--accent` netral | nama aplikasi    |
+| Portal kreator | `(portal)` | `--info`    | `--info-soft`     | "Portal Kreator" |
+| Portal klien   | `(client)` | `--success` | `--success-soft`  | "Portal Klien"   |
+
+Terverifikasi di browser: aksen aktif terbaca `#EBF0F7` / `#EFF6FF` / `#ECFDF5`
+sesuai token, tepat satu item aktif per area, dan aksen bertahan di sheet mobile.
+
+### Catatan patch pada `components/ui/sidebar.tsx`
+
+Komponen bawaan shadcn meneruskan `{...props}` ke `Sheet` (Radix Root) pada
+cabang mobile. Root itu bukan elemen DOM, jadi `style` — pembawa variabel aksen
+area — **hilang di layar ponsel**, justru perangkat utama kreator. `style`
+sekarang diteruskan eksplisit ke `SheetContent` dan ke kontainer desktop.
+Teks antarmuka komponen juga dialihbahasakan ke Bahasa Indonesia.
+
+`hooks/use-mobile.ts` hasil generate memanggil `setState` di dalam effect dan
+ditolak ESLint proyek; ditulis ulang memakai `useSyncExternalStore`.
 
 ## 9. Larangan
 

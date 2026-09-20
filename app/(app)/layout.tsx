@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/layout/app-shell";
+import { sidebarDefaultOpen } from "@/components/layout/sidebar-state";
 import { requireInternal } from "@/lib/auth/guards";
 import { publicEnv } from "@/lib/env";
 import { timezoneLabel } from "@/lib/format/timezone";
@@ -18,6 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       role={profile.role}
       area="app"
       timezoneLabel={timezoneLabel(profile.timezone)}
+      defaultOpen={await sidebarDefaultOpen()}
     >
       {children}
     </AppShell>
