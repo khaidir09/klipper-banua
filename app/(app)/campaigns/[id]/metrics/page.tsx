@@ -9,7 +9,7 @@ import {
 } from "@/lib/calculations/campaign-metrics";
 import { dueSnapshots, suggestCheckpoint } from "@/lib/calculations/checkpoints";
 import { listAssignments } from "@/lib/data/campaigns";
-import { getCampaignMetrics } from "@/lib/data/metrics";
+import { getCampaignMetrics, listPendingSubmissions } from "@/lib/data/metrics";
 import { loadCampaign } from "../data";
 import { MetricsPanel, type MetricsPanelProps } from "./metrics-panel";
 
@@ -21,9 +21,10 @@ export default async function CampaignMetricsPage({ params }: { params: Promise<
   const tz = session.profile.timezone;
   const now = new Date();
 
-  const [assignments, metrics] = await Promise.all([
+  const [assignments, metrics, pendingSubmissions] = await Promise.all([
     listAssignments(supabase, id),
     getCampaignMetrics(supabase, id),
+    listPendingSubmissions(supabase, id),
   ]);
 
   // Every content returned here has gone live (posted_at is set).
@@ -89,6 +90,7 @@ export default async function CampaignMetricsPage({ params }: { params: Promise<
       ),
     })),
     reports: metrics.reports,
+    pendingSubmissions,
     assignments: assignments.map((a) => ({
       id: a.id,
       name: names.get(a.id) ?? "–",

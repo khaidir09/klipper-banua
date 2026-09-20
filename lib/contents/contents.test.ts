@@ -4,7 +4,10 @@ import {
   canEditDraft,
   canMarkPosted,
   canMarkRemoved,
+  canCreatorEditDraft,
+  canProposePosted,
   canReview,
+  canSubmitMetric,
   canSubmitNewDraft,
   checklistItemsFor,
   isChecklistComplete,
@@ -14,6 +17,7 @@ import {
   contentCreateSchema,
   draftUpdateSchema,
   postedSchema,
+  proposedPostedSchema,
   removedSchema,
   reviewSchema,
 } from "@/lib/validation/contents";
@@ -175,5 +179,58 @@ describe("posted and removed forms", () => {
       postedSchema.safeParse({ posted_url: "https://tiktok.com/@x/1", posted_at: "" }).success,
     ).toBe(false);
     expect(removedSchema.safeParse({ removed_at: "2026-10-40T10:00" }).success).toBe(false);
+  });
+});
+
+describe("creator portal rules (M13)", () => {
+  it("lets a creator work on a draft only before it is reviewed", () => {
+    expect(canCreatorEditDraft("menunggu_review")).toBe(true);
+    expect(canCreatorEditDraft("revisi")).toBe(true);
+    expect(canCreatorEditDraft("disetujui")).toBe(false);
+    expect(canCreatorEditDraft("ditolak")).toBe(false);
+  });
+
+  it("allows a live report only for approved content that is not live (FR-M13-09)", () => {
+    expect(canProposePosted("disetujui", "belum_tayang")).toBe(true);
+    expect(canProposePosted("disetujui", "tayang")).toBe(false);
+    expect(canProposePosted("menunggu_review", "belum_tayang")).toBe(false);
+  });
+
+  it("allows metric submissions only for live content (FR-M13-06)", () => {
+    expect(canSubmitMetric("disetujui", "tayang")).toBe(true);
+    // Removed content still had a life worth reporting on.
+    expect(canSubmitMetric("disetujui", "dihapus")).toBe(true);
+    expect(canSubmitMetric("disetujui", "belum_tayang")).toBe(false);
+    expect(canSubmitMetric("revisi", "tayang")).toBe(false);
+  });
+});
+
+describe("proposedPostedSchema (FR-M13-09)", () => {
+  const contentId = "de300000-0000-4000-8000-0000000000d1";
+
+  it("accepts a live URL with a wall-clock time", () => {
+    const parsed = proposedPostedSchema.safeParse({
+      content_id: contentId,
+      proposed_posted_url: "https://www.tiktok.com/@a/video/1",
+      proposed_posted_at: "2026-10-05T19:30",
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rejects an empty URL or a missing time", () => {
+    expect(
+      proposedPostedSchema.safeParse({
+        content_id: contentId,
+        proposed_posted_url: "",
+        proposed_posted_at: "2026-10-05T19:30",
+      }).success,
+    ).toBe(false);
+    expect(
+      proposedPostedSchema.safeParse({
+        content_id: contentId,
+        proposed_posted_url: "https://www.tiktok.com/@a/video/1",
+        proposed_posted_at: "",
+      }).success,
+    ).toBe(false);
   });
 });

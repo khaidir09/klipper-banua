@@ -43,6 +43,23 @@ export type RegistrantReportView = {
 
 export type AssignmentClicks = { assignmentId: string; total: number; human: number };
 
+/** FR-M13-06: a creator's metric numbers waiting for the team. */
+export type PendingSubmissionView = {
+  id: string;
+  contentId: string;
+  creatorName: string;
+  platform: Database["public"]["Enums"]["social_platform"];
+  checkpoint: MetricCheckpoint;
+  captured_at: string;
+  created_at: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  saves: number;
+  proofUrl: string | null;
+};
+
 async function signPaths(supabase: SupabaseClient<Database>, paths: string[]) {
   const signed = new Map<string, string>();
   if (!paths.length) return signed;
@@ -136,4 +153,46 @@ export async function getCampaignMetrics(supabase: SupabaseClient<Database>, cam
   }));
 
   return { contents, clicks, reports };
+}
+
+/** FR-M13-06: submissions from the portal that still need verification. */
+export async function listPendingSubmissions(
+  supabase: SupabaseClient<Database>,
+  campaignId: string,
+): Promise<PendingSubmissionView[]> {
+  const { data, error } = await supabase
+    .from("metric_submissions")
+    .select(
+      `id, content_id, checkpoint, captured_at, created_at, views, likes, comments, shares, saves, proof_path,
+       content:contents!inner(platform, assignment:campaign_creators!inner(campaign_id, creator:creators(full_name, stage_name)))`,
+    )
+    .eq("status", "menunggu")
+    .eq("content.assignment.campaign_id", campaignId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+
+  const signed = await signPaths(
+    supabase,
+    data.map((row) => row.proof_path),
+  );
+
+  return data.map((row) => ({
+    id: row.id,
+    contentId: row.content_id,
+    creatorName:
+      row.content.assignment.creator?.stage_name ||
+      row.content.assignment.creator?.full_name ||
+      "–",
+    platform: row.content.platform,
+    checkpoint: row.checkpoint,
+    captured_at: row.captured_at,
+    created_at: row.created_at,
+    views: row.views,
+    likes: row.likes,
+    comments: row.comments,
+    shares: row.shares,
+    saves: row.saves,
+    proofUrl: signed.get(row.proof_path) ?? null,
+  }));
 }

@@ -20,6 +20,11 @@ type NonNullableExcept<T, K extends keyof T> = {
 } & { [P in K]: T[P] };
 
 type ProfileView = Database["public"]["Views"]["creator_portal_profile"]["Row"];
+type ContentView = Database["public"]["Views"]["creator_portal_contents"]["Row"];
+type ReviewView = Database["public"]["Views"]["creator_portal_reviews"]["Row"];
+type MetricView = Database["public"]["Views"]["creator_portal_metrics"]["Row"];
+type SubmissionView = Database["public"]["Views"]["creator_portal_submissions"]["Row"];
+type PayoutView = Database["public"]["Views"]["creator_portal_payouts"]["Row"];
 type AssignmentView = Database["public"]["Views"]["creator_portal_assignments"]["Row"];
 type AssetView = Database["public"]["Views"]["creator_portal_assets"]["Row"];
 
@@ -32,6 +37,21 @@ export type PortalAssignment = NonNullableExcept<
   "landing_url" | "joined_at" | "views_bonus_cap"
 >;
 export type PortalAsset = NonNullableExcept<AssetView, "file_path" | "external_url">;
+export type PortalContent = NonNullableExcept<
+  ContentView,
+  | "draft_url"
+  | "draft_file_path"
+  | "posted_url"
+  | "posted_at"
+  | "removed_at"
+  | "proposed_posted_url"
+  | "proposed_posted_at"
+  | "proposed_at"
+>;
+export type PortalReview = NonNullableExcept<ReviewView, never>;
+export type PortalMetric = NonNullableExcept<MetricView, never>;
+export type PortalSubmission = NonNullableExcept<SubmissionView, "reviewed_at">;
+export type PortalPayout = NonNullableExcept<PayoutView, "paid_at">;
 
 const SIGNED_URL_SECONDS = 60;
 
@@ -96,4 +116,85 @@ export async function listPortalAssets(
       return { ...asset, signed_url: signed?.signedUrl ?? null };
     }),
   );
+}
+
+/** FR-M13-05: the creator's own content for one assignment. */
+export async function listPortalContents(
+  supabase: SupabaseClient<Database>,
+  assignmentId: string,
+): Promise<PortalContent[]> {
+  const { data, error } = await supabase
+    .from("creator_portal_contents")
+    .select("*")
+    .eq("campaign_creator_id", assignmentId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data as PortalContent[];
+}
+
+/** FR-M13-05: review decisions, newest first, for the given content. */
+export async function listPortalReviews(
+  supabase: SupabaseClient<Database>,
+  contentIds: string[],
+): Promise<PortalReview[]> {
+  if (!contentIds.length) return [];
+
+  const { data, error } = await supabase
+    .from("creator_portal_reviews")
+    .select("*")
+    .in("content_id", contentIds)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data as PortalReview[];
+}
+
+/** FR-M13-06: numbers the team has already verified. */
+export async function listPortalMetrics(
+  supabase: SupabaseClient<Database>,
+  contentIds: string[],
+): Promise<PortalMetric[]> {
+  if (!contentIds.length) return [];
+
+  const { data, error } = await supabase
+    .from("creator_portal_metrics")
+    .select("*")
+    .in("content_id", contentIds)
+    .order("captured_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data as PortalMetric[];
+}
+
+/** FR-M13-06: what the creator sent and how it was verified. */
+export async function listPortalSubmissions(
+  supabase: SupabaseClient<Database>,
+  contentIds: string[],
+): Promise<PortalSubmission[]> {
+  if (!contentIds.length) return [];
+
+  const { data, error } = await supabase
+    .from("creator_portal_submissions")
+    .select("*")
+    .in("content_id", contentIds)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data as PortalSubmission[];
+}
+
+/** FR-M13-07: the creator's own fee for one assignment, if it exists yet. */
+export async function getPortalPayout(
+  supabase: SupabaseClient<Database>,
+  assignmentId: string,
+): Promise<PortalPayout | null> {
+  const { data, error } = await supabase
+    .from("creator_portal_payouts")
+    .select("*")
+    .eq("campaign_creator_id", assignmentId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? (data as PortalPayout) : null;
 }

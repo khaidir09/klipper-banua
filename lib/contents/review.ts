@@ -54,3 +54,22 @@ export function canMarkPosted(status: ReviewStatus): boolean {
 export function canMarkRemoved(status: ReviewStatus, liveStatus: LiveStatus): boolean {
   return status === "disetujui" && liveStatus === "tayang";
 }
+
+/* ------------------------------------------------------------------ */
+/* Creator portal (M13, v2.0)                                          */
+/* ------------------------------------------------------------------ */
+
+/** FR-M13-05: a creator may correct a waiting draft or answer a revision. */
+export function canCreatorEditDraft(status: ReviewStatus): boolean {
+  return status === "menunggu_review" || status === "revisi";
+}
+
+/** FR-M13-09: a live report only makes sense for approved, offline content. */
+export function canProposePosted(status: ReviewStatus, liveStatus: LiveStatus): boolean {
+  return status === "disetujui" && liveStatus === "belum_tayang";
+}
+
+/** FR-M13-06: metrics are reported for content that is live. */
+export function canSubmitMetric(status: ReviewStatus, liveStatus: LiveStatus): boolean {
+  return status === "disetujui" && liveStatus !== "belum_tayang";
+}

@@ -47,7 +47,7 @@ import {
 } from "@/lib/contents/review";
 import type { ContentView } from "@/lib/data/contents";
 import { formatDateTime } from "@/lib/format/date";
-import { deleteContentAction } from "../../content-actions";
+import { confirmProposedPostedAction, deleteContentAction } from "../../content-actions";
 import {
   ContentDraftDialog,
   PostedDialog,
@@ -307,6 +307,15 @@ function ContentItem({
     });
   }
 
+  /** FR-M13-09: take the creator's live report as it is. */
+  function confirmPosted() {
+    startTransition(async () => {
+      const result = await confirmProposedPostedAction(campaignId, content.id);
+      if (result.status === "success") toast.success(result.message);
+      else toast.error(result.message);
+    });
+  }
+
   return (
     <li className="rounded-lg border p-3 sm:p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -368,6 +377,25 @@ function ContentItem({
             ) : null}
           </p>
         ) : null}
+        {content.proposed_posted_url && content.live_status === "belum_tayang" ? (
+          <p className="rounded-md bg-muted px-2 py-1">
+            <span className="font-medium">Laporan kreator: </span>
+            <a
+              href={content.proposed_posted_url}
+              target="_blank"
+              rel="noreferrer"
+              className="break-all underline-offset-4 hover:underline"
+            >
+              {content.proposed_posted_url}
+            </a>
+            {content.proposed_posted_at ? (
+              <span className="text-muted-foreground">
+                {" "}
+                · tayang {formatDateTime(content.proposed_posted_at, timezone)}
+              </span>
+            ) : null}
+          </p>
+        ) : null}
         {content.removed_at ? (
           <p className="text-destructive">Dihapus {formatDateTime(content.removed_at, timezone)}</p>
         ) : null}
@@ -389,6 +417,15 @@ function ContentItem({
           <Button size="sm" onClick={() => onOpen("new-draft")}>
             <Upload aria-hidden />
             Catat draf baru
+          </Button>
+        ) : null}
+        {canEdit &&
+        content.proposed_posted_url &&
+        canMarkPosted(content.review_status) &&
+        content.live_status === "belum_tayang" ? (
+          <Button size="sm" disabled={isPending} onClick={confirmPosted}>
+            <CheckCircle2 aria-hidden />
+            Konfirmasi tayang
           </Button>
         ) : null}
         {canEdit && canMarkPosted(content.review_status) && content.live_status !== "dihapus" ? (

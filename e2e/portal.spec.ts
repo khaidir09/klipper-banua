@@ -28,7 +28,8 @@ test("a creator sees their own brief and nothing internal", async ({ page }) => 
     await expect(page.getByText("Ajak lulusan SMA/SMK", { exact: false })).toBeVisible();
     await expect(page.getByText("#PMBDemoBorneo")).toBeVisible();
     await expect(page.getByText(/\/r\/rina-kuliner-/)).toBeVisible();
-    await expect(page.getByText("Honor dasar")).toBeVisible();
+    // "Honor dasar" appears in the fee scheme and in the fee card (M13 phase 10).
+    await expect(page.getByText("Honor dasar").first()).toBeVisible();
 
     // FR-M13-04: the package price and the campaign targets stay internal.
     const body = (await page.locator("body").innerText()).replace(/\s+/g, " ");

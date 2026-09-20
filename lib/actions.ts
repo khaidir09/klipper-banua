@@ -65,6 +65,13 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   OWNER_ONLY: "Hanya owner yang dapat melakukan tindakan ini.",
   OPS_LOG_OWNER_FIXED: "Kampanye dan pencatat waktu tidak dapat diubah.",
   PORTAL_LINK_INTERNAL_ONLY: "Akses portal kreator hanya dapat diubah oleh tim internal.",
+  PORTAL_FIELD_LOCKED: "Bagian itu hanya dapat diubah tim, bukan dari portal kreator.",
+  SUBMISSION_NEEDS_LIVE_CONTENT: "Bukti metrik hanya untuk konten yang sudah tayang.",
+  SUBMISSION_BEFORE_POSTING: "Waktu pengambilan tidak boleh sebelum waktu tayang.",
+  SUBMISSION_NOT_PENDING: "Kiriman ini sudah diverifikasi tim.",
+  SUBMISSION_NOT_FOUND: "Kiriman tidak ditemukan.",
+  SUBMISSION_REJECT_NEEDS_NOTES: "Tulis alasan penolakan agar kreator tahu yang harus diperbaiki.",
+  SUBMISSION_INTERNAL_ONLY: "Hanya tim yang dapat memverifikasi kiriman kreator.",
 };
 
 /** Check constraints whose violation deserves a specific message. */

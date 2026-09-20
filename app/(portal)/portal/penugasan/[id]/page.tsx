@@ -11,12 +11,23 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCreator } from "@/lib/auth/guards";
+import { dueSnapshots, suggestCheckpoint } from "@/lib/calculations/checkpoints";
 import { ASSET_TYPE_LABELS } from "@/lib/constants/campaigns";
-import { getPortalAssignment, listPortalAssets } from "@/lib/data/portal";
+import { PAYOUT_STATUS_LABELS } from "@/lib/constants/finance";
+import {
+  getPortalAssignment,
+  getPortalPayout,
+  listPortalAssets,
+  listPortalContents,
+  listPortalMetrics,
+  listPortalReviews,
+  listPortalSubmissions,
+} from "@/lib/data/portal";
 import { publicEnv } from "@/lib/env";
 import { formatRupiah } from "@/lib/format/currency";
-import { formatCalendarRange } from "@/lib/format/date";
+import { formatCalendarDate, formatCalendarRange } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { SubmissionsPanel, type PortalContentView } from "./submissions-panel";
 
 export const metadata: Metadata = { title: "Brief penugasan" };
 
@@ -37,13 +48,85 @@ export default async function PortalAssignmentPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  await requireCreator();
+  const session = await requireCreator();
 
   const supabase = await createSupabaseServerClient();
   const assignment = await getPortalAssignment(supabase, id);
   if (!assignment) notFound();
 
-  const assets = await listPortalAssets(supabase, assignment.campaign_id);
+  const [assets, contents, payout] = await Promise.all([
+    listPortalAssets(supabase, assignment.campaign_id),
+    listPortalContents(supabase, id),
+    getPortalPayout(supabase, id),
+  ]);
+
+  const contentIds = contents.map((content) => content.id);
+  const [reviews, metrics, submissions] = await Promise.all([
+    listPortalReviews(supabase, contentIds),
+    listPortalMetrics(supabase, contentIds),
+    listPortalSubmissions(supabase, contentIds),
+  ]);
+
+  const tz = session.profile.timezone;
+  const now = new Date();
+  const due = dueSnapshots(
+    contents.map((content) => ({
+      id: content.id,
+      posted_at: content.posted_at,
+      live_status: content.live_status,
+      checkpoints: metrics.filter((m) => m.content_id === content.id).map((m) => m.checkpoint),
+    })),
+    now,
+    tz,
+  );
+
+  const contentViews: PortalContentView[] = contents.map((content) => {
+    const ownMetrics = metrics.filter((metric) => metric.content_id === content.id);
+    return {
+      id: content.id,
+      platform: content.platform,
+      draftUrl: content.draft_url,
+      draftFilePath: content.draft_file_path,
+      captionDraft: content.caption_draft,
+      reviewStatus: content.review_status,
+      liveStatus: content.live_status,
+      postedUrl: content.posted_url,
+      postedAt: content.posted_at,
+      proposedPostedUrl: content.proposed_posted_url,
+      proposedPostedAt: content.proposed_posted_at,
+      lastReview:
+        reviews
+          .filter((review) => review.content_id === content.id)
+          .map((review) => ({
+            decision: review.decision,
+            notes: review.notes,
+            createdAt: review.created_at,
+          }))[0] ?? null,
+      metrics: ownMetrics.map((metric) => ({
+        id: metric.id,
+        checkpoint: metric.checkpoint,
+        capturedAt: metric.captured_at,
+        views: Number(metric.views),
+      })),
+      submissions: submissions
+        .filter((submission) => submission.content_id === content.id)
+        .map((submission) => ({
+          id: submission.id,
+          checkpoint: submission.checkpoint,
+          capturedAt: submission.captured_at,
+          views: Number(submission.views),
+          status: submission.status,
+          reviewNotes: submission.review_notes,
+          createdAt: submission.created_at,
+        })),
+      dueCheckpoints: due.filter((d) => d.contentId === content.id).map((d) => d.checkpoint),
+      suggestedCheckpoint: suggestCheckpoint(
+        { posted_at: content.posted_at, checkpoints: ownMetrics.map((m) => m.checkpoint) },
+        now,
+        tz,
+      ),
+    };
+  });
   const baseUrl = publicEnv.NEXT_PUBLIC_APP_URL.replace(/\/+$/, "");
   const trackingUrl = `${baseUrl}/r/${assignment.tracking_slug}`;
 
@@ -171,6 +254,61 @@ export default async function PortalAssignmentPage({
             />
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Honor saya</CardTitle>
+            <CardDescription>
+              {payout
+                ? payout.status === "draf"
+                  ? "Masih dihitung tim dan bisa berubah sampai disetujui."
+                  : "Sudah diperiksa tim."
+                : "Honor dihitung setelah kampanye selesai."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {payout ? (
+              <DetailList
+                items={[
+                  { label: "Honor dasar", value: formatRupiah(payout.base_amount) },
+                  { label: "Bonus views", value: formatRupiah(payout.views_bonus) },
+                  { label: "Bonus pendaftar", value: formatRupiah(payout.registrant_bonus) },
+                  {
+                    label: "Penyesuaian",
+                    value: payout.adjustment_amount
+                      ? `${formatRupiah(payout.adjustment_amount)}${payout.adjustment_reason ? ` — ${payout.adjustment_reason}` : ""}`
+                      : "–",
+                    wide: true,
+                  },
+                  { label: "Total", value: formatRupiah(payout.total_amount) },
+                  {
+                    label: "Status",
+                    value:
+                      payout.status === "draf"
+                        ? "Sedang dihitung"
+                        : PAYOUT_STATUS_LABELS[payout.status],
+                  },
+                  ...(payout.paid_at
+                    ? [{ label: "Dibayar pada", value: formatCalendarDate(payout.paid_at) }]
+                    : []),
+                ]}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Belum ada perhitungan honor untuk penugasan ini.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <SubmissionsPanel
+          campaignId={assignment.campaign_id}
+          assignmentId={assignment.id}
+          campaignRunning={assignment.campaign_status === "aktif"}
+          contentsCommitted={assignment.contents_committed}
+          timezone={tz}
+          contents={contentViews}
+        />
 
         <Card className="lg:col-span-2">
           <CardHeader>

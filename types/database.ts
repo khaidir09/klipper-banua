@@ -505,6 +505,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "content_reviews_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "content_reviews_reviewer_id_fkey"
             columns: ["reviewer_id"]
             isOneToOne: false
@@ -526,6 +533,9 @@ export type Database = {
           platform: Database["public"]["Enums"]["social_platform"]
           posted_at: string | null
           posted_url: string | null
+          proposed_at: string | null
+          proposed_posted_at: string | null
+          proposed_posted_url: string | null
           removed_at: string | null
           review_status: Database["public"]["Enums"]["review_status"]
           revision_count: number
@@ -543,6 +553,9 @@ export type Database = {
           platform: Database["public"]["Enums"]["social_platform"]
           posted_at?: string | null
           posted_url?: string | null
+          proposed_at?: string | null
+          proposed_posted_at?: string | null
+          proposed_posted_url?: string | null
           removed_at?: string | null
           review_status?: Database["public"]["Enums"]["review_status"]
           revision_count?: number
@@ -560,6 +573,9 @@ export type Database = {
           platform?: Database["public"]["Enums"]["social_platform"]
           posted_at?: string | null
           posted_url?: string | null
+          proposed_at?: string | null
+          proposed_posted_at?: string | null
+          proposed_posted_url?: string | null
           removed_at?: string | null
           review_status?: Database["public"]["Enums"]["review_status"]
           revision_count?: number
@@ -894,8 +910,121 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "metric_snapshots_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "metric_snapshots_entered_by_fkey"
             columns: ["entered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      metric_submissions: {
+        Row: {
+          captured_at: string
+          checkpoint: Database["public"]["Enums"]["metric_checkpoint"]
+          comments: number
+          content_id: string
+          created_at: string
+          id: string
+          likes: number
+          proof_path: string
+          review_notes: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          saves: number
+          shares: number
+          snapshot_id: string | null
+          status: Database["public"]["Enums"]["submission_status"]
+          submitted_by: string | null
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          captured_at: string
+          checkpoint: Database["public"]["Enums"]["metric_checkpoint"]
+          comments?: number
+          content_id: string
+          created_at?: string
+          id?: string
+          likes?: number
+          proof_path: string
+          review_notes?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          saves?: number
+          shares?: number
+          snapshot_id?: string | null
+          status?: Database["public"]["Enums"]["submission_status"]
+          submitted_by?: string | null
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          captured_at?: string
+          checkpoint?: Database["public"]["Enums"]["metric_checkpoint"]
+          comments?: number
+          content_id?: string
+          created_at?: string
+          id?: string
+          likes?: number
+          proof_path?: string
+          review_notes?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          saves?: number
+          shares?: number
+          snapshot_id?: string | null
+          status?: Database["public"]["Enums"]["submission_status"]
+          submitted_by?: string | null
+          updated_at?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metric_submissions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_submissions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_submissions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_submissions_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_metrics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_submissions_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "metric_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_submissions_submitted_by_fkey"
+            columns: ["submitted_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1296,6 +1425,120 @@ export type Database = {
           },
         ]
       }
+      creator_portal_contents: {
+        Row: {
+          campaign_creator_id: string | null
+          campaign_id: string | null
+          caption_draft: string | null
+          created_at: string | null
+          draft_file_path: string | null
+          draft_url: string | null
+          id: string | null
+          live_status: Database["public"]["Enums"]["live_status"] | null
+          platform: Database["public"]["Enums"]["social_platform"] | null
+          posted_at: string | null
+          posted_url: string | null
+          proposed_at: string | null
+          proposed_posted_at: string | null
+          proposed_posted_url: string | null
+          removed_at: string | null
+          review_status: Database["public"]["Enums"]["review_status"] | null
+          revision_count: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_portal_metrics: {
+        Row: {
+          captured_at: string | null
+          checkpoint: Database["public"]["Enums"]["metric_checkpoint"] | null
+          comments: number | null
+          content_id: string | null
+          created_at: string | null
+          id: string | null
+          likes: number | null
+          saves: number | null
+          shares: number | null
+          views: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metric_snapshots_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_snapshots_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_portal_payouts: {
+        Row: {
+          adjustment_amount: number | null
+          adjustment_reason: string | null
+          base_amount: number | null
+          calculated_at: string | null
+          campaign_creator_id: string | null
+          campaign_id: string | null
+          id: string | null
+          paid_at: string | null
+          registrant_bonus: number | null
+          status: Database["public"]["Enums"]["payout_status"] | null
+          total_amount: number | null
+          views_bonus: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: true
+            referencedRelation: "campaign_creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: true
+            referencedRelation: "creator_portal_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_portal_profile: {
         Row: {
           city: string | null
@@ -1341,6 +1584,65 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_portal_reviews: {
+        Row: {
+          content_id: string | null
+          created_at: string | null
+          decision: Database["public"]["Enums"]["review_decision"] | null
+          id: string | null
+          notes: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_reviews_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reviews_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_portal_submissions: {
+        Row: {
+          captured_at: string | null
+          checkpoint: Database["public"]["Enums"]["metric_checkpoint"] | null
+          comments: number | null
+          content_id: string | null
+          created_at: string | null
+          id: string | null
+          likes: number | null
+          proof_path: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          saves: number | null
+          shares: number | null
+          status: Database["public"]["Enums"]["submission_status"] | null
+          views: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metric_submissions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_submissions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       anonymize_creator: { Args: { target_id: string }; Returns: string[] }
@@ -1372,6 +1674,10 @@ export type Database = {
       is_owner: { Args: never; Returns: boolean }
       open_report_share_link: {
         Args: { p_token_hash: string }
+        Returns: string
+      }
+      review_metric_submission: {
+        Args: { p_accept: boolean; p_id: string; p_notes?: string }
         Returns: string
       }
     }
@@ -1411,6 +1717,7 @@ export type Database = {
       review_decision: "disetujui" | "revisi" | "ditolak"
       review_status: "menunggu_review" | "disetujui" | "revisi" | "ditolak"
       social_platform: "tiktok" | "instagram" | "youtube" | "facebook"
+      submission_status: "menunggu" | "diterima" | "ditolak"
       user_role: "owner" | "manager" | "creator"
     }
     CompositeTypes: {
@@ -1580,6 +1887,7 @@ export const Constants = {
       review_decision: ["disetujui", "revisi", "ditolak"],
       review_status: ["menunggu_review", "disetujui", "revisi", "ditolak"],
       social_platform: ["tiktok", "instagram", "youtube", "facebook"],
+      submission_status: ["menunggu", "diterima", "ditolak"],
       user_role: ["owner", "manager", "creator"],
     },
   },

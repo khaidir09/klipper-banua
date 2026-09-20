@@ -16,7 +16,11 @@ import { METRIC_PROOF_BUCKET } from "@/lib/constants/metrics";
 import { zonedInputToUtc } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { uuidField } from "@/lib/validation/common";
-import { registrantReportSchema, snapshotSchema } from "@/lib/validation/metrics";
+import {
+  registrantReportSchema,
+  snapshotSchema,
+  submissionReviewSchema,
+} from "@/lib/validation/metrics";
 
 /*
  * Metric snapshots and registrant reports (PRD M7). Rules are checked here for
@@ -232,4 +236,64 @@ export async function deleteRegistrantReportAction(
 
   revalidateMetrics(campaignId);
   return ok("Laporan dihapus.");
+}
+
+/* ------------------------------------------------------------------ */
+/* Creator submissions (FR-M13-06)                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Accepts or rejects metric numbers a creator sent from the portal. The
+ * database function writes the official snapshot and closes the submission in
+ * one transaction, so numbers can never be half-accepted.
+ */
+export async function reviewMetricSubmissionAction(
+  campaignId: string,
+  values: unknown,
+): Promise<ActionResult> {
+  const session = await requireInternal();
+  if (!uuidField.safeParse(campaignId).success) return fail("ID kampanye tidak valid.");
+  const parsed = submissionReviewSchema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error);
+
+  const supabase = await createSupabaseServerClient();
+  const { data: submission } = await supabase
+    .from("metric_submissions")
+    .select(
+      "id, checkpoint, status, content:contents!inner(assignment:campaign_creators!inner(campaign_id))",
+    )
+    .eq("id", parsed.data.submission_id)
+    .maybeSingle();
+  if (!submission) return fail("Kiriman tidak ditemukan.");
+  if (submission.content.assignment.campaign_id !== campaignId) {
+    return fail("Kiriman tersebut bukan milik kampanye ini.");
+  }
+  if (submission.status !== "menunggu") return fail("Kiriman ini sudah diverifikasi.");
+
+  const { error } = await supabase.rpc("review_metric_submission", {
+    p_id: parsed.data.submission_id,
+    p_accept: parsed.data.accept,
+    p_notes: parsed.data.notes,
+  });
+  if (error) {
+    if (error.code === PG_UNIQUE_VIOLATION) {
+      return fail("Checkpoint ini sudah memiliki snapshot untuk konten tersebut.");
+    }
+    return fail(dbRuleMessage(error, "Verifikasi kiriman gagal disimpan."));
+  }
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "metric_submission",
+    entityId: parsed.data.submission_id,
+    action: "verify_submission",
+    details: {
+      campaign_id: campaignId,
+      checkpoint: submission.checkpoint,
+      accepted: parsed.data.accept,
+    },
+  });
+
+  revalidateMetrics(campaignId);
+  return ok(parsed.data.accept ? "Kiriman diterima dan tercatat." : "Kiriman ditolak.");
 }

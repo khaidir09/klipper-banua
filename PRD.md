@@ -2,9 +2,9 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi              | 0.3 (MVP rilis pilot; v1.1: tautan laporan klien dan pengingat Telegram; v2.0: portal kreator) |
+| Versi              | 0.4 (MVP rilis pilot; v1.1: tautan laporan klien dan pengingat Telegram; v2.0: portal kreator) |
 | Tanggal            | 20 September 2026                                                                           |
-| Status             | Fase 0–8 selesai; v2.0 (portal kreator) sedang dikerjakan di Fase 9–10                      |
+| Status             | Fase 0–9 selesai; Fase 10 (kiriman kreator) melengkapi v2.0                                 |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
 | Pengguna versi ini | Tim internal (`owner`, `manager`); sejak v2.0 kreator memakai portal terbatas                |
 
@@ -239,7 +239,7 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 
 ### M10 — Dasbor dan Pengingat
 
-- **FR-M10-01** Kartu ringkasan: kampanye aktif, konten menunggu review, snapshot metrik yang jatuh tempo, honor belum dibayar, invoice klien belum lunas.
+- **FR-M10-01** Kartu ringkasan: kampanye aktif, konten menunggu review, snapshot metrik yang jatuh tempo, honor belum dibayar, invoice klien belum lunas, dan _(v2.0)_ kiriman kreator yang menunggu verifikasi (usulan tayang dan usulan metrik) lintas kampanye.
 - **FR-M10-02** Daftar **snapshot jatuh tempo**: konten tayang yang sudah melewati H+1, H+3, atau H+7 dari `posted_at` tetapi belum memiliki snapshot untuk checkpoint tersebut. Diurutkan dari yang paling lama terlambat.
 - **FR-M10-03** Daftar konten `menunggu_review` diurutkan dari yang paling lama menunggu.
 - **FR-M10-04** Peringatan konten `dihapus` sebelum memenuhi minimal hari tayang.
@@ -273,9 +273,10 @@ Portal memindahkan pekerjaan input yang sekarang dikerjakan tim lewat WhatsApp k
 
 **Fase 10 — kiriman kreator**
 
-- **FR-M13-05** Kreator mengirim draf konten (tautan atau berkas + draf caption) untuk penugasannya; draf masuk sebagai `contents` berstatus `menunggu_review`. Kreator melihat keputusan review dan catatan revisi, lalu dapat mengirim draf perbaikan.
+- **FR-M13-05** Kreator mengirim draf konten (tautan atau berkas + draf caption) untuk penugasannya di kampanye berstatus `aktif`; draf masuk sebagai `contents` berstatus `menunggu_review`, yaitu antrean review yang sama dengan draf yang dicatat tim. Kreator dapat memperbaiki draf selama belum direview, melihat keputusan review beserta catatan revisi, lalu mengirim draf perbaikan (FR-M6-02). Kreator tidak dapat mengubah draf yang sudah direview, menyetujui kontennya sendiri, atau menghapus konten.
 - **FR-M13-06** Kreator mengunggah bukti metrik (checkpoint, waktu pengambilan, views, likes, komentar, share, simpan, tangkapan layar wajib) sebagai **usulan**. Tim memverifikasi (terima/tolak dengan alasan); hanya usulan yang diterima menjadi `metric_snapshots` resmi. Angka yang memengaruhi honor tidak pernah masuk tanpa verifikasi tim.
-- **FR-M13-07** Kreator melihat rincian honornya sendiri: honor dasar, bonus views, bonus pendaftar, penyesuaian beserta alasannya, total, dan status (`draf` ditampilkan sebagai "sedang dihitung", `disetujui`, `dibayar` beserta tanggal bayar). **Bukti transfer tetap hanya untuk `owner`.**
+- **FR-M13-07** Kreator melihat rincian honornya sendiri untuk setiap penugasan: honor dasar, bonus views, bonus pendaftar, penyesuaian beserta alasannya, total, dan status (`draf` ditampilkan sebagai "sedang dihitung dan masih bisa berubah", `disetujui`, `dibayar` beserta tanggal bayar). **Bukti transfer dan rincian perhitungan internal tetap hanya untuk `owner`.** Honor kreator lain tidak pernah terlihat.
+- **FR-M13-09** Setelah kontennya disetujui, kreator melaporkan konten sudah tayang dengan mengirim URL tayang dan waktu tayang sebagai **usulan** (`contents.proposed_posted_url`, `proposed_posted_at`). Usulan tidak mengubah status tayang; tim mengonfirmasi dengan satu tindakan, dan saat itulah aturan FR-M6-04 berlaku (URL tayang hanya untuk konten yang sudah disetujui). Tim tetap dapat mengisi sendiri tanpa usulan.
 
 **Aturan keamanan M13 (berlaku untuk kedua fase)**
 
@@ -300,7 +301,7 @@ Portal memindahkan pekerjaan input yang sekarang dikerjakan tim lewat WhatsApp k
 | `campaigns`               | `client_id`, `code` (unik), `name`, `objective`, `brief`, `must_do`, `must_not`, `hashtags`, `paid_label_required`, `landing_url`, `start_date`, `end_date`, `min_live_days`, `status`, `package_price`, `target_contents`, `target_views`, `target_registrants`, `default_base_fee`, `default_bonus_per_1000_views`, `default_bonus_per_registrant`, `default_views_bonus_cap`, `closing_notes`, `created_by` |                                                                                    |
 | `campaign_assets`         | `campaign_id`, `title`, `type`, `file_path`, `external_url`, `notes`                                                                                                                                                                                                                                                                                                                                           | Salah satu dari `file_path`/`external_url` wajib                                   |
 | `campaign_creators`       | `campaign_id`, `creator_id`, `status`, `contents_committed`, `base_fee`, `bonus_per_1000_views`, `bonus_per_registrant`, `views_bonus_cap`, `referral_code` (unik global), `tracking_slug` (unik global), `joined_at`                                                                                                                                                                                          | Unik (`campaign_id`, `creator_id`). Kolom honor `null` = pakai default kampanye    |
-| `contents`                | `campaign_creator_id`, `platform`, `draft_url`, `draft_file_path`, `caption_draft`, `review_status`, `revision_count`, `posted_url`, `posted_at`, `live_status`, `removed_at`                                                                                                                                                                                                                                  |                                                                                    |
+| `contents`                | `campaign_creator_id`, `platform`, `draft_url`, `draft_file_path`, `caption_draft`, `review_status`, `revision_count`, `posted_url`, `posted_at`, `live_status`, `removed_at`, `proposed_posted_url`, `proposed_posted_at`, `proposed_at`                                                                                                                                                                                                                                  |                                                                                    |
 | `content_reviews`         | `content_id`, `decision`, `checklist jsonb`, `notes`, `reviewer_id`                                                                                                                                                                                                                                                                                                                                            | Riwayat, tidak diubah setelah dibuat                                               |
 | `metric_snapshots`        | `content_id`, `checkpoint`, `captured_at`, `views`, `likes`, `comments`, `shares`, `saves`, `proof_path`, `entered_by`                                                                                                                                                                                                                                                                                         | Unik (`content_id`, `checkpoint`) kecuali `lainnya`                                |
 | `link_clicks`             | `campaign_creator_id`, `clicked_at`, `referrer`, `user_agent`, `ip_hash`, `is_bot`                                                                                                                                                                                                                                                                                                                             | Insert hanya lewat route server `/r/[slug]`                                        |
@@ -321,7 +322,8 @@ Portal memindahkan pekerjaan input yang sekarang dikerjakan tim lewat WhatsApp k
 | `creator_portal_assets`       | Materi kampanye untuk kampanye yang ditugaskan kepadanya                                                     |
 | `creator_portal_contents`     | Konten miliknya beserta status review (Fase 10)                                                              |
 | `creator_portal_reviews`      | Riwayat keputusan review atas kontennya (Fase 10)                                                            |
-| `creator_portal_metrics`      | Snapshot resmi dan usulan metriknya sendiri (Fase 10)                                                        |
+| `creator_portal_metrics`      | Snapshot metrik resmi atas kontennya sendiri (Fase 10)                                                       |
+| `creator_portal_submissions`  | Usulan metrik yang ia kirim beserta status verifikasinya (Fase 10)                                           |
 | `creator_portal_payouts`      | Rincian honornya sendiri, tanpa `transfer_proof_path` (Fase 10)                                              |
 
 ### 7.1 Penyimpanan berkas (Supabase Storage)
@@ -562,14 +564,15 @@ Kerjakan berurutan. Satu fase = satu atau beberapa sesi Claude Code = satu commi
 - [ ] Kreator hanya dapat mengunduh materi kampanye yang ditugaskan kepadanya.
 - [ ] Akses portal yang dicabut `owner` langsung menutup akses kreator.
 
-### Fase 10 — v2.0: Kiriman Draf, Bukti Metrik, dan Status Honor
+### Fase 10 — v2.0: Kiriman Draf, Laporan Tayang, Bukti Metrik, dan Status Honor
 
-**Cakupan:** FR-M13-05 sampai FR-M13-07. Tabel `metric_submissions` beserta alur verifikasi tim; view `creator_portal_contents`, `creator_portal_reviews`, `creator_portal_metrics`, `creator_portal_payouts`; kebijakan storage `content-drafts` dan `metric-proofs` untuk kreator; halaman kiriman di portal dan panel verifikasi di aplikasi internal.
+**Cakupan:** FR-M13-05 sampai FR-M13-07 dan FR-M13-09, serta kartu kiriman pada FR-M10-01. Kolom usulan tayang di `contents`; tabel `metric_submissions` beserta fungsi verifikasi tim; view `creator_portal_contents`, `creator_portal_reviews`, `creator_portal_metrics`, `creator_portal_submissions`, `creator_portal_payouts`; kebijakan storage `content-drafts` dan `metric-proofs` untuk kreator; halaman kiriman di portal, panel verifikasi di tab Konten dan Metrik, kartu kiriman di dasbor, dan kampanye demo kedua berstatus `aktif` untuk melatih alur portal.
 **Kriteria penerimaan:**
 
 - [ ] Draf yang dikirim kreator muncul di antrean review tim sebagai `menunggu_review`.
-- [ ] Kreator tidak dapat mengubah draf yang sudah direview, menyetujui kontennya sendiri, atau mengisi URL tayang.
-- [ ] Usulan metrik tidak memengaruhi metrik kampanye maupun honor sebelum diterima tim.
+- [ ] Kreator tidak dapat mengubah draf yang sudah direview, menyetujui kontennya sendiri, atau mengisi `posted_url` secara langsung.
+- [ ] Laporan tayang dari kreator baru berlaku setelah tim mengonfirmasi.
+- [ ] Usulan metrik tidak memengaruhi metrik kampanye maupun honor sebelum diterima tim; penolakan wajib disertai alasan.
 - [ ] Kreator melihat rincian honornya sendiri tanpa bukti transfer, dan tidak melihat honor kreator lain.
 - [ ] Setiap tabel dan view baru tercakup di `scripts/rls-check.sql` untuk `owner`, `manager`, `creator`, dan anonim.
 
@@ -622,3 +625,4 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | 0.1   | 17 Sep 2026 | Draf awal berdasarkan diskusi validasi ide |
 | 0.2   | 19 Sep 2026 | v1.1: FR-M9-05 (tautan laporan klien), FR-M10-05 (pengingat Telegram via n8n menggantikan WhatsApp), tabel `report_share_links`, Fase 8 |
 | 0.3   | 20 Sep 2026 | v2.0: modul M13 (portal kreator), peran `creator`, view `creator_portal_*`, tabel `metric_submissions`, Fase 9 dan Fase 10. Portal kreator keluar dari daftar "di luar cakupan"; portal klien tetap di luar cakupan |
+| 0.4   | 20 Sep 2026 | Fase 10: FR-M13-09 (laporan tayang dari kreator sebagai usulan), kartu kiriman kreator pada FR-M10-01, kolom `contents.proposed_posted_*`, view `creator_portal_submissions` |

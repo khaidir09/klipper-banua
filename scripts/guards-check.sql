@@ -411,3 +411,110 @@ select
   (select count(*) from public.profiles where id='88888888-0000-0000-0000-0000000000f1') as profile_rows;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 10 (v2.0): what a creator may send from the portal (PRD M13)
+-- ---------------------------------------------------------------------------
+begin;
+create temporary table p10_roles on commit drop as
+select
+  (select id from public.profiles where role = 'owner' and is_active limit 1) as owner_id,
+  (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id,
+  '77777777-0000-0000-0000-0000000000f1'::uuid as creator_user_id;
+
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values (
+  '77777777-0000-0000-0000-0000000000f1',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated',
+  'authenticated',
+  'guard.portal10@example.test',
+  '{}'::jsonb,
+  jsonb_build_object('full_name', 'Guard Portal Creator 10', 'role', 'creator'),
+  now(),
+  now()
+);
+insert into public.creators (id, full_name, birth_date, province, status, profile_id) values
+ ('77777777-0000-0000-0000-0000000000a1','Portal C10','1995-01-01','Kalimantan Selatan','aktif','77777777-0000-0000-0000-0000000000f1'),
+ ('77777777-0000-0000-0000-0000000000a2','Other C10','1995-01-01','Kalimantan Selatan','aktif',null);
+insert into public.clients (id, name, type, province) values ('77777777-0000-0000-0000-000000000001','Portal Client 10','kampus_swasta','Kalimantan Selatan');
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, landing_url) values
+ ('77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-000000000001','PORTAL10-2026-01','Portal 10','awareness','2026-10-01','2026-10-31','aktif', null);
+insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values
+ ('77777777-0000-0000-0000-0000000000b1','77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-0000000000a1','PRTLTA','portal10-a'),
+ ('77777777-0000-0000-0000-0000000000b2','77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-0000000000a2','PRTLTB','portal10-b');
+-- One approved, live content of the portal creator; one still waiting.
+insert into public.contents (id, campaign_creator_id, platform, draft_url, review_status, posted_url, posted_at, live_status) values
+ ('77777777-0000-0000-0000-0000000000d1','77777777-0000-0000-0000-0000000000b1','tiktok','https://example.com/d1','disetujui','https://example.com/live', now() - interval '2 days','tayang'),
+ ('77777777-0000-0000-0000-0000000000d2','77777777-0000-0000-0000-0000000000b1','instagram','https://example.com/d2','disetujui', null, null,'belum_tayang');
+
+select set_config('request.jwt.claims', json_build_object('sub','77777777-0000-0000-0000-0000000000f1','role','authenticated')::text, true) is not null as creator_claims;
+set local role authenticated;
+\echo 'P10-1. creator sends a draft for another creator (expect RLS violation)'
+savepoint a; insert into public.contents (campaign_creator_id, platform, draft_url) values ('77777777-0000-0000-0000-0000000000b2','tiktok','https://example.com/x'); rollback to savepoint a;
+\echo 'P10-2. creator sends their own draft (expect INSERT 1, waiting for review)'
+insert into public.contents (id, campaign_creator_id, platform, draft_url, caption_draft) values ('77777777-0000-0000-0000-0000000000d3','77777777-0000-0000-0000-0000000000b1','tiktok','https://example.com/d3','Draf dari portal');
+select review_status, live_status, posted_url is null as no_live_url from public.contents where id='77777777-0000-0000-0000-0000000000d3';
+\echo 'P10-3. creator marks their own content live (expect PORTAL_FIELD_LOCKED)'
+savepoint b; update public.contents set posted_url='https://example.com/self', posted_at=now(), live_status='tayang' where id='77777777-0000-0000-0000-0000000000d2'; rollback to savepoint b;
+\echo 'P10-4. creator approves their own content (expect a rejected transition)'
+savepoint c; update public.contents set review_status='disetujui' where id='77777777-0000-0000-0000-0000000000d3'; rollback to savepoint c;
+\echo 'P10-5. creator reports it live instead (expect UPDATE 1, still belum_tayang)'
+update public.contents set proposed_posted_url='https://example.com/proposed', proposed_posted_at=now() where id='77777777-0000-0000-0000-0000000000d2';
+select live_status, proposed_at is not null as stamped from public.contents where id='77777777-0000-0000-0000-0000000000d2';
+\echo 'P10-6. metrics for content that is not live (expect SUBMISSION_NEEDS_LIVE_CONTENT)'
+savepoint d; insert into public.metric_submissions (content_id, checkpoint, captured_at, proof_path) values ('77777777-0000-0000-0000-0000000000d2','H+1', now(), 'x/p.png'); rollback to savepoint d;
+\echo 'P10-7. captured before the content went live (expect SUBMISSION_BEFORE_POSTING)'
+savepoint e; insert into public.metric_submissions (content_id, checkpoint, captured_at, proof_path) values ('77777777-0000-0000-0000-0000000000d1','H+1', now() - interval '5 days', 'x/p.png'); rollback to savepoint e;
+\echo 'P10-8. a valid submission (expect INSERT 1, status menunggu)'
+insert into public.metric_submissions (id, content_id, checkpoint, captured_at, views, proof_path) values ('77777777-0000-0000-0000-0000000000e1','77777777-0000-0000-0000-0000000000d1','H+1', now() - interval '1 day', 4200, 'x/p.png');
+select status, submitted_by = '77777777-0000-0000-0000-0000000000f1' as own from public.metric_submissions where id='77777777-0000-0000-0000-0000000000e1';
+\echo 'P10-9. creator verifies their own submission (expect SUBMISSION_INTERNAL_ONLY)'
+savepoint f; select public.review_metric_submission('77777777-0000-0000-0000-0000000000e1', true, ''); rollback to savepoint f;
+\echo 'P10-10. the numbers are not official yet (expect 0 snapshots)'
+reset role;
+select count(*) as snapshots from public.metric_snapshots where content_id='77777777-0000-0000-0000-0000000000d1';
+
+select set_config('request.jwt.claims', json_build_object('sub',(select manager_id from p10_roles),'role','authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+\echo 'P10-11. team rejects without a reason (expect SUBMISSION_REJECT_NEEDS_NOTES)'
+savepoint g; select public.review_metric_submission('77777777-0000-0000-0000-0000000000e1', false, '   '); rollback to savepoint g;
+\echo 'P10-12. team accepts (expect a snapshot id, then status diterima and 1 snapshot)'
+select public.review_metric_submission('77777777-0000-0000-0000-0000000000e1', true, '') is not null as snapshot_created;
+select status, snapshot_id is not null as linked from public.metric_submissions where id='77777777-0000-0000-0000-0000000000e1';
+select count(*) as snapshots, max(views) as views from public.metric_snapshots where content_id='77777777-0000-0000-0000-0000000000d1';
+\echo 'P10-13. verifying it twice (expect SUBMISSION_NOT_PENDING)'
+savepoint h; select public.review_metric_submission('77777777-0000-0000-0000-0000000000e1', false, 'berubah pikiran'); rollback to savepoint h;
+\echo 'P10-14. team edits the queue by hand (expect UPDATE 0: no update policy)'
+update public.metric_submissions set views = 99999 where id='77777777-0000-0000-0000-0000000000e1';
+reset role;
+
+select set_config('request.jwt.claims', json_build_object('sub','77777777-0000-0000-0000-0000000000f1','role','authenticated')::text, true) is not null as creator_claims;
+set local role authenticated;
+\echo 'P10-15. creator withdraws a verified submission (expect DELETE 0)'
+delete from public.metric_submissions where id='77777777-0000-0000-0000-0000000000e1';
+\echo 'P10-16. creator withdraws an open one (expect DELETE 1)'
+insert into public.metric_submissions (id, content_id, checkpoint, captured_at, proof_path) values ('77777777-0000-0000-0000-0000000000e2','77777777-0000-0000-0000-0000000000d1','H+3', now(), 'x/p2.png');
+delete from public.metric_submissions where id='77777777-0000-0000-0000-0000000000e2';
+\echo 'P10-17. creator answers a revision request (expect UPDATE 1, back to review)'
+reset role;
+-- The team reviews it first, with the team's own claims.
+select set_config('request.jwt.claims', json_build_object('sub',(select manager_id from p10_roles),'role','authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+insert into public.content_reviews (content_id, decision, notes) values ('77777777-0000-0000-0000-0000000000d3', 'revisi', 'Tambahkan label berbayar.');
+reset role;
+select set_config('request.jwt.claims', json_build_object('sub','77777777-0000-0000-0000-0000000000f1','role','authenticated')::text, true) is not null as creator_claims;
+set local role authenticated;
+update public.contents
+  set draft_url = 'https://example.com/d3-revisi',
+      review_status = 'menunggu_review',
+      revision_count = revision_count + 1
+  where id = '77777777-0000-0000-0000-0000000000d3';
+select review_status, revision_count from public.contents where id='77777777-0000-0000-0000-0000000000d3';
+\echo 'P10-18. creator reads another creator''s content or fee (expect 0 / 0)'
+select
+  (select count(*) from public.contents where campaign_creator_id='77777777-0000-0000-0000-0000000000b2') as other_contents,
+  (select count(*) from public.creator_portal_payouts) as own_payouts;
+reset role;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;

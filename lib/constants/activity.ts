@@ -14,6 +14,7 @@ export const ACTIVITY_ENTITY_LABELS = {
   metric_snapshot: "Snapshot metrik",
   registrant_report: "Laporan pendaftar",
   payout: "Honor",
+  metric_submission: "Kiriman metrik kreator",
   client_payment: "Pembayaran klien",
 } as const;
 
@@ -47,6 +48,10 @@ export const ACTIVITY_ACTION_LABELS = {
   share_link_revoke: "Mencabut tautan laporan klien",
   portal_invite: "Mengundang ke portal kreator",
   portal_access: "Mengubah akses portal kreator",
+  submit_draft: "Mengirim draf dari portal",
+  propose_posted: "Melaporkan konten tayang",
+  submit_metric: "Mengirim bukti metrik",
+  verify_submission: "Memverifikasi kiriman kreator",
 } as const;
 
 export type ActivityAction = keyof typeof ACTIVITY_ACTION_LABELS;

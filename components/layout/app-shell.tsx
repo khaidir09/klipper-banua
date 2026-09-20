@@ -90,8 +90,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const navItems =
-    area === "portal" ? PORTAL_NAV_ITEMS : visibleNavItems(role as InternalRole);
+  const navItems = area === "portal" ? PORTAL_NAV_ITEMS : visibleNavItems(role as InternalRole);
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">

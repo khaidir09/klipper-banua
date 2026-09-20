@@ -1,7 +1,8 @@
 /**
  * Demo data for local development, staging and the end-to-end test
  * (PRD section 11, phase 7): 1 campus with a contact, 8 creators and 1 draft
- * campaign, so the whole flow of section 5.2 can be run from the start. With
+ * campaign, so the whole flow of section 5.2 can be run from the start, plus
+ * a second running campaign for the creator portal (phase 10). With
  * SEED_CREATOR_EMAIL/PASSWORD set, the first creator also gets a portal
  * account (phase 9, M13).
  *
@@ -22,6 +23,13 @@ export const DEMO = {
   clientId: "de300000-0000-4000-8000-000000000001",
   campaignId: "de300000-0000-4000-8000-0000000000c1",
   campaignCode: "DEMO-PMB-2026",
+  // Second campaign, always running, so the creator portal (M13) has a brief
+  // to work on: the first one is closed by the end-to-end owner flow.
+  portalCampaignId: "de300000-0000-4000-8000-0000000000c2",
+  portalCampaignCode: "DEMO-PORTAL-2026",
+  portalAssignmentId: "de300000-0000-4000-8000-0000000000b2",
+  portalLiveContentId: "de300000-0000-4000-8000-0000000000d1",
+  portalRevisionContentId: "de300000-0000-4000-8000-0000000000d2",
 } as const;
 
 const creatorId = (n: number) => `de300000-0000-4000-8000-0000000000a${n}`;
@@ -240,6 +248,225 @@ async function seedPortalAccount(
   return email;
 }
 
+/**
+ * A running campaign for the creator portal (M13, phase 10): two assignments,
+ * one approved content that is already live (ready for a metric submission)
+ * and one waiting for a new draft after a revision request.
+ */
+async function seedPortalCampaign(
+  admin: SupabaseClient<Database>,
+  ownerId: string | null,
+  proof: Buffer,
+  now: Date,
+) {
+  const check = (label: string, error: { message: string } | null) => {
+    if (error) throw new Error(`${label}: ${error.message}`);
+  };
+  const postedAt = addDays(now, -3);
+
+  check(
+    "portal campaign",
+    (
+      await admin.from("campaigns").upsert({
+        id: DEMO.portalCampaignId,
+        client_id: DEMO.clientId,
+        code: DEMO.portalCampaignCode,
+        name: "Open House Universitas Demo Borneo",
+        objective: "pendaftar",
+        brief:
+          "Ajak siswa kelas 12 di Banjarmasin dan sekitarnya datang ke open house kampus. Tunjukkan fasilitas, jurusan favorit, dan cara mendaftar lewat kode referalmu.",
+        must_do: [
+          "Sebutkan tanggal open house di video",
+          "Cantumkan tautan pendaftaran di bio",
+          "Tandai akun kampus di caption",
+        ],
+        must_not: ["Menjanjikan beasiswa penuh", "Memakai musik tanpa izin"],
+        hashtags: ["#OpenHouseDemoBorneo", "#KuliahDiBanua"],
+        paid_label_required: true,
+        landing_url: "https://pmb.kampus-demo.example/open-house",
+        start_date: iso(addDays(now, -10)),
+        end_date: iso(addDays(now, 20)),
+        min_live_days: 14,
+        status: "aktif",
+        package_price: 9_000_000,
+        target_contents: 6,
+        target_views: 80_000,
+        target_registrants: 20,
+        default_base_fee: 300_000,
+        default_bonus_per_1000_views: 4_000,
+        default_bonus_per_registrant: 20_000,
+        default_views_bonus_cap: 200_000,
+        created_by: ownerId,
+      })
+    ).error,
+  );
+
+  check(
+    "portal asset",
+    (
+      await admin.from("campaign_assets").upsert({
+        id: "de300000-0000-4000-8000-0000000000f1",
+        campaign_id: DEMO.portalCampaignId,
+        title: "Panduan open house (tautan)",
+        type: "tautan",
+        external_url: "https://kampus-demo.example/panduan-open-house",
+        notes: "Baca sebelum membuat konten.",
+        created_by: ownerId,
+      })
+    ).error,
+  );
+
+  check(
+    "portal assignments",
+    (
+      await admin.from("campaign_creators").upsert([
+        {
+          id: DEMO.portalAssignmentId,
+          campaign_id: DEMO.portalCampaignId,
+          creator_id: creatorId(1),
+          status: "bergabung",
+          contents_committed: 2,
+          referral_code: "DEMPRA",
+          tracking_slug: "demo-portal-rina",
+          joined_at: addDays(now, -9).toISOString(),
+          created_by: ownerId,
+        },
+        {
+          id: "de300000-0000-4000-8000-0000000000b3",
+          campaign_id: DEMO.portalCampaignId,
+          creator_id: creatorId(2),
+          status: "bergabung",
+          contents_committed: 1,
+          referral_code: "DEMPFZ",
+          tracking_slug: "demo-portal-fauzi",
+          joined_at: addDays(now, -9).toISOString(),
+          created_by: ownerId,
+        },
+      ])
+    ).error,
+  );
+
+  // Content is created the way the app creates it - waiting for review - and
+  // the review rows below move it to its demo state. Review history is
+  // append-only, so this whole block runs only on a fresh demo campaign.
+  const { data: liveContent } = await admin
+    .from("contents")
+    .select("id")
+    .eq("id", DEMO.portalLiveContentId)
+    .maybeSingle();
+
+  if (!liveContent) {
+    check(
+      "portal contents",
+      (
+        await admin.from("contents").insert([
+          {
+            id: DEMO.portalLiveContentId,
+            campaign_creator_id: DEMO.portalAssignmentId,
+            platform: "tiktok",
+            draft_url: "https://drive.example/demo-open-house-draft",
+            caption_draft: "Open house kampus impianmu! Pakai kode DEMPRA saat daftar ya.",
+            created_by: ownerId,
+          },
+          {
+            id: DEMO.portalRevisionContentId,
+            campaign_creator_id: DEMO.portalAssignmentId,
+            platform: "instagram",
+            draft_url: "https://drive.example/demo-open-house-draft-2",
+            caption_draft: "Jangan lupa datang ke open house!",
+            created_by: ownerId,
+          },
+        ])
+      ).error,
+    );
+
+    check(
+      "portal review (disetujui)",
+      (
+        await admin.from("content_reviews").insert({
+          content_id: DEMO.portalLiveContentId,
+          decision: "disetujui",
+          checklist: {
+            sesuai_brief: true,
+            tanpa_larangan: true,
+            label_berbayar: true,
+            info_akurat: true,
+          },
+          notes: "Sudah sesuai brief, silakan tayang.",
+          reviewer_id: ownerId,
+        })
+      ).error,
+    );
+
+    check(
+      "portal live fields",
+      (
+        await admin
+          .from("contents")
+          .update({
+            posted_url: "https://www.tiktok.com/@rina.kuliner/video/demo-open-house",
+            posted_at: postedAt.toISOString(),
+            live_status: "tayang",
+          })
+          .eq("id", DEMO.portalLiveContentId)
+      ).error,
+    );
+
+    check(
+      "portal review (revisi)",
+      (
+        await admin.from("content_reviews").insert({
+          content_id: DEMO.portalRevisionContentId,
+          decision: "revisi",
+          checklist: {},
+          notes:
+            "Tolong sebutkan tanggal open house di detik pertama dan tambahkan label berbayar.",
+          reviewer_id: ownerId,
+        })
+      ).error,
+    );
+  }
+
+  // One official snapshot so the portal shows a verified number and the H+3
+  // checkpoint is the one still waiting for the creator.
+  const metricProofPath = `${DEMO.portalCampaignId}/demo-metric.png`;
+  check(
+    "portal metric proof",
+    (
+      await admin.storage
+        .from("metric-proofs")
+        .upload(metricProofPath, proof, { contentType: "image/png", upsert: true })
+    ).error,
+  );
+
+  const { data: snapshot } = await admin
+    .from("metric_snapshots")
+    .select("id")
+    .eq("content_id", DEMO.portalLiveContentId)
+    .eq("checkpoint", "H+1")
+    .maybeSingle();
+
+  if (!snapshot) {
+    check(
+      "portal snapshot",
+      (
+        await admin.from("metric_snapshots").insert({
+          content_id: DEMO.portalLiveContentId,
+          checkpoint: "H+1",
+          captured_at: addDays(postedAt, 1).toISOString(),
+          views: 8_200,
+          likes: 640,
+          comments: 48,
+          shares: 31,
+          saves: 96,
+          proof_path: metricProofPath,
+          entered_by: ownerId,
+        })
+      ).error,
+    );
+  }
+}
+
 const iso = (date: Date) => date.toISOString().slice(0, 10);
 const addDays = (date: Date, days: number) => new Date(date.getTime() + days * 86_400_000);
 
@@ -437,8 +664,10 @@ async function main() {
     );
   }
 
+  await seedPortalCampaign(admin, owner?.id ?? null, proof, now);
+
   console.log(
-    `Demo data ready: 1 client, ${CREATORS.length} creators, campaign ${DEMO.campaignCode}.`,
+    `Demo data ready: 1 client, ${CREATORS.length} creators, campaigns ${DEMO.campaignCode} and ${DEMO.portalCampaignCode}.`,
   );
   console.log(
     portalEmail

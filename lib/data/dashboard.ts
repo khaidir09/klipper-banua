@@ -34,6 +34,15 @@ export type PendingItem = {
   revisionCount: number;
   waitingSince: string;
 };
+/** FR-M10-01 (v2.0): what creators sent from the portal and nobody checked yet. */
+export type CreatorSubmissionItem = {
+  kind: "metrik" | "tayang";
+  id: string;
+  campaign: CampaignRef;
+  creatorName: string;
+  detail: string;
+  sentAt: string;
+};
 export type EarlyRemovalItem = {
   contentId: string;
   campaign: CampaignRef;
@@ -95,7 +104,16 @@ export async function getDashboard(
   now: Date,
   timezone: string,
 ) {
-  const [active, pending, dueItems, removed, unpaidPayouts, openInvoices] = await Promise.all([
+  const [
+    active,
+    pending,
+    dueItems,
+    removed,
+    unpaidPayouts,
+    openInvoices,
+    metricSubmissions,
+    liveReports,
+  ] = await Promise.all([
     supabase.from("campaigns").select("id", { count: "exact", head: true }).eq("status", "aktif"),
     supabase
       .from("contents")
@@ -111,9 +129,38 @@ export async function getDashboard(
     // FR-M10-01: payouts not yet paid, invoices not yet settled.
     supabase.from("payouts").select("total_amount").neq("status", "dibayar"),
     supabase.from("client_payments").select("amount, paid_amount").neq("status", "lunas"),
+    // FR-M13-06 and FR-M13-09: the creator queue, across campaigns.
+    supabase
+      .from("metric_submissions")
+      .select(
+        `id, checkpoint, views, created_at,
+         content:contents!inner(
+           platform,
+           assignment:campaign_creators!inner(
+             campaign:campaigns(id, code, name, status, min_live_days),
+             creator:creators(full_name, stage_name)
+           )
+         )`,
+      )
+      .eq("status", "menunggu")
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("contents")
+      .select(`id, platform, proposed_posted_url, proposed_at, ${JOIN}`)
+      .not("proposed_posted_url", "is", null)
+      .eq("live_status", "belum_tayang")
+      .order("proposed_at", { ascending: true }),
   ]);
 
-  for (const result of [active, pending, removed, unpaidPayouts, openInvoices]) {
+  for (const result of [
+    active,
+    pending,
+    removed,
+    unpaidPayouts,
+    openInvoices,
+    metricSubmissions,
+    liveReports,
+  ]) {
     if (result.error) throw new Error(result.error.message);
   }
 
@@ -149,6 +196,28 @@ export async function getDashboard(
       removedAt: row.removed_at!,
     }));
 
+  // FR-M10-01 (v2.0): both kinds of creator submission in one queue.
+  const creatorSubmissions: CreatorSubmissionItem[] = [
+    ...openRows((metricSubmissions.data ?? []).map((row) => ({ ...row, ...row.content }))).map(
+      (row) => ({
+        kind: "metrik" as const,
+        id: row.id,
+        campaign: row.assignment.campaign!,
+        creatorName: creatorName(row),
+        detail: `Bukti metrik ${row.checkpoint} · ${row.views} views`,
+        sentAt: row.created_at,
+      }),
+    ),
+    ...openRows(liveReports.data ?? []).map((row) => ({
+      kind: "tayang" as const,
+      id: row.id,
+      campaign: row.assignment.campaign!,
+      creatorName: creatorName(row),
+      detail: "Laporan konten tayang",
+      sentAt: row.proposed_at ?? "",
+    })),
+  ].sort((a, b) => a.sentAt.localeCompare(b.sentAt));
+
   const payouts = unpaidPayouts.data ?? [];
   const invoices = openInvoices.data ?? [];
 
@@ -165,5 +234,6 @@ export async function getDashboard(
     pending: pendingItems,
     due: dueItems,
     earlyRemovals,
+    creatorSubmissions,
   };
 }

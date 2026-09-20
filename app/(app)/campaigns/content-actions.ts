@@ -47,7 +47,7 @@ async function loadContent(supabase: Supabase, campaignId: string, contentId: st
   const { data } = await supabase
     .from("contents")
     .select(
-      "id, review_status, revision_count, live_status, posted_at, draft_file_path, assignment:campaign_creators!inner(campaign_id, campaign:campaigns(paid_label_required))",
+      "id, review_status, revision_count, live_status, posted_at, draft_file_path, proposed_posted_url, proposed_posted_at, assignment:campaign_creators!inner(campaign_id, campaign:campaigns(paid_label_required))",
     )
     .eq("id", contentId)
     .eq("assignment.campaign_id", campaignId)
@@ -259,7 +259,15 @@ export async function markPostedAction(
   const postedAt = zonedInputToUtc(parsed.data.posted_at, session.profile.timezone);
   const { error } = await supabase
     .from("contents")
-    .update({ posted_url: parsed.data.posted_url, posted_at: postedAt, live_status: "tayang" })
+    .update({
+      posted_url: parsed.data.posted_url,
+      posted_at: postedAt,
+      live_status: "tayang",
+      // A creator's live report (FR-M13-09) has served its purpose now.
+      proposed_posted_url: null,
+      proposed_posted_at: null,
+      proposed_at: null,
+    })
     .eq("id", contentId);
   if (error) return fail(dbRuleMessage(error, "Status tayang gagal disimpan."));
 
@@ -354,4 +362,59 @@ export async function deleteContentAction(
 
   revalidateContents(campaignId);
   return ok("Konten dihapus.");
+}
+
+/**
+ * FR-M13-09: confirm the live report a creator sent from the portal. The
+ * proposal is only data until this runs; from here the normal FR-M6-04 rules
+ * apply, so it goes through the same update as `markPostedAction`.
+ */
+export async function confirmProposedPostedAction(
+  campaignId: string,
+  contentId: string,
+): Promise<ActionResult> {
+  const session = await requireInternal();
+  if (!validIds(campaignId, contentId)) return fail("ID tidak valid.");
+
+  const supabase = await createSupabaseServerClient();
+  const content = await loadContent(supabase, campaignId, contentId);
+  if (!content) return fail("Konten tidak ditemukan.");
+  if (!content.proposed_posted_url || !content.proposed_posted_at) {
+    return fail("Belum ada laporan tayang dari kreator.");
+  }
+  if (!canMarkPosted(content.review_status)) {
+    return fail("URL tayang hanya dapat diisi untuk konten yang sudah disetujui.");
+  }
+  if (content.live_status !== "belum_tayang") {
+    return fail("Konten ini sudah ditandai tayang atau dihapus.");
+  }
+
+  const { error } = await supabase
+    .from("contents")
+    .update({
+      posted_url: content.proposed_posted_url,
+      posted_at: content.proposed_posted_at,
+      live_status: "tayang",
+      proposed_posted_url: null,
+      proposed_posted_at: null,
+      proposed_at: null,
+    })
+    .eq("id", contentId);
+  if (error) return fail(dbRuleMessage(error, "Status tayang gagal disimpan."));
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "content",
+    entityId: contentId,
+    action: "posted",
+    details: {
+      campaign_id: campaignId,
+      posted_url: content.proposed_posted_url,
+      posted_at: content.proposed_posted_at,
+      from_creator: true,
+    },
+  });
+
+  revalidateContents(campaignId);
+  return ok("Laporan tayang kreator dikonfirmasi.");
 }

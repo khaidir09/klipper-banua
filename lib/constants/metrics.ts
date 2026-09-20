@@ -12,6 +12,15 @@ export const CHECKPOINT_LABELS: Record<MetricCheckpoint, string> = {
 
 export const CHECKPOINTS = Object.keys(CHECKPOINT_LABELS) as MetricCheckpoint[];
 
+/** FR-M13-06: how a creator's metric submission is doing. */
+export type SubmissionStatus = Database["public"]["Enums"]["submission_status"];
+
+export const SUBMISSION_STATUS_LABELS: Record<SubmissionStatus, string> = {
+  menunggu: "Menunggu verifikasi",
+  diterima: "Diterima",
+  ditolak: "Ditolak",
+};
+
 /** Checkpoints that fall due a fixed number of days after posting (FR-M10-02). */
 export const DUE_CHECKPOINTS = [
   { checkpoint: "H+1", days: 1 },

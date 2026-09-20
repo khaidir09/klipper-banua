@@ -55,8 +55,10 @@ values ('f1000000-0000-4000-8000-000000000008', 'f1000000-0000-4000-8000-0000000
 insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values
   ('f1000000-0000-4000-8000-000000000009', 'f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000003', 'RLSAAA', 'rls-fixture-a'),
   ('f1000000-0000-4000-8000-000000000010', 'f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000004', 'RLSBBB', 'rls-fixture-b');
-insert into public.contents (id, campaign_creator_id, platform, draft_url)
-values ('f1000000-0000-4000-8000-000000000011', 'f1000000-0000-4000-8000-000000000009', 'tiktok', 'https://example.com/draft');
+insert into public.contents (id, campaign_creator_id, platform, draft_url, review_status, posted_url, posted_at, live_status) values
+  ('f1000000-0000-4000-8000-000000000011', 'f1000000-0000-4000-8000-000000000009', 'tiktok', 'https://example.com/draft', 'disetujui', 'https://example.com/live', now() - interval '2 days', 'tayang'),
+  -- Content of the other creator (f1…04), for the portal isolation cases.
+  ('f1000000-0000-4000-8000-000000000023', 'f1000000-0000-4000-8000-000000000010', 'tiktok', 'https://example.com/draft-b', 'menunggu_review', null, null, 'belum_tayang');
 insert into public.content_reviews (id, content_id, decision)
 values ('f1000000-0000-4000-8000-000000000012', 'f1000000-0000-4000-8000-000000000011', 'disetujui');
 insert into public.metric_snapshots (id, content_id, checkpoint, captured_at, proof_path)
@@ -67,6 +69,10 @@ insert into public.registrant_reports (id, campaign_id, period_start, period_end
 values ('f1000000-0000-4000-8000-000000000015', 'f1000000-0000-4000-8000-000000000007', '2026-10-01', '2026-10-07', 3);
 insert into public.payouts (id, campaign_creator_id)
 values ('f1000000-0000-4000-8000-000000000016', 'f1000000-0000-4000-8000-000000000009');
+insert into public.metric_submissions (id, content_id, checkpoint, captured_at, proof_path, status) values
+  ('f1000000-0000-4000-8000-000000000024', 'f1000000-0000-4000-8000-000000000011', 'H+3', now(), 'x/submission.png', 'menunggu'),
+  -- Someone else's submission: the portal creator must not see or touch it.
+  ('f1000000-0000-4000-8000-000000000025', 'f1000000-0000-4000-8000-000000000023', 'H+1', now(), 'x/submission-b.png', 'menunggu');
 insert into public.client_payments (id, campaign_id, invoice_number, amount, due_date)
 values ('f1000000-0000-4000-8000-000000000017', 'f1000000-0000-4000-8000-000000000007', 'RLS-INV-1', 1000000, '2026-11-01');
 insert into public.ops_time_logs (id, campaign_id, user_id, activity, minutes, log_date)
@@ -91,7 +97,9 @@ values ('f1000000-0000-4000-8000-000000000022', 'f1000000-0000-4000-8000-0000000
 -- Campaign material is stored as `<campaign_id>/<file>` (lib/storage/upload.ts).
 insert into storage.objects (bucket_id, name) values
   ('campaign-assets', 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'),
-  ('campaign-assets', 'f1000000-0000-4000-8000-000000000022/rls-unassigned.png');
+  ('campaign-assets', 'f1000000-0000-4000-8000-000000000022/rls-unassigned.png'),
+  ('content-drafts', 'f1000000-0000-4000-8000-000000000007/rls-assigned.mp4'),
+  ('metric-proofs', 'f1000000-0000-4000-8000-000000000007/rls-assigned.png');
 
 -- ---------------------------------------------------------------------------
 -- Probe: runs one statement as a role and reports allow / deny / error.
@@ -245,6 +253,36 @@ insert into rls_cases values
   ('storage:campaign-assets-assigned', 'select', $q$select count(*) from storage.objects where bucket_id = 'campaign-assets' and name = 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'$q$),
   ('storage:campaign-assets-unassigned', 'select', $q$select count(*) from storage.objects where bucket_id = 'campaign-assets' and name = 'f1000000-0000-4000-8000-000000000022/rls-unassigned.png'$q$);
 
+-- Phase 10 (M13): drafts, live reports, metric submissions and fees.
+insert into rls_cases values
+  ('metric_submissions', 'select', $q$select count(*) from public.metric_submissions where id = 'f1000000-0000-4000-8000-000000000024'$q$),
+  ('metric_submissions', 'insert', $q$insert into public.metric_submissions (content_id, checkpoint, captured_at, proof_path) values ('f1000000-0000-4000-8000-000000000011', 'akhir', now(), 'x/new.png')$q$),
+  ('metric_submissions', 'update', $q$update public.metric_submissions set review_notes = review_notes where id = 'f1000000-0000-4000-8000-000000000024'$q$),
+  ('metric_submissions', 'delete', $q$delete from public.metric_submissions where id = 'f1000000-0000-4000-8000-000000000024'$q$),
+  -- Another creator's submission stays out of reach.
+  ('metric_submissions_other', 'select', $q$select count(*) from public.metric_submissions where id = 'f1000000-0000-4000-8000-000000000025'$q$),
+  ('metric_submissions_other', 'delete', $q$delete from public.metric_submissions where id = 'f1000000-0000-4000-8000-000000000025'$q$),
+  ('contents_other', 'select', $q$select count(*) from public.contents where id = 'f1000000-0000-4000-8000-000000000023'$q$),
+
+  -- A creator may send a draft for their own assignment, but not for someone else's.
+  ('contents_own_draft', 'insert', $q$insert into public.contents (campaign_creator_id, platform, draft_url) values ('f1000000-0000-4000-8000-000000000009', 'instagram', 'https://example.com/portal-draft')$q$),
+  ('contents_other_draft', 'insert', $q$insert into public.contents (campaign_creator_id, platform, draft_url) values ('f1000000-0000-4000-8000-000000000010', 'instagram', 'https://example.com/portal-draft-b')$q$),
+  ('contents_own_update', 'update', $q$update public.contents set caption_draft = caption_draft where id = 'f1000000-0000-4000-8000-000000000011'$q$),
+  ('contents_other_update', 'update', $q$update public.contents set caption_draft = caption_draft where id = 'f1000000-0000-4000-8000-000000000023'$q$),
+
+  ('creator_portal_contents', 'select', $q$select count(*) from public.creator_portal_contents$q$),
+  ('creator_portal_reviews', 'select', $q$select count(*) from public.creator_portal_reviews$q$),
+  ('creator_portal_metrics', 'select', $q$select count(*) from public.creator_portal_metrics$q$),
+  ('creator_portal_submissions', 'select', $q$select count(*) from public.creator_portal_submissions$q$),
+  ('creator_portal_payouts', 'select', $q$select count(*) from public.creator_portal_payouts$q$),
+  -- The fee of the other assignment (f1…10) is never listed for this creator.
+  ('creator_portal_payouts_other', 'select', $q$select count(*) from public.creator_portal_payouts where campaign_creator_id = 'f1000000-0000-4000-8000-000000000010'$q$),
+
+  ('storage:content-drafts-assigned', 'select', $q$select count(*) from storage.objects where bucket_id = 'content-drafts' and name = 'f1000000-0000-4000-8000-000000000007/rls-assigned.mp4'$q$),
+  ('storage:content-drafts-assigned', 'insert', $q$insert into storage.objects (bucket_id, name) values ('content-drafts', 'f1000000-0000-4000-8000-000000000007/rls-new.mp4')$q$),
+  ('storage:metric-proofs-assigned', 'select', $q$select count(*) from storage.objects where bucket_id = 'metric-proofs' and name = 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'$q$),
+  ('storage:metric-proofs-assigned', 'insert', $q$insert into storage.objects (bucket_id, name) values ('metric-proofs', 'f1000000-0000-4000-8000-000000000007/rls-new.png')$q$);
+
 -- Storage buckets: list, upload, remove.
 insert into rls_cases
 select 'storage:' || bucket, op, sql
@@ -378,6 +416,40 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) valu
 
 -- Portal actions must stay in the audit trail (FR-M11-01); reading it does not.
 update rls_expected set creator = 'a' where tbl = 'activity_logs' and op = 'insert';
+
+-- The fixture content and assignment belong to the portal creator, so for
+-- `contents` the creator column means "their own row"; the *_other cases
+-- below check that someone else's content stays out of reach. Deleting
+-- content is never theirs.
+update rls_expected set creator = 'a'
+  where tbl = 'contents' and op in ('select', 'insert', 'update');
+
+-- Phase 10 (M13): what the portal may write, and what stays with the team.
+insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) values
+  -- The fixture submission is the portal creator's own one.
+  ('metric_submissions', 'select', 'a', 'a', 'd', 'd', 'a'),
+  -- The creator sends and may withdraw their own open submission; verifying
+  -- happens through review_metric_submission, so nobody updates rows directly.
+  ('metric_submissions', 'insert', 'd', 'd', 'd', 'd', 'a'),
+  ('metric_submissions', 'update', 'd', 'd', 'd', 'd', 'd'),
+  ('metric_submissions', 'delete', 'd', 'd', 'd', 'd', 'a'),
+  ('metric_submissions_other', 'select', 'a', 'a', 'd', 'd', 'd'),
+  ('metric_submissions_other', 'delete', 'd', 'd', 'd', 'd', 'd'),
+  ('contents_other', 'select', 'a', 'a', 'd', 'd', 'd'),
+  ('contents_own_draft', 'insert', 'a', 'a', 'd', 'd', 'a'),
+  ('contents_other_draft', 'insert', 'a', 'a', 'd', 'd', 'd'),
+  ('contents_own_update', 'update', 'a', 'a', 'd', 'd', 'a'),
+  ('contents_other_update', 'update', 'a', 'a', 'd', 'd', 'd'),
+  ('creator_portal_contents', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_reviews', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_metrics', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_submissions', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_payouts', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_payouts_other', 'select', 'd', 'd', 'd', 'd', 'd'),
+  ('storage:content-drafts-assigned', 'select', 'a', 'a', 'd', 'd', 'a'),
+  ('storage:content-drafts-assigned', 'insert', 'a', 'a', 'd', 'd', 'a'),
+  ('storage:metric-proofs-assigned', 'select', 'a', 'a', 'd', 'd', 'a'),
+  ('storage:metric-proofs-assigned', 'insert', 'a', 'a', 'd', 'd', 'a');
 
 -- ---------------------------------------------------------------------------
 -- Run every case for every role.

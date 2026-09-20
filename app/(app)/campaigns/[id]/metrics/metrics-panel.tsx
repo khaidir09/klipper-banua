@@ -27,11 +27,16 @@ import type { DueSnapshot } from "@/lib/calculations/checkpoints";
 import { LIVE_STATUS_LABELS } from "@/lib/constants/contents";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/constants/creators";
 import { CHECKPOINT_LABELS, type MetricCheckpoint } from "@/lib/constants/metrics";
-import type { MetricContentView, RegistrantReportView } from "@/lib/data/metrics";
+import type {
+  MetricContentView,
+  PendingSubmissionView,
+  RegistrantReportView,
+} from "@/lib/data/metrics";
 import { formatCalendarRange, formatDateTime } from "@/lib/format/date";
 import { formatNumber, formatPercent } from "@/lib/format/number";
 import { deleteRegistrantReportAction, deleteSnapshotAction } from "../../metric-actions";
 import { RegistrantReportDialog, SnapshotDialog } from "./metrics-dialogs";
+import { SubmissionsQueue } from "./submissions-queue";
 
 export type MetricsContent = MetricContentView & {
   creatorName: string;
@@ -64,6 +69,7 @@ export type MetricsPanelProps = {
   contents: MetricsContent[];
   reports: RegistrantReportView[];
   assignments: AssignmentOption[];
+  pendingSubmissions: PendingSubmissionView[];
 };
 
 function StatTile({ label, value, detail }: { label: string; value: string; detail?: string }) {
@@ -115,6 +121,13 @@ export function MetricsPanel(props: MetricsPanelProps) {
           }
         />
       </div>
+
+      <SubmissionsQueue
+        campaignId={campaignId}
+        canEdit={canEdit}
+        timezone={timezone}
+        submissions={props.pendingSubmissions}
+      />
 
       <Card>
         <CardHeader>

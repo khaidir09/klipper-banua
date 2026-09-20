@@ -4,8 +4,9 @@ Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kali
 bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
-Status: **Fase 9 — v2.0** selesai: portal kreator (`/portal`) dengan peran `creator`, undangan
-akun dari halaman kreator, dasbor penugasan, brief, materi, kode referal, dan skema honor.
+Status: **Fase 10 — v2.0** selesai: portal kreator lengkap. Fase 9 memberi akses dan brief;
+Fase 10 menambah kiriman draf, laporan tayang, bukti metrik dengan verifikasi tim, dan status
+honor.
 Fase 8 (v1.1): tautan laporan baca-saja untuk klien (`/laporan/<token>`, dibuat dari tab Laporan
 kampanye) dan pengingat Telegram harian snapshot jatuh tempo lewat n8n
 (`/api/reminders/due-snapshots`, workflow di `docs/n8n/`). Fase 0–7 (MVP pilot): autentikasi,
@@ -55,7 +56,7 @@ templat yang sama ke _Authentication → Email Templates_ di dashboard proyek Su
 
 `npm run db:rls-check` menjalankan `scripts/rls-check.sql`: matriks SELECT/INSERT/UPDATE/DELETE
 untuk **setiap tabel, view, dan bucket Storage** sebagai `owner`, `manager`, anggota nonaktif,
-akun portal `creator`, dan `anon`, dibandingkan dengan hasil yang diharapkan (490 kasus). Skrip gagal (exit code bukan 0) bila ada
+akun portal `creator`, dan `anon`, dibandingkan dengan hasil yang diharapkan (595 kasus). Skrip gagal (exit code bukan 0) bila ada
 yang tidak cocok atau bila ada tabel `public` tanpa RLS, tanpa kebijakan, atau belum masuk
 matriks (view wajib masuk matriks juga), sehingga tabel atau view baru tidak bisa lolos tanpa
 diuji. Juga memeriksa bahwa manager hanya
@@ -71,8 +72,11 @@ pribadi; kode referal setelah ada laporan), serta keuangan (honor untuk kampanye
 persetujuan/pembayaran oleh manager, hitung ulang honor yang sudah disetujui, dibayar tanpa bukti,
 penyesuaian tanpa alasan, lompatan status), serta waktu operasional (mencatat atas nama orang lain,
 durasi di luar 1–1.440 menit, memindahkan catatan ke pengguna lain), serta anonimisasi kreator
-(oleh manager, mengubah atau menambah rekening setelah dianonimkan, anonimisasi ganda) —
-masing-masing harus ditolak database.
+(oleh manager, mengubah atau menambah rekening setelah dianonimkan, anonimisasi ganda), serta
+portal kreator (kreator mengirim draf untuk penugasan orang lain, menandai kontennya tayang atau
+menyetujui kontennya sendiri, mengirim metrik untuk konten belum tayang atau sebelum waktu tayang,
+memverifikasi kiriman sendiri, tim menolak tanpa alasan, verifikasi ganda) — masing-masing harus
+ditolak database.
 
 ## Portal kreator (v2.0)
 
@@ -80,6 +84,17 @@ Kreator memakai halaman login yang sama lalu masuk ke `/portal`: daftar penugasa
 materi kampanye, kode referal dan tautan pelacakan, serta skema honor yang berlaku baginya.
 Undangan dikirim dari tab **Portal** di halaman kreator (status wajib terverifikasi atau aktif);
 `owner` dapat mencabut atau mengaktifkan kembali aksesnya.
+
+Dari portal kreator juga mengirim pekerjaannya, dengan prinsip **kreator mengisi, tim memutuskan**:
+
+| Kreator mengirim                           | Yang terjadi                                                                                                                                                                           |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Draf konten (tautan atau berkas + caption) | Masuk ke antrean review tim yang sama seperti draf yang dicatat tim; kreator melihat keputusan dan catatan revisi, lalu dapat mengirim draf baru                                       |
+| Laporan konten tayang (URL + waktu)        | Tersimpan sebagai usulan; baru menjadi status tayang setelah tim menekan **Konfirmasi tayang**                                                                                         |
+| Bukti metrik (angka + tangkapan layar)     | Masuk ke `metric_submissions`; hanya usulan yang **diterima** tim menjadi snapshot resmi, jadi tidak ada angka yang memengaruhi honor tanpa diperiksa. Penolakan wajib disertai alasan |
+
+Tim melihat antreannya di tab **Konten** dan **Metrik** kampanye, serta di kartu "Kiriman kreator"
+pada dasbor. Kreator melihat rincian honornya sendiri (tanpa bukti transfer) di halaman penugasan.
 
 Peran `creator` tidak punya kebijakan RLS atas tabel mana pun. Semua bacaan portal lewat view
 `creator_portal_profile`, `creator_portal_assignments`, dan `creator_portal_assets` yang memfilter
@@ -90,15 +105,17 @@ internal saja, sehingga seluruh kebijakan lama otomatis menolak akun portal.
 ## Data demo dan uji E2E
 
 `npm run seed:demo` mengisi Universitas Demo Borneo (fiktif), 8 kreator dengan status beragam,
-dan kampanye draft `DEMO-PMB-2026`, sehingga alur PRD Bagian 5.2 bisa dilatih dari awal. Bila
+kampanye draft `DEMO-PMB-2026`, dan kampanye berjalan `DEMO-PORTAL-2026` (berisi konten disetujui,
+konten yang diminta revisi, dan satu snapshot) untuk melatih portal kreator. Bila
 `SEED_CREATOR_EMAIL`/`SEED_CREATOR_PASSWORD` diisi, kreator pertama juga mendapat akun portal.
 Skrip menolak URL Supabase non-lokal. `npm run seed:demo:reset` mengembalikan kampanye demo ke draft.
 
 `npm run test:e2e` (Playwright, memakai Chrome terpasang) menjalankan alur kritis sebagai owner:
 tugaskan kreator → aktifkan → draf, revisi, setujui → tayang → snapshot dengan bukti, laporan
 pendaftar, klik tautan → selesaikan → hitung, setujui, bayar honor → invoice lunas → laporan
-cetak A4 dan CSV → log aktivitas. Lalu memeriksa batas akses manager, dan portal kreator (brief
-miliknya sendiri, tanpa harga paket, tanpa akses ke rute internal). Data demo di-reset otomatis
+cetak A4 dan CSV → log aktivitas. Lalu memeriksa batas akses manager, dan portal kreator: brief
+miliknya sendiri (tanpa harga paket, tanpa akses ke rute internal) serta alur penuh kirim draf →
+review tim → laporan tayang → konfirmasi tim → bukti metrik → verifikasi tim. Data demo di-reset otomatis
 sebelum setiap run. Butuh `npm run db:start` dan akun dari `seed:owner` (termasuk manager) serta
 `seed:demo` (akun portal kreator).
 

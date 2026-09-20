@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { registrantReportSchema, snapshotSchema } from "@/lib/validation/metrics";
+import {
+  registrantReportSchema,
+  snapshotSchema,
+  submissionReviewSchema,
+} from "@/lib/validation/metrics";
 
 const content = "3f6f2a57-6f5d-4f0f-9d8a-2a8a2f0b8c11";
 
@@ -89,5 +93,37 @@ describe("registrantReportSchema (FR-M7-04)", () => {
   it("is idempotent for server re-validation", () => {
     const once = registrantReportSchema.parse({ ...valid, campaign_creator_id: "" });
     expect(registrantReportSchema.parse(once)).toEqual(once);
+  });
+});
+
+describe("submissionReviewSchema (FR-M13-06)", () => {
+  const submissionId = "de300000-0000-4000-8000-0000000000e1";
+
+  it("accepts a submission without any note", () => {
+    const parsed = submissionReviewSchema.safeParse({
+      submission_id: submissionId,
+      accept: true,
+      notes: "",
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("refuses a rejection without a reason for the creator", () => {
+    const parsed = submissionReviewSchema.safeParse({
+      submission_id: submissionId,
+      accept: false,
+      notes: "   ",
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) expect(parsed.error.issues[0]?.path).toEqual(["notes"]);
+  });
+
+  it("accepts a rejection with a reason", () => {
+    const parsed = submissionReviewSchema.safeParse({
+      submission_id: submissionId,
+      accept: false,
+      notes: "Tangkapan layar terpotong.",
+    });
+    expect(parsed.success).toBe(true);
   });
 });

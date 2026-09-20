@@ -145,6 +145,12 @@ export default async function DashboardPage() {
           value={data.openInvoices.count}
           detail={`Sisa ${formatRupiah(data.openInvoices.outstanding)}`}
         />
+        <SummaryCard
+          label="Kiriman kreator"
+          value={data.creatorSubmissions.length}
+          href="#kiriman-kreator"
+          detail="Menunggu verifikasi tim"
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -198,6 +204,31 @@ export default async function DashboardPage() {
           ))}
         </ListCard>
       </div>
+
+      <ListCard
+        id="kiriman-kreator"
+        title="Kiriman kreator menunggu verifikasi"
+        description="Laporan tayang dan bukti metrik yang dikirim kreator lewat portal. Paling lama menunggu di atas."
+        empty="Tidak ada kiriman yang menunggu."
+        total={data.creatorSubmissions.length}
+      >
+        {data.creatorSubmissions.slice(0, LIST_LIMIT).map((item) => (
+          <Row
+            key={`${item.kind}-${item.id}`}
+            href={`/campaigns/${item.campaign.id}/${item.kind === "metrik" ? "metrics" : "contents"}`}
+          >
+            <span className="flex flex-wrap items-center gap-1.5">
+              <Badge variant="outline">{item.kind === "metrik" ? "Metrik" : "Tayang"}</Badge>
+              <span className="font-medium">{item.creatorName}</span>
+              <span className="text-muted-foreground">· {item.detail}</span>
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              {item.campaign.code}
+              {item.sentAt ? ` · dikirim ${formatDateTime(item.sentAt, tz)}` : ""}
+            </span>
+          </Row>
+        ))}
+      </ListCard>
 
       <ListCard
         id="dihapus-lebih-awal"

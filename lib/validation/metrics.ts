@@ -24,6 +24,27 @@ export const snapshotSchema = z.object({
 export type SnapshotFormInput = z.input<typeof snapshotSchema>;
 export type SnapshotInput = z.output<typeof snapshotSchema>;
 
+/** FR-M13-06: what a creator sends from the portal; the team verifies it. */
+export const metricSubmissionSchema = snapshotSchema;
+
+export type MetricSubmissionFormInput = z.input<typeof metricSubmissionSchema>;
+export type MetricSubmissionInput = z.output<typeof metricSubmissionSchema>;
+
+/** FR-M13-06: accepting needs nothing, rejecting always needs a reason. */
+export const submissionReviewSchema = z
+  .object({
+    submission_id: uuidField,
+    accept: z.boolean(),
+    notes: z.string().trim().max(2000).default(""),
+  })
+  .refine((value) => value.accept || value.notes.length > 0, {
+    path: ["notes"],
+    message: "Tulis alasan penolakan agar kreator tahu yang harus diperbaiki.",
+  });
+
+export type SubmissionReviewFormInput = z.input<typeof submissionReviewSchema>;
+export type SubmissionReviewInput = z.output<typeof submissionReviewSchema>;
+
 export const NO_PERSONAL_DATA_MESSAGE =
   "Pastikan bukti hanya berisi angka rekap, tanpa nama/NIK/nomor HP pendaftar, lalu centang konfirmasi.";
 

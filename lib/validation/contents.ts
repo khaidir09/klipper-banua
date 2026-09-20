@@ -71,6 +71,22 @@ export const postedSchema = z.object({
 export type PostedFormInput = z.input<typeof postedSchema>;
 export type PostedInput = z.output<typeof postedSchema>;
 
+/**
+ * FR-M13-09: the creator reports their content as live. Same shape as
+ * `postedSchema`, but the values land in the `proposed_*` columns until the
+ * team confirms them.
+ */
+export const proposedPostedSchema = z.object({
+  content_id: uuidField,
+  proposed_posted_url: optionalHttpUrl.refine((value) => value !== null, {
+    message: "URL tayang wajib diisi.",
+  }),
+  proposed_posted_at: localDateTimeField("Waktu tayang wajib diisi."),
+});
+
+export type ProposedPostedFormInput = z.input<typeof proposedPostedSchema>;
+export type ProposedPostedInput = z.output<typeof proposedPostedSchema>;
+
 /** FR-M6-05 */
 export const removedSchema = z.object({
   removed_at: localDateTimeField("Waktu penghapusan wajib diisi."),
