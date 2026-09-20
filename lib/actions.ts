@@ -92,10 +92,19 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
 };
 
 /** Maps a trigger or constraint violation to Indonesian text; falls back otherwise. */
-export function dbRuleMessage(error: { message?: string } | null, fallback: string): string {
+export function dbRuleMessage(
+  error: { message?: string; code?: string } | null,
+  fallback: string,
+): string {
   const message = error?.message ?? "";
   const key = message.split(":")[0]?.trim();
   if (key && DB_RULE_MESSAGES[key]) return DB_RULE_MESSAGES[key];
   const constraint = Object.keys(CONSTRAINT_MESSAGES).find((name) => message.includes(name));
-  return constraint ? CONSTRAINT_MESSAGES[constraint]! : fallback;
+  if (constraint) return CONSTRAINT_MESSAGES[constraint]!;
+
+  // Nothing matched, so the user only gets `fallback`. Leave the real error in
+  // the server log: an RLS denial and a bad payload look identical from the
+  // outside, which once made a production failure impossible to diagnose.
+  console.error(`unmapped database error (${error?.code ?? "no code"}): ${message}`);
+  return fallback;
 }
