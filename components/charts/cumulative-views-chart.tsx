@@ -84,14 +84,14 @@ export function CumulativeViewsChart({ points, target }: { points: Point[]; targ
             <Area
               type="linear"
               dataKey="views"
-              stroke="var(--series-1)"
+              stroke="var(--chart-1)"
               strokeWidth={2}
               strokeLinejoin="round"
               strokeLinecap="round"
-              fill="var(--series-1)"
+              fill="var(--chart-1)"
               fillOpacity={0.1}
-              dot={{ r: 4, fill: "var(--series-1)", stroke: "var(--card)", strokeWidth: 2 }}
-              activeDot={{ r: 6, fill: "var(--series-1)", stroke: "var(--card)", strokeWidth: 2 }}
+              dot={{ r: 4, fill: "var(--chart-1)", stroke: "var(--card)", strokeWidth: 2 }}
+              activeDot={{ r: 6, fill: "var(--chart-1)", stroke: "var(--card)", strokeWidth: 2 }}
               isAnimationActive={false}
             >
               <LabelList

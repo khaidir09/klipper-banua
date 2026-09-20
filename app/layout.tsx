@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { publicEnv } from "@/lib/env";
 import "./globals.css";
@@ -25,10 +26,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="id" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    // next-themes sets the theme class on <html> before paint, which the server
+    // markup cannot know about: suppressHydrationWarning covers that one attribute.
+    <html
+      lang="id"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body className="flex min-h-full flex-col">
-        {children}
-        <Toaster position="top-right" />
+        <ThemeProvider>
+          {children}
+          <Toaster position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

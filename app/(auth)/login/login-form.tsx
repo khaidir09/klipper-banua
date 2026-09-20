@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Info, Loader2, OctagonAlert } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -39,7 +40,14 @@ export function LoginForm({ next, notice }: { next?: string; notice?: string | n
     <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
       <FieldGroup>
         {message ? (
+          // The icon carries the same meaning as the colour, so the state still
+          // reads for anyone who cannot tell the two variants apart.
           <Alert variant={serverError ? "destructive" : "default"}>
+            {serverError ? (
+              <OctagonAlert aria-hidden />
+            ) : (
+              <Info className="text-info" aria-hidden />
+            )}
             <AlertDescription>{message}</AlertDescription>
           </Alert>
         ) : null}
@@ -49,8 +57,10 @@ export function LoginForm({ next, notice }: { next?: string; notice?: string | n
           <Input
             id="email"
             type="email"
+            inputMode="email"
             autoComplete="email"
             autoFocus
+            className="h-11"
             aria-invalid={Boolean(form.formState.errors.email)}
             {...form.register("email")}
           />
@@ -58,11 +68,20 @@ export function LoginForm({ next, notice }: { next?: string; notice?: string | n
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="password">Kata sandi</FieldLabel>
+          <div className="flex items-baseline justify-between gap-3">
+            <FieldLabel htmlFor="password">Kata sandi</FieldLabel>
+            <Link
+              href="/lupa-sandi"
+              className="text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            >
+              Lupa kata sandi?
+            </Link>
+          </div>
           <Input
             id="password"
             type="password"
             autoComplete="current-password"
+            className="h-11"
             aria-invalid={Boolean(form.formState.errors.password)}
             {...form.register("password")}
           />
@@ -71,16 +90,17 @@ export function LoginForm({ next, notice }: { next?: string; notice?: string | n
 
         <input type="hidden" {...form.register("next")} />
 
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Memproses…" : "Masuk"}
+        {/* h-11 clears the 44px touch target that the default h-8 misses. */}
+        <Button type="submit" disabled={isPending} className="h-11 w-full">
+          {isPending ? (
+            <>
+              <Loader2 className="animate-spin" aria-hidden />
+              Memproses…
+            </>
+          ) : (
+            "Masuk"
+          )}
         </Button>
-
-        <Link
-          href="/lupa-sandi"
-          className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-        >
-          Lupa kata sandi?
-        </Link>
       </FieldGroup>
     </form>
   );

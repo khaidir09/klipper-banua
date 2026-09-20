@@ -17,7 +17,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Masuk</CardTitle>
+        {/* CardTitle renders a div, so the page would otherwise have no h1.
+            Tailwind's preflight resets heading size, so the h1 inherits it. */}
+        <CardTitle>
+          <h1>Masuk</h1>
+        </CardTitle>
         <CardDescription>Gunakan akun yang diberikan owner.</CardDescription>
       </CardHeader>
       <CardContent>

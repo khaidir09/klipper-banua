@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, OctagonAlert } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -34,6 +35,7 @@ export function NewPasswordForm() {
       <FieldGroup>
         {serverError ? (
           <Alert variant="destructive">
+            <OctagonAlert aria-hidden />
             <AlertDescription>{serverError}</AlertDescription>
           </Alert>
         ) : null}
@@ -45,6 +47,7 @@ export function NewPasswordForm() {
             type="password"
             autoComplete="new-password"
             autoFocus
+            className="h-11"
             aria-invalid={Boolean(form.formState.errors.password)}
             {...form.register("password")}
           />
@@ -57,14 +60,22 @@ export function NewPasswordForm() {
             id="passwordConfirmation"
             type="password"
             autoComplete="new-password"
+            className="h-11"
             aria-invalid={Boolean(form.formState.errors.passwordConfirmation)}
             {...form.register("passwordConfirmation")}
           />
           <FieldError errors={[form.formState.errors.passwordConfirmation]} />
         </Field>
 
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Menyimpan…" : "Simpan kata sandi"}
+        <Button type="submit" disabled={isPending} className="h-11 w-full">
+          {isPending ? (
+            <>
+              <Loader2 className="animate-spin" aria-hidden />
+              Menyimpan…
+            </>
+          ) : (
+            "Simpan kata sandi"
+          )}
         </Button>
       </FieldGroup>
     </form>

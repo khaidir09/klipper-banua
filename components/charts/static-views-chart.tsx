@@ -100,15 +100,15 @@ export function StaticViewsChart({ points, target }: { points: Point[]; target: 
           </g>
         ) : null}
 
-        <path d={area} fill="var(--series-1)" fillOpacity={0.12} />
-        <path d={line} fill="none" stroke="var(--series-1)" strokeWidth={2} />
+        <path d={area} fill="var(--chart-1)" fillOpacity={0.12} />
+        <path d={line} fill="none" stroke="var(--chart-1)" strokeWidth={2} />
         {points.map((p, i) => (
           <circle
             key={p.checkpoint}
             cx={x(i)}
             cy={y(p.views)}
             r={4}
-            fill="var(--series-1)"
+            fill="var(--chart-1)"
             stroke="var(--background)"
             strokeWidth={2}
           />

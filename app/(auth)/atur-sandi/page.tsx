@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -18,12 +19,14 @@ export default async function SetPasswordPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Atur kata sandi baru</CardTitle>
+        <CardTitle>
+          <h1>Atur kata sandi baru</h1>
+        </CardTitle>
         <CardDescription>
           Minimal 8 karakter, memuat huruf kecil, huruf kapital, dan angka.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         {user ? (
           <NewPasswordForm />
         ) : (
@@ -35,8 +38,9 @@ export default async function SetPasswordPage() {
             </Alert>
             <Link
               href="/lupa-sandi"
-              className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
             >
+              <ArrowLeft className="size-4" aria-hidden />
               Minta tautan baru
             </Link>
           </>
