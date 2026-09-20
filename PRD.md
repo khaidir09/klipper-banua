@@ -2,11 +2,11 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi              | 0.4 (MVP rilis pilot; v1.1: tautan laporan klien dan pengingat Telegram; v2.0: portal kreator) |
+| Versi              | 0.5 (MVP rilis pilot; v1.1: tautan laporan klien dan pengingat Telegram; v2.0: portal kreator; v3.0: portal klien) |
 | Tanggal            | 20 September 2026                                                                           |
-| Status             | Fase 0–9 selesai; Fase 10 (kiriman kreator) melengkapi v2.0                                 |
+| Status             | Fase 0–10 selesai (v2.0 lengkap); v3.0 (portal klien) dirancang di Fase 11–12               |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
-| Pengguna versi ini | Tim internal (`owner`, `manager`); sejak v2.0 kreator memakai portal terbatas                |
+| Pengguna versi ini | Tim internal (`owner`, `manager`); kreator lewat portal sejak v2.0; klien lewat portal sejak v3.0 |
 
 ---
 
@@ -77,10 +77,11 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 | `owner`   | Founder / direktur | Semua fitur, termasuk kelola pengguna internal, data rekening kreator, persetujuan dan status pembayaran honor                                                                               |
 | `manager` | Pengelola kampanye | Semua fitur operasional (klien, kreator, kampanye, konten, metrik, laporan). **Tidak bisa** melihat nomor rekening lengkap (tampil tersamar), mengelola pengguna, atau menyetujui pembayaran |
 | `creator` | Kreator mitra _(v2.0)_ | Hanya portal kreator di `/portal`, hanya data penugasannya sendiri. **Tidak punya akses** ke aplikasi internal, data klien, kreator lain, harga paket, margin, atau log aktivitas |
+| `client`  | Kontak klien _(v3.0)_  | Hanya portal klien di `/klien`, hanya kampanye milik instansinya. Memantau capaian, menyetujui konten bila kampanye mewajibkannya, mengunduh laporan, dan melaporkan jumlah pendaftar. **Tidak melihat** honor kreator, margin, biaya internal, data pribadi kreator, klien lain, atau log aktivitas |
 
-- Pendaftaran publik **dinonaktifkan**. Akun tim dibuat lewat undangan oleh `owner`; akun kreator lewat undangan dari halaman kreator (v2.0).
+- Pendaftaran publik **dinonaktifkan**. Akun tim dibuat lewat undangan oleh `owner`; akun kreator lewat undangan dari halaman kreator (v2.0); akun klien lewat undangan dari halaman klien (v3.0).
 - Pengguna yang dinonaktifkan (`is_active = false`) tidak bisa mengakses data apa pun.
-- Peran `creator` bukan anggota internal: setiap pemeriksaan "anggota internal" di database (`is_active_member()`) menolaknya.
+- Peran `creator` dan `client` bukan anggota internal: setiap pemeriksaan "anggota internal" di database (`is_active_member()`) menolak keduanya.
 
 ---
 
@@ -103,11 +104,12 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 | M11  | Log aktivitas (audit)                               | Wajib         |
 | M12  | Catatan waktu operasional                           | Sebaiknya ada |
 | M13  | Portal kreator (akses, brief, kiriman, honor)       | v2.0          |
+| M14  | Portal klien (pantau, persetujuan konten, laporan)  | v3.0          |
 
 ### 4.2 Di luar cakupan (JANGAN dibangun di MVP)
 
-- Login dan portal untuk klien. Portal **kreator** masuk cakupan sejak v2.0 (M13).
-- Marketplace terbuka (kreator melamar kampanye sendiri).
+- Marketplace terbuka dan fitur di luar daftar modul. Portal **kreator** masuk cakupan sejak v2.0 (M13), portal **klien** sejak v3.0 (M14).
+- Kreator melamar kampanye sendiri (tetap ditugaskan tim).
 - Payment gateway, top-up saldo, atau transfer honor otomatis.
 - Integrasi API TikTok, Instagram, YouTube, atau Facebook untuk menarik metrik otomatis.
 - Notifikasi WhatsApp/email otomatis. Pengecualian sejak v1.1: pengingat Telegram harian **untuk owner internal** (FR-M10-05).
@@ -135,10 +137,11 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 4. Kampanye diubah menjadi `aktif`.
 5. Kreator mengirim draf konten lewat WhatsApp → tim mencatatnya sebagai konten `menunggu_review`.
 6. Tim meninjau: `disetujui`, `revisi` (dengan catatan), atau `ditolak`.
+6b. _(v3.0, bila kampanye mewajibkan)_ Klien menyetujui konten yang sudah lolos review tim, atau meminta revisi dengan catatan.
 7. Kreator memposting konten yang disetujui → tim mengisi URL dan waktu tayang.
 8. Pada checkpoint H+1, H+3, H+7, dan akhir kampanye, tim memasukkan snapshot metrik beserta tangkapan layar bukti.
 9. Klik tautan pelacakan tercatat otomatis.
-10. Klien melaporkan jumlah pendaftar per kode kreator → tim memasukkan angka agregatnya.
+10. Klien melaporkan jumlah pendaftar per kode kreator lewat WhatsApp → tim memasukkan angka agregatnya; sejak v3.0 klien dapat mengirimkannya sendiri dari portal untuk diverifikasi tim.
 11. Kampanye selesai → sistem menghitung honor → `owner` menyetujui dan menandai pembayaran.
 12. Tim mencetak laporan kampanye untuk klien.
 
@@ -203,7 +206,7 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 - **FR-M6-01** Mencatat konten per penugasan: platform, tautan draf (URL) atau berkas draf, draf caption.
 - **FR-M6-02** Status review: `menunggu_review` → `disetujui` / `revisi` / `ditolak`. Status `revisi` wajib disertai catatan. Konten yang direvisi kembali ke `menunggu_review` saat draf baru dicatat, dan `revision_count` bertambah.
 - **FR-M6-03** Checklist review yang wajib dicentang sebelum menyetujui: sesuai brief, tidak melanggar larangan, ada label konten berbayar (jika diwajibkan), tidak ada informasi keliru tentang klien.
-- **FR-M6-04** Setelah `disetujui`, tim dapat mengisi URL tayang dan waktu tayang → status tayang `tayang`. URL tayang **tidak bisa** diisi untuk konten yang belum disetujui.
+- **FR-M6-04** Setelah `disetujui`, tim dapat mengisi URL tayang dan waktu tayang → status tayang `tayang`. URL tayang **tidak bisa** diisi untuk konten yang belum disetujui. _(v3.0)_ Pada kampanye yang mewajibkan persetujuan klien, URL tayang juga baru dapat diisi setelah klien menyetujui (FR-M14-04).
 - **FR-M6-05** Status tayang: `belum_tayang`, `tayang`, `dihapus`. Jika ditandai `dihapus`, catat tanggal penghapusan.
 - **FR-M6-06** Riwayat review (siapa, kapan, keputusan, catatan) disimpan dan ditampilkan.
 
@@ -212,7 +215,7 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 - **FR-M7-01** Input snapshot metrik per konten tayang: checkpoint (`H+1`, `H+3`, `H+7`, `akhir`, `lainnya`), waktu pengambilan, views, likes, komentar, share, simpan, unggahan tangkapan layar bukti (wajib).
 - **FR-M7-02** Views sebuah konten = nilai views dari snapshot **terbaru** (berdasarkan `captured_at`). Sistem memberi peringatan jika views snapshot baru lebih kecil dari snapshot sebelumnya.
 - **FR-M7-03** Klik tautan dihitung otomatis dari tabel klik. Tampilkan total klik dan klik non-bot.
-- **FR-M7-04** Input laporan pendaftar dari klien: per penugasan (kode kreator) atau "tanpa kode", periode, jumlah pendaftar (angka agregat), bukti opsional, catatan. **Tidak menyimpan nama atau data pribadi pendaftar.**
+- **FR-M7-04** Input laporan pendaftar dari klien: per penugasan (kode kreator) atau "tanpa kode", periode, jumlah pendaftar (angka agregat), bukti opsional, catatan. **Tidak menyimpan nama atau data pribadi pendaftar.** _(v3.0)_ Klien dapat mengirim angka ini sendiri dari portal sebagai usulan; hanya yang diterima tim menjadi laporan resmi (FR-M14-06).
 - **FR-M7-05** Tab Metrik kampanye menampilkan: total views, klik, pendaftar, perbandingan dengan target, grafik views kumulatif per checkpoint, dan tabel per kreator.
 
 ### M8 — Keuangan
@@ -235,7 +238,8 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
   - token acak 32 byte; database hanya menyimpan hash SHA-256, sehingga tautan ditampilkan sekali saat dibuat ("Buat ulang" mencabut tautan lama);
   - berlaku sampai dicabut, dengan tanggal kedaluwarsa opsional; tautan dicabut, kedaluwarsa, salah, atau kampanye dibatalkan menampilkan halaman tidak ditemukan yang sama;
   - isi sama dengan laporan cetak (FR-M9-02) dan tetap tanpa data keuangan (FR-M9-03); halaman `noindex`, tanpa referrer, dengan rate limit per IP;
-  - mencatat jumlah dan waktu terakhir dilihat tanpa menyimpan IP; pembuatan dan pencabutan tercatat di log aktivitas.
+  - mencatat jumlah dan waktu terakhir dilihat tanpa menyimpan IP; pembuatan dan pencabutan tercatat di log aktivitas;
+  - tetap berlaku setelah portal klien (v3.0) ada, untuk pihak klien yang tidak punya akun (pimpinan, yayasan, panitia).
 
 ### M10 — Dasbor dan Pengingat
 
@@ -284,6 +288,30 @@ Portal memindahkan pekerjaan input yang sekarang dikerjakan tim lewat WhatsApp k
 - Harga paket, target kampanye, margin, data klien, data kreator lain, catatan internal, dan rekening bank tidak pernah keluar lewat portal.
 - Setiap tulisan dari portal lewat Server Action yang memvalidasi Zod, memeriksa kepemilikan penugasan di server, lalu ditegakkan ulang oleh RLS dan trigger database.
 
+### M14 — Portal Klien _(v3.0)_
+
+Portal klien memindahkan tiga percakapan WhatsApp ke aplikasi: "sudah sampai mana kampanyenya?", "boleh minta persetujuan konten ini?", dan "berapa pendaftar bulan ini?". Prinsipnya sama dengan M13: **klien memutuskan hal yang memang haknya; angka tetap diverifikasi tim.**
+
+**Fase 11 — akses dan pantau**
+
+- **FR-M14-01** `owner` atau `manager` mengundang kontak klien ke portal dari halaman klien. Undangan memakai Supabase Auth (`invite`) dan ditautkan ke baris `client_contacts` (FR-M2-02), sehingga setiap orang punya akun sendiri dan jejak persetujuan jelas siapa yang memutuskan. Undangan dapat dikirim ulang; `owner` dapat mencabut atau mengaktifkan kembali akses. Semuanya tercatat di log aktivitas.
+- **FR-M14-02** Klien login di halaman login yang sama lalu diarahkan ke `/klien`. Klien tidak dapat membuka satu pun rute internal maupun portal kreator, dan hanya melihat kampanye milik instansinya sendiri.
+- **FR-M14-03** Dasbor klien: daftar kampanye instansinya beserta status, periode, dan capaian vs target (views, klik non-bot, pendaftar). Halaman kampanye menampilkan grafik views per checkpoint, daftar konten tayang beserta tautannya, dan rekap per kreator memakai **nama panggung saja**.
+
+**Fase 12 — persetujuan konten, laporan, dan laporan pendaftar**
+
+- **FR-M14-04** Persetujuan konten dua tahap, **opsional per kampanye** (`campaigns.client_approval_required`). Bila diwajibkan: konten yang sudah `disetujui` tim berpindah ke antrean klien dengan `client_review_status = menunggu_klien`; klien memilih `disetujui` atau `revisi` (catatan wajib). Permintaan revisi klien mengembalikan konten ke alur revisi tim (FR-M6-02). Konten hanya boleh ditandai tayang setelah kedua tahap lulus.
+- **FR-M14-05** Klien membuka laporan kampanye (isi sama dengan FR-M9-02, tanpa data keuangan internal sesuai FR-M9-03), mencetaknya sebagai PDF, dan mengunduh CSV yang sama dengan FR-M9-04 — tanpa perlu tautan rahasia.
+- **FR-M14-06** Klien mengirim laporan jumlah pendaftar per kode referal atau "tanpa kode": periode, jumlah (angka agregat), bukti opsional, catatan. Kiriman masuk sebagai **usulan**; hanya yang diterima tim menjadi `registrant_reports` resmi, sehingga angka yang memengaruhi metrik dan bonus kreator tidak pernah masuk tanpa verifikasi. Penolakan wajib disertai alasan.
+- **FR-M14-07** Bukti yang diunggah klien tetap tunduk pada FR-M7-04: hanya angka rekap, dengan konfirmasi bebas data pribadi pendaftar sebelum kiriman diterima.
+
+**Aturan keamanan M14**
+
+- Peran `client` tidak diberi kebijakan RLS atas tabel dasar kecuali baris yang memang miliknya dan perlu ditulis dari portal (keputusan persetujuan, usulan laporan pendaftar). Bacaan portal lewat view `client_portal_*` yang memfilter klien yang sedang login dan hanya memuat kolom aman.
+- Honor kreator, margin, harga paket, biaya per pendaftar, catatan internal, data pribadi kreator (nama lengkap, WhatsApp, rekening), klien lain, dan log aktivitas tidak pernah keluar lewat portal klien.
+- Ekspresi kebijakan tidak boleh menyentuh tabel ber-RLS lain; pakai helper `security definer` seperti pada M13.
+- Setiap tulisan dari portal klien lewat Server Action yang memvalidasi Zod, memeriksa kepemilikan kampanye di server, lalu ditegakkan ulang oleh RLS dan trigger.
+
 ---
 
 ## 7. Model Data
@@ -294,14 +322,14 @@ Portal memindahkan pekerjaan input yang sekarang dikerjakan tim lewat WhatsApp k
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `profiles`                | `id` (= `auth.users.id`), `full_name`, `email`, `role` (`owner`/`manager`/`creator`), `is_active`, `timezone`                                                                                                                                                                                                                                                                                                  | Dibuat saat undangan diterima. `creator` = akun portal (v2.0), bukan anggota internal |
 | `clients`                 | `name`, `type`, `city`, `province`, `address`, `notes`                                                                                                                                                                                                                                                                                                                                                         |                                                                                    |
-| `client_contacts`         | `client_id`, `name`, `position`, `phone_wa`, `email`, `is_primary`                                                                                                                                                                                                                                                                                                                                             |                                                                                    |
+| `client_contacts`         | `client_id`, `name`, `position`, `phone_wa`, `email`, `is_primary`, `profile_id`, `portal_invited_at`                                                                                                                                                                                                                                                                                                                                             | `profile_id` (unik) = akun portal klien v3.0 |
 | `creators`                | `full_name`, `stage_name`, `phone_wa`, `email`, `city`, `province`, `birth_date`, `niches text[]`, `tier`, `status`, `terms_version`, `terms_agreed_at`, `verified_at`, `verified_by`, `notes`, `profile_id`, `portal_invited_at`                                                                                                                                                                                                            | Usia ≥ 18 divalidasi di aplikasi. `profile_id` (unik) = akun portal v2.0           |
 | `creator_bank_accounts`   | `creator_id` (unik), `bank_name`, `account_number`, `account_holder`                                                                                                                                                                                                                                                                                                                                           | **RLS: hanya `owner`**. `manager` membaca lewat view/fungsi yang menyamarkan nomor |
 | `creator_social_accounts` | `creator_id`, `platform`, `handle`, `profile_url`, `followers_count`, `kalimantan_audience_pct numeric(5,2)`, `top_cities`, `audience_proof_path`, `last_verified_at`                                                                                                                                                                                                                                          | Unik (`platform`, `handle`)                                                        |
-| `campaigns`               | `client_id`, `code` (unik), `name`, `objective`, `brief`, `must_do`, `must_not`, `hashtags`, `paid_label_required`, `landing_url`, `start_date`, `end_date`, `min_live_days`, `status`, `package_price`, `target_contents`, `target_views`, `target_registrants`, `default_base_fee`, `default_bonus_per_1000_views`, `default_bonus_per_registrant`, `default_views_bonus_cap`, `closing_notes`, `created_by` |                                                                                    |
+| `campaigns`               | `client_id`, `code` (unik), `name`, `objective`, `brief`, `must_do`, `must_not`, `hashtags`, `paid_label_required`, `landing_url`, `start_date`, `end_date`, `min_live_days`, `status`, `package_price`, `target_contents`, `target_views`, `target_registrants`, `default_base_fee`, `default_bonus_per_1000_views`, `default_bonus_per_registrant`, `default_views_bonus_cap`, `closing_notes`, `client_approval_required`, `created_by` |                                                                                    |
 | `campaign_assets`         | `campaign_id`, `title`, `type`, `file_path`, `external_url`, `notes`                                                                                                                                                                                                                                                                                                                                           | Salah satu dari `file_path`/`external_url` wajib                                   |
 | `campaign_creators`       | `campaign_id`, `creator_id`, `status`, `contents_committed`, `base_fee`, `bonus_per_1000_views`, `bonus_per_registrant`, `views_bonus_cap`, `referral_code` (unik global), `tracking_slug` (unik global), `joined_at`                                                                                                                                                                                          | Unik (`campaign_id`, `creator_id`). Kolom honor `null` = pakai default kampanye    |
-| `contents`                | `campaign_creator_id`, `platform`, `draft_url`, `draft_file_path`, `caption_draft`, `review_status`, `revision_count`, `posted_url`, `posted_at`, `live_status`, `removed_at`, `proposed_posted_url`, `proposed_posted_at`, `proposed_at`                                                                                                                                                                                                                                  |                                                                                    |
+| `contents`                | `campaign_creator_id`, `platform`, `draft_url`, `draft_file_path`, `caption_draft`, `review_status`, `revision_count`, `posted_url`, `posted_at`, `live_status`, `removed_at`, `proposed_posted_url`, `proposed_posted_at`, `proposed_at`, `client_review_status` | `client_review_status`: `tidak_perlu` / `menunggu_klien` / `disetujui` / `revisi` (v3.0) |
 | `content_reviews`         | `content_id`, `decision`, `checklist jsonb`, `notes`, `reviewer_id`                                                                                                                                                                                                                                                                                                                                            | Riwayat, tidak diubah setelah dibuat                                               |
 | `metric_snapshots`        | `content_id`, `checkpoint`, `captured_at`, `views`, `likes`, `comments`, `shares`, `saves`, `proof_path`, `entered_by`                                                                                                                                                                                                                                                                                         | Unik (`content_id`, `checkpoint`) kecuali `lainnya`                                |
 | `link_clicks`             | `campaign_creator_id`, `clicked_at`, `referrer`, `user_agent`, `ip_hash`, `is_bot`                                                                                                                                                                                                                                                                                                                             | Insert hanya lewat route server `/r/[slug]`                                        |
@@ -312,6 +340,8 @@ Portal memindahkan pekerjaan input yang sekarang dikerjakan tim lewat WhatsApp k
 | `report_share_links`      | `campaign_id`, `token_hash` (unik), `expires_at`, `created_by`, `revoked_at`, `revoked_by`, `last_viewed_at`, `view_count` | v1.1 (FR-M9-05); satu tautan aktif per kampanye; tidak dapat dihapus |
 | `activity_logs`           | `actor_id`, `entity_type`, `entity_id`, `action`, `details jsonb`                                                                                                                                                                                                                                                                                                                                              | Append-only                                                                        |
 | `metric_submissions`      | `content_id`, `checkpoint`, `captured_at`, `views`, `likes`, `comments`, `shares`, `saves`, `proof_path`, `status` (`menunggu`/`diterima`/`ditolak`), `review_notes`, `submitted_by`, `reviewed_by`, `reviewed_at`, `snapshot_id`                                                                                                                                                                              | v2.0 Fase 10 (FR-M13-06); usulan metrik dari kreator, resmi hanya setelah diterima |
+| `client_content_reviews`  | `content_id`, `decision` (`disetujui`/`revisi`), `notes`, `reviewer_id`, `created_at` | v3.0 (FR-M14-04); riwayat keputusan klien, tidak diubah setelah dibuat |
+| `registrant_submissions`  | `campaign_id`, `campaign_creator_id` (nullable), `period_start`, `period_end`, `registrant_count`, `proof_path`, `proof_confirmed_no_personal_data`, `notes`, `status`, `review_notes`, `submitted_by`, `reviewed_by`, `reviewed_at`, `report_id` | v3.0 (FR-M14-06); usulan pendaftar dari klien, resmi hanya setelah diterima |
 
 **View portal kreator (v2.0).** Kreator tidak memiliki kebijakan RLS atas tabel mana pun. Portal membaca lewat view berikut; semuanya memfilter kreator yang sedang login (`current_creator_id()`), hanya memuat kolom yang aman, dan hanya dapat dibaca oleh peran `authenticated` (bukan `anon`).
 
@@ -325,6 +355,16 @@ Portal memindahkan pekerjaan input yang sekarang dikerjakan tim lewat WhatsApp k
 | `creator_portal_metrics`      | Snapshot metrik resmi atas kontennya sendiri (Fase 10)                                                       |
 | `creator_portal_submissions`  | Usulan metrik yang ia kirim beserta status verifikasinya (Fase 10)                                           |
 | `creator_portal_payouts`      | Rincian honornya sendiri, tanpa `transfer_proof_path` (Fase 10)                                              |
+
+**View portal klien (v3.0).** Aturan yang sama: peran `client` membaca lewat view yang memfilter klien yang sedang login, hanya kolom yang aman, dan hanya dapat dibaca peran `authenticated`.
+
+| View                        | Isi                                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `client_portal_campaigns`   | Kampanye instansinya: status, periode, target, dan capaian. Tanpa harga paket, honor, dan margin (Fase 11) |
+| `client_portal_contents`    | Konten kampanyenya beserta status review, status persetujuan klien, dan tautan tayang (Fase 11–12)         |
+| `client_portal_creators`    | Rekap per kreator dengan nama panggung saja (Fase 11)                                                      |
+| `client_portal_metrics`     | Snapshot resmi per konten untuk grafik dan rekap (Fase 11)                                                 |
+| `client_portal_submissions` | Usulan laporan pendaftar yang ia kirim beserta status verifikasinya (Fase 12)                              |
 
 ### 7.1 Penyimpanan berkas (Supabase Storage)
 
@@ -390,6 +430,7 @@ gross_margin_pct     = gross_margin / package_price × 100
 - Kreator berstatus `diblokir` tidak dapat ditugaskan ke kampanye mana pun.
 - Kode referal dan slug tidak boleh diubah setelah ada klik atau laporan pendaftar yang terkait.
 - Checkpoint jatuh tempo dihitung dari `posted_at` dalam zona waktu tampilan.
+- _(v3.0)_ Pada kampanye dengan `client_approval_required`, konten baru boleh ditandai tayang setelah disetujui tim **dan** klien. Syarat honor (8.2) tetap dihitung dari konten yang benar-benar tayang, jadi menunggu persetujuan klien tidak merugikan kreator selama kontennya akhirnya tayang dan memenuhi `min_live_days`.
 
 ---
 
@@ -441,6 +482,7 @@ app/
   (app)/settings/{users,profile}/
   (app)/activity/
   (portal)/portal/{penugasan,profil}/   # v2.0, peran `creator`
+  (client)/klien/{kampanye,laporan}/    # v3.0, peran `client`
   r/[slug]/route.ts
   api/export/[type]/route.ts
 components/{ui,forms,tables,charts,layout}/
@@ -576,6 +618,30 @@ Kerjakan berurutan. Satu fase = satu atau beberapa sesi Claude Code = satu commi
 - [ ] Kreator melihat rincian honornya sendiri tanpa bukti transfer, dan tidak melihat honor kreator lain.
 - [ ] Setiap tabel dan view baru tercakup di `scripts/rls-check.sql` untuk `owner`, `manager`, `creator`, dan anonim.
 
+### Fase 11 — v3.0: Akses Portal Klien dan Pantau Kampanye
+
+**Cakupan:** FR-M14-01 sampai FR-M14-03. Peran `client` pada `user_role`; `client_contacts.profile_id` dan `portal_invited_at`; undangan dan pencabutan akses dari halaman klien; rute `(client)` di `/klien` beserta dasbor kampanye, halaman kampanye (capaian, grafik, konten tayang, rekap per kreator); view `client_portal_campaigns`, `client_portal_contents`, `client_portal_creators`, `client_portal_metrics`.
+**Kriteria penerimaan:**
+
+- [ ] Kontak klien yang diundang dapat menetapkan kata sandi lalu masuk ke `/klien`.
+- [ ] Klien tidak dapat membuka rute internal maupun `/portal`; anggota internal yang membuka `/klien` diarahkan ke `/dashboard`.
+- [ ] Dengan sesi `client`, kueri langsung ke `campaigns`, `creators`, `payouts`, `client_payments`, dan `activity_logs` mengembalikan nol baris.
+- [ ] Klien hanya melihat kampanye instansinya sendiri; kampanye klien lain tidak muncul di view mana pun.
+- [ ] Harga paket, honor, margin, dan nama lengkap kreator tidak muncul di portal klien (diuji di `scripts/rls-check.sql` dan uji E2E).
+- [ ] Akses yang dicabut `owner` langsung menutup akses klien.
+
+### Fase 12 — v3.0: Persetujuan Konten, Laporan, dan Laporan Pendaftar
+
+**Cakupan:** FR-M14-04 sampai FR-M14-07 dan penyesuaian FR-M6-04. Kolom `campaigns.client_approval_required` dan `contents.client_review_status`; tabel `client_content_reviews` dan `registrant_submissions` beserta alur verifikasi tim; view `client_portal_submissions`; antrean persetujuan di portal klien; panel status persetujuan klien di tab Konten dan kartu kiriman klien di dasbor tim; halaman laporan dan unduhan CSV untuk klien.
+**Kriteria penerimaan:**
+
+- [ ] Pada kampanye yang mewajibkan persetujuan klien, konten yang disetujui tim muncul di antrean klien dan **tidak** dapat ditandai tayang sebelum klien menyetujui.
+- [ ] Permintaan revisi dari klien wajib disertai catatan dan mengembalikan konten ke alur revisi tim.
+- [ ] Kampanye tanpa `client_approval_required` berjalan persis seperti sebelumnya.
+- [ ] Usulan laporan pendaftar dari klien tidak memengaruhi metrik kampanye maupun bonus kreator sebelum diterima tim; penolakan wajib beralasan.
+- [ ] Laporan dan CSV yang diunduh klien tidak memuat data keuangan internal (FR-M9-03).
+- [ ] Setiap tabel dan view baru tercakup di `scripts/rls-check.sql` untuk `owner`, `manager`, `creator`, `client`, dan anonim.
+
 ---
 
 ## 12. Peta Jalan Setelah Pilot (Indikatif)
@@ -587,7 +653,7 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | 1.1   | Tautan laporan baca-saja untuk klien (token rahasia, tanpa login); pengingat Telegram harian ke owner via n8n untuk snapshot jatuh tempo (Fase 8) |
 | 1.2   | Pengingat WhatsApp otomatis ke tim (ditunda dari 1.1) |
 | 2.0   | Portal kreator: login, lihat brief, kirim draf, unggah bukti metrik, lihat status honor (M13; Fase 9 dan Fase 10) — **sedang dikerjakan** |
-| 3.0   | Portal klien: pantau kampanye berjalan, setujui konten, unduh laporan                                                            |
+| 3.0   | Portal klien: pantau kampanye berjalan, setujui konten, unduh laporan, kirim laporan pendaftar (M14; Fase 11 dan Fase 12) — **sedang dikerjakan** |
 | 4.0   | Integrasi API resmi platform media sosial untuk metrik otomatis (bergantung persetujuan akses API)                               |
 | 5.0   | Pembayaran honor terintegrasi; perluasan ke segmen bank daerah, BUMD, dan Pemda (invoice, dokumen pengadaan)                     |
 
@@ -615,6 +681,8 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | 6   | Isi syarat kerja sama kreator (label iklan, larangan, hak pakai konten oleh klien)        | Founder + konsultasi hukum |
 | 7   | Bagaimana kampus mencatat pendaftar dan seberapa cepat mereka bisa melapor?               | Wawancara kampus           |
 | 8   | Hosting: Vercel berbayar atau VPS sendiri?                                                | Founder                    |
+| 9   | Berapa lama tenggat wajar persetujuan konten oleh klien sebelum tim menagih atau melanjutkan? | Pilot v3.0             |
+| 10  | Apakah klien bersedia mengisi laporan pendaftar sendiri di portal, atau tetap lewat WhatsApp? | Pilot v3.0             |
 
 ---
 
@@ -626,3 +694,4 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | 0.2   | 19 Sep 2026 | v1.1: FR-M9-05 (tautan laporan klien), FR-M10-05 (pengingat Telegram via n8n menggantikan WhatsApp), tabel `report_share_links`, Fase 8 |
 | 0.3   | 20 Sep 2026 | v2.0: modul M13 (portal kreator), peran `creator`, view `creator_portal_*`, tabel `metric_submissions`, Fase 9 dan Fase 10. Portal kreator keluar dari daftar "di luar cakupan"; portal klien tetap di luar cakupan |
 | 0.4   | 20 Sep 2026 | Fase 10: FR-M13-09 (laporan tayang dari kreator sebagai usulan), kartu kiriman kreator pada FR-M10-01, kolom `contents.proposed_posted_*`, view `creator_portal_submissions` |
+| 0.5   | 20 Sep 2026 | v3.0: modul M14 (portal klien), peran `client`, persetujuan konten dua tahap opsional (FR-M14-04, penyesuaian FR-M6-04), usulan laporan pendaftar dari klien (FR-M14-06, penyesuaian FR-M7-04), tabel `client_content_reviews` dan `registrant_submissions`, view `client_portal_*`, Fase 11 dan Fase 12. Tautan laporan v1.1 tetap berlaku berdampingan |
