@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MessageCircle, Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { Mail, MessageCircle, Pencil, Plus, Send, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import type { ClientContactRow } from "@/lib/data/clients";
+import type { ClientContactRow, ClientPortalAccount } from "@/lib/data/clients";
+import { formatDateTime } from "@/lib/format/date";
 import { applyFieldErrors } from "@/lib/forms";
 import {
   clientContactSchema,
@@ -27,7 +28,12 @@ import {
   type ClientContactInput,
 } from "@/lib/validation/clients";
 import { formatWhatsapp, whatsappLink } from "@/lib/validation/phone";
-import { deleteContactAction, saveContactAction } from "../actions";
+import {
+  deleteContactAction,
+  inviteClientPortalAction,
+  saveContactAction,
+  setClientPortalAccessAction,
+} from "../actions";
 
 const EMPTY: ClientContactFormInput = {
   name: "",
@@ -37,15 +43,116 @@ const EMPTY: ClientContactFormInput = {
   is_primary: false,
 };
 
+/** FR-M14-01: portal status and the actions the team has for one contact. */
+function PortalAccess({
+  contact,
+  account,
+  isOwner,
+  isPending,
+  timezone,
+  onInvite,
+  onToggle,
+}: {
+  contact: ClientContactRow;
+  account: ClientPortalAccount | undefined;
+  isOwner: boolean;
+  isPending: boolean;
+  timezone: string;
+  onInvite: () => void;
+  onToggle: (isActive: boolean) => void;
+}) {
+  if (!account) {
+    return (
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <Badge variant="outline">Belum diundang ke portal</Badge>
+        {contact.email ? (
+          <Button size="sm" variant="outline" disabled={isPending} onClick={onInvite}>
+            <Send aria-hidden />
+            Undang ke portal
+          </Button>
+        ) : (
+          <span className="text-xs text-muted-foreground">
+            Isi email kontak ini untuk bisa mengundangnya.
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 space-y-1">
+      <div className="flex flex-wrap items-center gap-2">
+        <Mail className="size-3.5 text-muted-foreground" aria-hidden />
+        <span className="text-sm">{account.email}</span>
+        {account.is_active ? (
+          <Badge>Akses portal aktif</Badge>
+        ) : (
+          <Badge variant="outline">Akses portal dicabut</Badge>
+        )}
+      </div>
+      {contact.portal_invited_at ? (
+        <p className="text-xs text-muted-foreground">
+          Undangan terakhir {formatDateTime(contact.portal_invited_at, timezone)}.
+        </p>
+      ) : null}
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" disabled={isPending} onClick={onInvite}>
+          <Send aria-hidden />
+          Kirim ulang tautan masuk
+        </Button>
+        {isOwner ? (
+          <Button
+            size="sm"
+            variant={account.is_active ? "outline" : "default"}
+            disabled={isPending}
+            onClick={() => onToggle(!account.is_active)}
+          >
+            {account.is_active ? "Cabut akses" : "Aktifkan kembali"}
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function ClientContacts({
   clientId,
   contacts,
+  portalAccounts,
+  isOwner,
+  timezone,
 }: {
   clientId: string;
   contacts: ClientContactRow[];
+  /** FR-M14-01: portal account per contact, keyed by `profile_id`. */
+  portalAccounts: Map<string, ClientPortalAccount>;
+  isOwner: boolean;
+  timezone: string;
 }) {
   const [editing, setEditing] = useState<ClientContactRow | null | "new">(null);
   const [isPending, startTransition] = useTransition();
+
+  function invite(contact: ClientContactRow) {
+    startTransition(async () => {
+      const result = await inviteClientPortalAction({
+        contact_id: contact.id,
+        email: contact.email,
+      });
+      if (result.status === "success") toast.success(result.message);
+      else toast.error(result.message);
+    });
+  }
+
+  function toggleAccess(contact: ClientContactRow, isActive: boolean) {
+    startTransition(async () => {
+      const result = await setClientPortalAccessAction({
+        contact_id: contact.id,
+        is_active: isActive,
+      });
+      if (result.status === "success") toast.success(result.message);
+      else toast.error(result.message);
+    });
+  }
 
   function remove(contact: ClientContactRow) {
     if (!window.confirm(`Hapus kontak ${contact.name}?`)) return;
@@ -105,6 +212,17 @@ export function ClientContacts({
                     {contact.phone_wa && contact.email ? " · " : null}
                     {contact.email}
                   </p>
+                  <PortalAccess
+                    contact={contact}
+                    account={
+                      contact.profile_id ? portalAccounts.get(contact.profile_id) : undefined
+                    }
+                    isOwner={isOwner}
+                    isPending={isPending}
+                    timezone={timezone}
+                    onInvite={() => invite(contact)}
+                    onToggle={(next) => toggleAccess(contact, next)}
+                  />
                 </div>
                 <div className="flex shrink-0 gap-1">
                   <Button

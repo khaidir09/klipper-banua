@@ -43,6 +43,13 @@ export default defineConfig({
       use: { storageState: "e2e/.auth/manager.json" },
     },
     {
+      name: "client",
+      testMatch: /klien\.spec\.ts/,
+      // Runs after the owner flow so the demo campaigns carry real numbers.
+      dependencies: ["owner"],
+      use: { storageState: "e2e/.auth/client.json" },
+    },
+    {
       name: "creator",
       testMatch: /portal(-flow)?\.spec\.ts/,
       // Runs after the owner flow so the demo campaign is live with a brief.

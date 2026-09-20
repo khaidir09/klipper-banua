@@ -30,6 +30,8 @@ export const DEMO = {
   portalAssignmentId: "de300000-0000-4000-8000-0000000000b2",
   portalLiveContentId: "de300000-0000-4000-8000-0000000000d1",
   portalRevisionContentId: "de300000-0000-4000-8000-0000000000d2",
+  /** Primary contact of the demo client, who gets the client portal account. */
+  contactId: "de300000-0000-4000-8000-0000000000b1",
 } as const;
 
 const creatorId = (n: number) => `de300000-0000-4000-8000-0000000000a${n}`;
@@ -192,25 +194,27 @@ function isLocal(url: string) {
   return host === "localhost" || host === "127.0.0.1" || host === "::1";
 }
 
+type PortalRole = "creator" | "client";
+
 /**
- * Portal account for the first demo creator (M13, FR-M13-01), so the portal
- * and the end-to-end test have a creator to sign in as. Skipped when
- * SEED_CREATOR_EMAIL/PASSWORD are unset.
+ * Creates or repairs a portal account and links it to the row it belongs to:
+ * a creator (M13, FR-M13-01) or a client contact (M14, FR-M14-01). Skipped
+ * when the matching SEED_*_EMAIL/PASSWORD pair is unset.
  */
 async function seedPortalAccount(
   admin: SupabaseClient<Database>,
-  creatorRowId: string,
-  fullName: string,
+  options: { role: PortalRole; rowId: string; fullName: string },
 ): Promise<string | null> {
-  const email = process.env.SEED_CREATOR_EMAIL;
-  const password = process.env.SEED_CREATOR_PASSWORD;
+  const prefix = options.role === "creator" ? "SEED_CREATOR" : "SEED_CLIENT";
+  const email = process.env[`${prefix}_EMAIL`];
+  const password = process.env[`${prefix}_PASSWORD`];
   if (!email || !password) return null;
 
   const { data: list, error: listError } = await admin.auth.admin.listUsers({ perPage: 1000 });
   if (listError) throw new Error(`portal account: ${listError.message}`);
 
   const existing = list.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
-  const metadata = { full_name: fullName, role: "creator" };
+  const metadata = { full_name: options.fullName, role: options.role };
 
   let userId: string;
   if (existing) {
@@ -232,17 +236,18 @@ async function seedPortalAccount(
   }
 
   // The auth trigger created the profile; make sure the role stuck and the
-  // account is active, then link it to the creator.
+  // account is active, then link it to its row.
   const { error: profileError } = await admin
     .from("profiles")
-    .update({ full_name: fullName, role: "creator", is_active: true })
+    .update({ full_name: options.fullName, role: options.role, is_active: true })
     .eq("id", userId);
   if (profileError) throw new Error(`portal profile: ${profileError.message}`);
 
+  const table = options.role === "creator" ? "creators" : "client_contacts";
   const { error: linkError } = await admin
-    .from("creators")
+    .from(table)
     .update({ profile_id: userId, portal_invited_at: new Date().toISOString() })
-    .eq("id", creatorRowId);
+    .eq("id", options.rowId);
   if (linkError) throw new Error(`portal link: ${linkError.message}`);
 
   return email;
@@ -510,7 +515,7 @@ async function main() {
     "client contact",
     (
       await admin.from("client_contacts").upsert({
-        id: "de300000-0000-4000-8000-0000000000b1",
+        id: DEMO.contactId,
         client_id: DEMO.clientId,
         name: "Siti Marlina",
         position: "Kepala Humas dan PMB",
@@ -608,7 +613,16 @@ async function main() {
     }
   }
 
-  const portalEmail = await seedPortalAccount(admin, creatorId(1), CREATORS[0]!.full_name);
+  const portalEmail = await seedPortalAccount(admin, {
+    role: "creator",
+    rowId: creatorId(1),
+    fullName: CREATORS[0]!.full_name,
+  });
+  const clientPortalEmail = await seedPortalAccount(admin, {
+    role: "client",
+    rowId: DEMO.contactId,
+    fullName: "Siti Marlina",
+  });
 
   // Draft campaign starting today: the E2E flow assigns creators, activates it
   // and runs it to the final report.
@@ -673,6 +687,11 @@ async function main() {
     portalEmail
       ? `Creator portal account: ${portalEmail} (${CREATORS[0]!.full_name}).`
       : "No creator portal account: set SEED_CREATOR_EMAIL/PASSWORD in .env.local.",
+  );
+  console.log(
+    clientPortalEmail
+      ? `Client portal account: ${clientPortalEmail} (Siti Marlina).`
+      : "No client portal account: set SEED_CLIENT_EMAIL/PASSWORD in .env.local.",
   );
 }
 

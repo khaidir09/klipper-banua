@@ -4,8 +4,8 @@
 --   npm run db:rls-check
 --
 -- Each table is exercised with SELECT / INSERT / UPDATE / DELETE as `owner`,
--- `manager`, a creator portal account, an inactive member and `anon`, and
--- compared with the expected
+-- `manager`, a creator portal account, a client portal account, an inactive
+-- member and `anon`, and compared with the expected
 -- outcome. Triggers are switched off (session_replication_role = replica) so
 -- only grants, RLS policies and CHECK constraints decide; business rules are
 -- covered by scripts/guards-check.sql. Everything runs in one transaction and
@@ -21,7 +21,8 @@ select
   (select id from public.profiles where role = 'owner' and is_active limit 1) as owner_id,
   (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id,
   'f1000000-0000-4000-8000-000000000099'::uuid as inactive_id,
-  'f1000000-0000-4000-8000-000000000098'::uuid as creator_user_id;
+  'f1000000-0000-4000-8000-000000000098'::uuid as creator_user_id,
+  'f1000000-0000-4000-8000-000000000097'::uuid as client_user_id;
 
 do $$
 begin
@@ -84,6 +85,18 @@ values ('f1000000-0000-4000-8000-000000000019', (select owner_id from rls_ids), 
 insert into storage.objects (bucket_id, name)
 select bucket, 'rls-check/' || bucket || '.png'
 from unnest(array['audience-proofs', 'campaign-assets', 'content-drafts', 'metric-proofs', 'finance-proofs']) as bucket;
+
+-- Client portal account (M14), linked to the contact of "RLS Client" (f1…01).
+-- Campaign f1…07 belongs to that client; f1…26 belongs to another one.
+insert into public.profiles (id, full_name, role, is_active)
+values ('f1000000-0000-4000-8000-000000000097', 'RLS Portal Client', 'client', true);
+update public.client_contacts
+  set profile_id = 'f1000000-0000-4000-8000-000000000097'
+  where id = 'f1000000-0000-4000-8000-000000000002';
+insert into public.clients (id, name, type, province)
+values ('f1000000-0000-4000-8000-000000000025', 'RLS Client Lain', 'umkm', 'Kalimantan Selatan');
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status)
+values ('f1000000-0000-4000-8000-000000000026', 'f1000000-0000-4000-8000-000000000025', 'RLS-FIX-03', 'RLS Klien Lain', 'awareness', '2026-10-01', '2026-10-31', 'aktif');
 
 -- Creator portal account (M13), linked to "RLS Creator" (f1…03), who is
 -- assigned to campaign f1…07 but not to f1…22.
@@ -283,6 +296,16 @@ insert into rls_cases values
   ('storage:metric-proofs-assigned', 'select', $q$select count(*) from storage.objects where bucket_id = 'metric-proofs' and name = 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'$q$),
   ('storage:metric-proofs-assigned', 'insert', $q$insert into storage.objects (bucket_id, name) values ('metric-proofs', 'f1000000-0000-4000-8000-000000000007/rls-new.png')$q$);
 
+-- Client portal (M14): the portal reads through views, and the contact row
+-- that carries the account must stay out of the client's own reach.
+insert into rls_cases values
+  ('client_portal_campaigns', 'select', $q$select count(*) from public.client_portal_campaigns$q$),
+  -- Another client's campaign is never listed.
+  ('client_portal_campaigns_other', 'select', $q$select count(*) from public.client_portal_campaigns where id = 'f1000000-0000-4000-8000-000000000026'$q$),
+  ('client_portal_contents', 'select', $q$select count(*) from public.client_portal_contents$q$),
+  ('client_portal_creators', 'select', $q$select count(*) from public.client_portal_creators$q$),
+  ('client_portal_metrics', 'select', $q$select count(*) from public.client_portal_metrics$q$);
+
 -- Storage buckets: list, upload, remove.
 insert into rls_cases
 select 'storage:' || bucket, op, sql
@@ -300,7 +323,8 @@ lateral (values
 -- ---------------------------------------------------------------------------
 create temporary table rls_expected (
   tbl text, op text, owner text, manager text, inactive text, anon text,
-  creator text not null default 'd'
+  creator text not null default 'd',
+  client text not null default 'd'
 ) on commit drop;
 insert into rls_expected values
   -- Everyone signed in sees their own profile (to learn they were deactivated).
@@ -416,6 +440,17 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) valu
 
 -- Portal actions must stay in the audit trail (FR-M11-01); reading it does not.
 update rls_expected set creator = 'a' where tbl = 'activity_logs' and op = 'insert';
+update rls_expected set client = 'a' where tbl = 'activity_logs' and op = 'insert';
+update rls_expected set client = 'a' where tbl = 'profiles_self' and op = 'update';
+
+-- Phase 11 (M14): the client sees its own campaigns through the views, and
+-- nothing else at all.
+insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator, client) values
+  ('client_portal_campaigns', 'select', 'd', 'd', 'd', 'd', 'd', 'a'),
+  ('client_portal_campaigns_other', 'select', 'd', 'd', 'd', 'd', 'd', 'd'),
+  ('client_portal_contents', 'select', 'd', 'd', 'd', 'd', 'd', 'a'),
+  ('client_portal_creators', 'select', 'd', 'd', 'd', 'd', 'd', 'a'),
+  ('client_portal_metrics', 'select', 'd', 'd', 'd', 'd', 'd', 'a');
 
 -- The fixture content and assignment belong to the portal creator, so for
 -- `contents` the creator column means "their own row"; the *_other cases
@@ -464,6 +499,7 @@ select
     when 'manager' then e.manager
     when 'inactive' then e.inactive
     when 'creator' then e.creator
+    when 'client' then e.client
     else e.anon
   end as expected,
   pg_temp.probe(
@@ -479,18 +515,19 @@ cross join lateral (values
   ('manager', (select manager_id from rls_ids)),
   ('inactive', (select inactive_id from rls_ids)),
   ('creator', (select creator_user_id from rls_ids)),
+  ('client', (select client_user_id from rls_ids)),
   ('anon', null::uuid)
 ) as r(role_name, sub);
 
 \set QUIET off
-\echo '--- RLS matrix (a = allow, d = deny; owner / manager / inactive / creator / anon) ---'
+\echo '--- RLS matrix (a = allow, d = deny; owner / manager / inactive / creator / client / anon) ---'
 select
   tbl as "table",
   op,
   string_agg(
     case when left(actual, 1) = expected then upper(expected) else '✗' || left(actual, 5) end,
-    ' / ' order by array_position(array['owner', 'manager', 'inactive', 'creator', 'anon'], role_name)
-  ) as "owner / manager / inactive / creator / anon"
+    ' / ' order by array_position(array['owner', 'manager', 'inactive', 'creator', 'client', 'anon'], role_name)
+  ) as "owner / manager / inactive / creator / client / anon"
 from rls_results
 group by tbl, op
 order by tbl, array_position(array['select', 'insert', 'update', 'delete'], op);

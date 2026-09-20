@@ -23,10 +23,11 @@ describe("safeNextPath", () => {
 });
 
 describe("homePathForRole", () => {
-  it("sends the team to the app and a creator to the portal (FR-M13-02)", () => {
+  it("sends every role to its own area (FR-M13-02, FR-M14-02)", () => {
     expect(homePathForRole("owner")).toBe("/dashboard");
     expect(homePathForRole("manager")).toBe("/dashboard");
     expect(homePathForRole("creator")).toBe("/portal");
+    expect(homePathForRole("client")).toBe("/klien");
   });
 
   it("is used as the fallback destination after login", () => {
@@ -34,6 +35,7 @@ describe("homePathForRole", () => {
     expect(safeNextPath("https://evil.example", "/portal")).toBe("/portal");
     expect(safeNextPath("/login", "/portal")).toBe("/portal");
     expect(safeNextPath("/portal/penugasan", "/portal")).toBe("/portal/penugasan");
+    expect(safeNextPath(null, homePathForRole("client"))).toBe("/klien");
   });
 });
 

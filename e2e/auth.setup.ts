@@ -1,14 +1,15 @@
 import { expect, test as setup } from "@playwright/test";
 import { account } from "./helpers";
 
-// A creator lands in the portal, the team in the app (FR-M13-02).
+// Every role lands in its own area (FR-M13-02, FR-M14-02).
 const LANDING = {
   owner: /\/dashboard/,
   manager: /\/dashboard/,
   creator: /\/portal/,
+  client: /\/klien/,
 } as const;
 
-for (const role of ["owner", "manager", "creator"] as const) {
+for (const role of ["owner", "manager", "creator", "client"] as const) {
   setup(`sign in as ${role}`, async ({ page }) => {
     const { email, password } = account(role);
     await page.goto("/login");

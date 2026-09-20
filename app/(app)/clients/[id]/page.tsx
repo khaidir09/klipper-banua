@@ -12,7 +12,7 @@ import { requireInternal } from "@/lib/auth/guards";
 import { totalContractValue } from "@/lib/calculations/contract";
 import { CLIENT_TYPE_LABELS } from "@/lib/constants/clients";
 import { listClientCampaigns } from "@/lib/data/campaigns";
-import { getClient } from "@/lib/data/clients";
+import { getClient, getClientPortalAccounts } from "@/lib/data/clients";
 import { formatDateTime } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ClientContacts } from "./client-contacts";
@@ -26,7 +26,13 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   const supabase = await createSupabaseServerClient();
   const client = await getClient(supabase, id);
   if (!client) notFound();
-  const campaigns = await listClientCampaigns(supabase, id);
+  const [campaigns, portalAccounts] = await Promise.all([
+    listClientCampaigns(supabase, id),
+    getClientPortalAccounts(
+      supabase,
+      client.contacts.map((contact) => contact.profile_id),
+    ),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -75,7 +81,13 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           </CardContent>
         </Card>
 
-        <ClientContacts clientId={id} contacts={client.contacts} />
+        <ClientContacts
+          clientId={id}
+          contacts={client.contacts}
+          portalAccounts={portalAccounts}
+          isOwner={profile.role === "owner"}
+          timezone={profile.timezone}
+        />
       </div>
 
       <ClientCampaignHistory

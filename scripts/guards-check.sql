@@ -518,3 +518,74 @@ select
 reset role;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 11 (v3.0): client portal access and monitoring (PRD M14)
+-- ---------------------------------------------------------------------------
+begin;
+create temporary table p11_roles on commit drop as
+select
+  (select id from public.profiles where role = 'owner' and is_active limit 1) as owner_id,
+  (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id,
+  '66666666-0000-0000-0000-0000000000f1'::uuid as client_user_id;
+
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values (
+  '66666666-0000-0000-0000-0000000000f1',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated',
+  'authenticated',
+  'guard.klien@example.test',
+  '{}'::jsonb,
+  jsonb_build_object('full_name', 'Guard Portal Client', 'role', 'client'),
+  now(),
+  now()
+);
+insert into public.clients (id, name, type, province) values
+ ('66666666-0000-0000-0000-000000000001','Klien Portal','kampus_swasta','Kalimantan Selatan'),
+ ('66666666-0000-0000-0000-000000000002','Klien Lain','umkm','Kalimantan Selatan');
+insert into public.client_contacts (id, client_id, name, email, is_primary, profile_id) values
+ ('66666666-0000-0000-0000-0000000000e1','66666666-0000-0000-0000-000000000001','Kontak Portal','kontak@example.test', true, '66666666-0000-0000-0000-0000000000f1'),
+ ('66666666-0000-0000-0000-0000000000e2','66666666-0000-0000-0000-000000000002','Kontak Lain','lain@example.test', true, null);
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, package_price) values
+ ('66666666-0000-0000-0000-0000000000c1','66666666-0000-0000-0000-000000000001','KLIEN-2026-01','Kampanye Klien','awareness','2026-10-01','2026-10-31','aktif', 12000000),
+ ('66666666-0000-0000-0000-0000000000c2','66666666-0000-0000-0000-000000000001','KLIEN-2026-02','Masih Draft','awareness','2026-10-01','2026-10-31','draft', 5000000),
+ ('66666666-0000-0000-0000-0000000000c3','66666666-0000-0000-0000-000000000002','KLIEN-2026-03','Kampanye Lain','awareness','2026-10-01','2026-10-31','aktif', 7000000);
+
+select set_config('request.jwt.claims', json_build_object('sub','66666666-0000-0000-0000-0000000000f1','role','authenticated')::text, true) is not null as client_claims;
+set local role authenticated;
+\echo 'P11-1. is_active_member() and current_client_id() for a client (expect f, then the client id)'
+select public.is_active_member() as internal_member, public.current_client_id() = '66666666-0000-0000-0000-000000000001' as own_client;
+\echo 'P11-2. the portal lists only the client''s own running campaign (expect 1 row: KLIEN-2026-01)'
+select code, name from public.client_portal_campaigns;
+\echo 'P11-3. the view carries no package price (expect column "package_price" does not exist)'
+savepoint a; select package_price from public.client_portal_campaigns; rollback to savepoint a;
+\echo 'P11-4. internal tables stay empty for a client (expect 0 / 0 / 0 / 0)'
+select
+  (select count(*) from public.campaigns) as campaigns,
+  (select count(*) from public.creators) as creators,
+  (select count(*) from public.payouts) as payouts,
+  (select count(*) from public.client_payments) as client_payments;
+\echo 'P11-5. client moves their own account to another contact (expect UPDATE 0)'
+update public.client_contacts set profile_id = '66666666-0000-0000-0000-0000000000f1' where id='66666666-0000-0000-0000-0000000000e2';
+reset role;
+
+\echo 'P11-6. the team records an invitation (expect UPDATE 1)'
+select set_config('request.jwt.claims', json_build_object('sub',(select manager_id from p11_roles),'role','authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+update public.client_contacts set portal_invited_at = now() where id='66666666-0000-0000-0000-0000000000e1';
+reset role;
+
+\echo 'P11-7. access withdrawn by the owner closes the portal (expect null and 0 rows)'
+-- Only an owner may flip is_active (protect_profile_privileges), which is why
+-- setClientPortalAccessAction is owner-only too.
+select set_config('request.jwt.claims', json_build_object('sub',(select owner_id from p11_roles),'role','authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+update public.profiles set is_active = false where id='66666666-0000-0000-0000-0000000000f1';
+reset role;
+select set_config('request.jwt.claims', json_build_object('sub','66666666-0000-0000-0000-0000000000f1','role','authenticated')::text, true) is not null as client_claims;
+set local role authenticated;
+select public.current_client_id() as client_id, (select count(*) from public.client_portal_campaigns) as campaigns;
+reset role;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;

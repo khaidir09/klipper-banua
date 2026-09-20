@@ -35,6 +35,13 @@ export const PORTAL_NAV_ITEMS: NavItem[] = [
   { label: "Profil", href: "/portal/profil", icon: User },
 ];
 
+/** Client portal (M14). Clients never see an internal menu entry either. */
+export const CLIENT_NAV_ITEMS: NavItem[] = [
+  { label: "Beranda", href: "/klien", icon: Home },
+  { label: "Kampanye", href: "/klien/kampanye", icon: Megaphone },
+  { label: "Profil", href: "/klien/profil", icon: User },
+];
+
 export function visibleNavItems(role: InternalRole): NavItem[] {
   return NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role));
 }
@@ -43,4 +50,5 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   owner: "Owner",
   manager: "Manager",
   creator: "Kreator",
+  client: "Klien",
 };

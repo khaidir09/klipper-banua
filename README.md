@@ -4,9 +4,9 @@ Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kali
 bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
-Status: **Fase 10 — v2.0** selesai: portal kreator lengkap. Fase 9 memberi akses dan brief;
-Fase 10 menambah kiriman draf, laporan tayang, bukti metrik dengan verifikasi tim, dan status
-honor.
+Status: **Fase 11 — v3.0** selesai: portal klien untuk memantau kampanye. v2.0 (Fase 9–10)
+memberi kreator portal untuk brief dan kiriman; Fase 11 memberi kontak klien akses baca ke
+kampanye instansinya sendiri.
 Fase 8 (v1.1): tautan laporan baca-saja untuk klien (`/laporan/<token>`, dibuat dari tab Laporan
 kampanye) dan pengingat Telegram harian snapshot jatuh tempo lewat n8n
 (`/api/reminders/due-snapshots`, workflow di `docs/n8n/`). Fase 0–7 (MVP pilot): autentikasi,
@@ -41,6 +41,7 @@ Nilai yang dipakai di `.env.local`:
 | `SEED_OWNER_EMAIL` / `SEED_OWNER_PASSWORD`     | akun owner yang akan dibuat                            |
 | `SEED_MANAGER_EMAIL` / `SEED_MANAGER_PASSWORD` | (opsional) akun manager untuk menguji RLS              |
 | `SEED_CREATOR_EMAIL` / `SEED_CREATOR_PASSWORD` | (opsional) akun portal kreator untuk data demo         |
+| `SEED_CLIENT_EMAIL` / `SEED_CLIENT_PASSWORD`   | (opsional) akun portal klien untuk data demo           |
 | `REMINDER_API_TOKEN`                           | (opsional) token n8n untuk pengingat, min. 32 karakter |
 
 Email lokal (undangan, lupa kata sandi) dapat dibaca di Mailpit: <http://127.0.0.1:55324>.
@@ -56,7 +57,8 @@ templat yang sama ke _Authentication → Email Templates_ di dashboard proyek Su
 
 `npm run db:rls-check` menjalankan `scripts/rls-check.sql`: matriks SELECT/INSERT/UPDATE/DELETE
 untuk **setiap tabel, view, dan bucket Storage** sebagai `owner`, `manager`, anggota nonaktif,
-akun portal `creator`, dan `anon`, dibandingkan dengan hasil yang diharapkan (595 kasus). Skrip gagal (exit code bukan 0) bila ada
+akun portal `creator`, akun portal `client`, dan `anon`, dibandingkan dengan hasil yang
+diharapkan (744 kasus). Skrip gagal (exit code bukan 0) bila ada
 yang tidak cocok atau bila ada tabel `public` tanpa RLS, tanpa kebijakan, atau belum masuk
 matriks (view wajib masuk matriks juga), sehingga tabel atau view baru tidak bisa lolos tanpa
 diuji. Juga memeriksa bahwa manager hanya
@@ -75,8 +77,9 @@ durasi di luar 1–1.440 menit, memindahkan catatan ke pengguna lain), serta ano
 (oleh manager, mengubah atau menambah rekening setelah dianonimkan, anonimisasi ganda), serta
 portal kreator (kreator mengirim draf untuk penugasan orang lain, menandai kontennya tayang atau
 menyetujui kontennya sendiri, mengirim metrik untuk konten belum tayang atau sebelum waktu tayang,
-memverifikasi kiriman sendiri, tim menolak tanpa alasan, verifikasi ganda) — masing-masing harus
-ditolak database.
+memverifikasi kiriman sendiri, tim menolak tanpa alasan, verifikasi ganda), serta portal klien
+(klien memindahkan akunnya ke kontak lain, melihat kampanye klien lain atau kampanye draft,
+membaca tabel internal, dan akses yang dicabut owner) — masing-masing harus ditolak database.
 
 ## Portal kreator (v2.0)
 
@@ -102,6 +105,18 @@ Peran `creator` tidak punya kebijakan RLS atas tabel mana pun. Semua bacaan port
 data kreator lain tidak pernah keluar. `public.is_active_member()` sejak Fase 9 berarti anggota
 internal saja, sehingga seluruh kebijakan lama otomatis menolak akun portal.
 
+## Portal klien (v3.0)
+
+Kontak klien diundang dari halaman klien (tab kontak) dan masuk ke `/klien`: daftar kampanye
+instansinya beserta capaian vs target, lalu halaman kampanye berisi grafik views per checkpoint,
+rekap per kreator (nama panggung dan kode referal), dan daftar konten tayang. `owner` dapat
+mencabut atau mengaktifkan kembali akses tiap kontak.
+
+Peran `client` membaca lewat view `client_portal_campaigns`, `client_portal_contents`,
+`client_portal_creators`, dan `client_portal_metrics` yang memfilter `current_client_id()`.
+Harga paket, skema honor, margin, data kreator selain nama panggung, klien lain, dan log aktivitas
+tidak pernah keluar lewat portal ini. Kampanye `draft` dan `dibatalkan` juga tidak muncul.
+
 ## Data demo dan uji E2E
 
 `npm run seed:demo` mengisi Universitas Demo Borneo (fiktif), 8 kreator dengan status beragam,
@@ -115,7 +130,9 @@ tugaskan kreator → aktifkan → draf, revisi, setujui → tayang → snapshot 
 pendaftar, klik tautan → selesaikan → hitung, setujui, bayar honor → invoice lunas → laporan
 cetak A4 dan CSV → log aktivitas. Lalu memeriksa batas akses manager, dan portal kreator: brief
 miliknya sendiri (tanpa harga paket, tanpa akses ke rute internal) serta alur penuh kirim draf →
-review tim → laporan tayang → konfirmasi tim → bukti metrik → verifikasi tim. Data demo di-reset otomatis
+review tim → laporan tayang → konfirmasi tim → bukti metrik → verifikasi tim. Terakhir portal
+klien: kampanye instansinya sendiri, tanpa harga paket maupun honor, dan tanpa akses ke rute
+internal. Data demo di-reset otomatis
 sebelum setiap run. Butuh `npm run db:start` dan akun dari `seed:owner` (termasuk manager) serta
 `seed:demo` (akun portal kreator).
 
@@ -162,8 +179,9 @@ tidak pernah dibaca. Slug tak dikenal atau kampanye dibatalkan → 404. Rute ini
 app/(auth)/     halaman masuk, lupa & atur kata sandi
 app/(app)/      halaman internal: dashboard, clients, creators, campaigns, settings
 app/(portal)/   portal kreator (v2.0): beranda, penugasan, profil
+app/(client)/   portal klien (v3.0): beranda, kampanye, profil
 components/     ui (shadcn), layout, tables (TanStack), forms, creators
-lib/data/       query daftar/detail per modul (server-only; portal.ts = view portal kreator)
+lib/data/       query daftar/detail per modul (server-only; portal.ts & client-portal.ts = view portal)
 lib/activity/   penulisan log aktivitas (M11)
 lib/calculations/ fungsi murni honor & metrik (+ unit test)
 lib/referral/   generator kode referal & slug

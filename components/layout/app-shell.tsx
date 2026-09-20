@@ -17,6 +17,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import {
+  CLIENT_NAV_ITEMS,
   PORTAL_NAV_ITEMS,
   ROLE_LABELS,
   visibleNavItems,
@@ -25,17 +26,17 @@ import {
 import type { InternalRole, UserRole } from "@/lib/auth/guards";
 
 /**
- * Shell for both signed-in areas: the internal app and the creator portal
- * (M13). `area` picks the menu, so the portal can never render an internal
- * entry. Menu items hold icon components, which cannot cross the server /
- * client boundary as props: the list is built here instead.
+ * Shell for every signed-in area: the internal app, the creator portal (M13)
+ * and the client portal (M14). `area` picks the menu, so a portal can never
+ * render an internal entry. Menu items hold icon components, which cannot
+ * cross the server / client boundary as props: the list is built here.
  */
 type AppShellProps = {
   appName: string;
   fullName: string;
   email: string;
   role: UserRole;
-  area: "app" | "portal";
+  area: "app" | "portal" | "client";
   timezoneLabel: string;
   children: React.ReactNode;
 };
@@ -90,7 +91,12 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const navItems = area === "portal" ? PORTAL_NAV_ITEMS : visibleNavItems(role as InternalRole);
+  const navItems =
+    area === "portal"
+      ? PORTAL_NAV_ITEMS
+      : area === "client"
+        ? CLIENT_NAV_ITEMS
+        : visibleNavItems(role as InternalRole);
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">

@@ -1,7 +1,13 @@
 import { z } from "zod";
 import { CLIENT_TYPES } from "@/lib/constants/clients";
 import { PROVINCES } from "@/lib/constants/regions";
-import { listQuerySchema, optionalEmailField, optionalTextField, shortTextField } from "./common";
+import {
+  listQuerySchema,
+  optionalEmailField,
+  optionalTextField,
+  shortTextField,
+  uuidField,
+} from "./common";
 import { whatsappField } from "./phone";
 
 export const clientSchema = z.object({
@@ -26,6 +32,24 @@ export const clientContactSchema = z.object({
 
 export type ClientContactFormInput = z.input<typeof clientContactSchema>;
 export type ClientContactInput = z.output<typeof clientContactSchema>;
+
+/* ------------------------------------------------------------------ */
+/* Client portal (M14, v3.0)                                           */
+/* ------------------------------------------------------------------ */
+
+/** FR-M14-01: an invitation needs an email address to send it to. */
+export const inviteClientPortalSchema = z.object({
+  contact_id: uuidField,
+  email: z.email({ message: "Format email tidak valid." }).transform((v) => v.toLowerCase()),
+});
+
+export type InviteClientPortalInput = z.infer<typeof inviteClientPortalSchema>;
+
+/** FR-M14-01: owner switches a contact's portal access on or off. */
+export const clientPortalAccessSchema = z.object({
+  contact_id: uuidField,
+  is_active: z.boolean(),
+});
 
 export const clientListQuerySchema = listQuerySchema.extend({
   type: z.enum(CLIENT_TYPES).optional().catch(undefined),

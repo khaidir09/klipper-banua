@@ -118,6 +118,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "campaign_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "campaign_assets_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -184,6 +191,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
             referencedColumns: ["id"]
           },
           {
@@ -323,7 +337,9 @@ export type Database = {
           is_primary: boolean
           name: string
           phone_wa: string
+          portal_invited_at: string | null
           position: string
+          profile_id: string | null
           updated_at: string
         }
         Insert: {
@@ -334,7 +350,9 @@ export type Database = {
           is_primary?: boolean
           name: string
           phone_wa?: string
+          portal_invited_at?: string | null
           position?: string
+          profile_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -345,7 +363,9 @@ export type Database = {
           is_primary?: boolean
           name?: string
           phone_wa?: string
+          portal_invited_at?: string | null
           position?: string
+          profile_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -354,6 +374,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_contacts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -407,6 +434,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_payments_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
             referencedColumns: ["id"]
           },
           {
@@ -501,6 +535,13 @@ export type Database = {
             foreignKeyName: "content_reviews_content_id_fkey"
             columns: ["content_id"]
             isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reviews_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
             referencedRelation: "contents"
             referencedColumns: ["id"]
           },
@@ -588,6 +629,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "campaign_creators"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["campaign_creator_id"]
+          },
+          {
+            foreignKeyName: "contents_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_creators"
+            referencedColumns: ["campaign_creator_id"]
           },
           {
             foreignKeyName: "contents_campaign_creator_id_fkey"
@@ -850,6 +905,20 @@ export type Database = {
             foreignKeyName: "link_clicks_campaign_creator_id_fkey"
             columns: ["campaign_creator_id"]
             isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["campaign_creator_id"]
+          },
+          {
+            foreignKeyName: "link_clicks_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_creators"
+            referencedColumns: ["campaign_creator_id"]
+          },
+          {
+            foreignKeyName: "link_clicks_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
             referencedRelation: "creator_portal_assignments"
             referencedColumns: ["id"]
           },
@@ -902,6 +971,13 @@ export type Database = {
           views?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "metric_snapshots_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "metric_snapshots_content_id_fkey"
             columns: ["content_id"]
@@ -991,6 +1067,13 @@ export type Database = {
             foreignKeyName: "metric_submissions_content_id_fkey"
             columns: ["content_id"]
             isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_submissions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
             referencedRelation: "contents"
             referencedColumns: ["id"]
           },
@@ -1006,6 +1089,13 @@ export type Database = {
             columns: ["reviewed_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_submissions_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_metrics"
             referencedColumns: ["id"]
           },
           {
@@ -1071,6 +1161,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ops_time_logs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
             referencedColumns: ["id"]
           },
           {
@@ -1157,6 +1254,20 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "campaign_creators"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: true
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["campaign_creator_id"]
+          },
+          {
+            foreignKeyName: "payouts_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: true
+            referencedRelation: "client_portal_creators"
+            referencedColumns: ["campaign_creator_id"]
           },
           {
             foreignKeyName: "payouts_campaign_creator_id_fkey"
@@ -1262,6 +1373,20 @@ export type Database = {
             foreignKeyName: "registrant_reports_campaign_creator_id_fkey"
             columns: ["campaign_creator_id"]
             isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["campaign_creator_id"]
+          },
+          {
+            foreignKeyName: "registrant_reports_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_creators"
+            referencedColumns: ["campaign_creator_id"]
+          },
+          {
+            foreignKeyName: "registrant_reports_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
             referencedRelation: "creator_portal_assignments"
             referencedColumns: ["id"]
           },
@@ -1270,6 +1395,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registrant_reports_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
             referencedColumns: ["id"]
           },
           {
@@ -1327,6 +1459,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "report_share_links_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "report_share_links_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -1344,6 +1483,162 @@ export type Database = {
       }
     }
     Views: {
+      client_portal_campaigns: {
+        Row: {
+          brief: string | null
+          code: string | null
+          created_at: string | null
+          end_date: string | null
+          id: string | null
+          min_live_days: number | null
+          name: string | null
+          objective: Database["public"]["Enums"]["campaign_objective"] | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["campaign_status"] | null
+          target_contents: number | null
+          target_registrants: number | null
+          target_views: number | null
+        }
+        Insert: {
+          brief?: string | null
+          code?: string | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string | null
+          min_live_days?: number | null
+          name?: string | null
+          objective?: Database["public"]["Enums"]["campaign_objective"] | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"] | null
+          target_contents?: number | null
+          target_registrants?: number | null
+          target_views?: number | null
+        }
+        Update: {
+          brief?: string | null
+          code?: string | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string | null
+          min_live_days?: number | null
+          name?: string | null
+          objective?: Database["public"]["Enums"]["campaign_objective"] | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"] | null
+          target_contents?: number | null
+          target_registrants?: number | null
+          target_views?: number | null
+        }
+        Relationships: []
+      }
+      client_portal_contents: {
+        Row: {
+          campaign_creator_id: string | null
+          campaign_id: string | null
+          creator_name: string | null
+          id: string | null
+          live_status: Database["public"]["Enums"]["live_status"] | null
+          platform: Database["public"]["Enums"]["social_platform"] | null
+          posted_at: string | null
+          posted_url: string | null
+          removed_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_portal_creators: {
+        Row: {
+          campaign_creator_id: string | null
+          campaign_id: string | null
+          clicks_human: number | null
+          clicks_total: number | null
+          creator_name: string | null
+          live_contents: number | null
+          referral_code: string | null
+          registrants: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_portal_metrics: {
+        Row: {
+          campaign_id: string | null
+          captured_at: string | null
+          checkpoint: Database["public"]["Enums"]["metric_checkpoint"] | null
+          comments: number | null
+          content_id: string | null
+          id: string | null
+          likes: number | null
+          saves: number | null
+          shares: number | null
+          views: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_snapshots_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_snapshots_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_snapshots_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_portal_assets: {
         Row: {
           campaign_id: string | null
@@ -1381,6 +1676,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
             referencedColumns: ["id"]
           },
         ]
@@ -1423,6 +1725,13 @@ export type Database = {
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
         ]
       }
       creator_portal_contents: {
@@ -1455,11 +1764,32 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "contents_campaign_creator_id_fkey"
             columns: ["campaign_creator_id"]
             isOneToOne: false
             referencedRelation: "campaign_creators"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["campaign_creator_id"]
+          },
+          {
+            foreignKeyName: "contents_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_creators"
+            referencedColumns: ["campaign_creator_id"]
           },
           {
             foreignKeyName: "contents_campaign_creator_id_fkey"
@@ -1484,6 +1814,13 @@ export type Database = {
           views: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "metric_snapshots_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "metric_snapshots_content_id_fkey"
             columns: ["content_id"]
@@ -1524,11 +1861,32 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payouts_campaign_creator_id_fkey"
             columns: ["campaign_creator_id"]
             isOneToOne: true
             referencedRelation: "campaign_creators"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: true
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["campaign_creator_id"]
+          },
+          {
+            foreignKeyName: "payouts_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: true
+            referencedRelation: "client_portal_creators"
+            referencedColumns: ["campaign_creator_id"]
           },
           {
             foreignKeyName: "payouts_campaign_creator_id_fkey"
@@ -1597,6 +1955,13 @@ export type Database = {
             foreignKeyName: "content_reviews_content_id_fkey"
             columns: ["content_id"]
             isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reviews_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
             referencedRelation: "contents"
             referencedColumns: ["id"]
           },
@@ -1631,6 +1996,13 @@ export type Database = {
             foreignKeyName: "metric_submissions_content_id_fkey"
             columns: ["content_id"]
             isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metric_submissions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
             referencedRelation: "contents"
             referencedColumns: ["id"]
           },
@@ -1650,6 +2022,10 @@ export type Database = {
         Args: { p_campaign_id: string }
         Returns: undefined
       }
+      client_owns_campaign: {
+        Args: { target_campaign_id: string }
+        Returns: boolean
+      }
       content_campaign_id: {
         Args: { p_campaign_creator_id: string }
         Returns: string
@@ -1658,6 +2034,15 @@ export type Database = {
         Args: { target_campaign_id: string }
         Returns: boolean
       }
+      creator_owns_assignment: {
+        Args: { target_assignment_id: string }
+        Returns: boolean
+      }
+      creator_owns_content: {
+        Args: { target_content_id: string }
+        Returns: boolean
+      }
+      current_client_id: { Args: never; Returns: string }
       current_creator_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
@@ -1718,7 +2103,7 @@ export type Database = {
       review_status: "menunggu_review" | "disetujui" | "revisi" | "ditolak"
       social_platform: "tiktok" | "instagram" | "youtube" | "facebook"
       submission_status: "menunggu" | "diterima" | "ditolak"
-      user_role: "owner" | "manager" | "creator"
+      user_role: "owner" | "manager" | "creator" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1888,7 +2273,7 @@ export const Constants = {
       review_status: ["menunggu_review", "disetujui", "revisi", "ditolak"],
       social_platform: ["tiktok", "instagram", "youtube", "facebook"],
       submission_status: ["menunggu", "diterima", "ditolak"],
-      user_role: ["owner", "manager", "creator"],
+      user_role: ["owner", "manager", "creator", "client"],
     },
   },
 } as const

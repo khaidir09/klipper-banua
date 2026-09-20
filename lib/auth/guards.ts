@@ -23,6 +23,16 @@ export function isInternalRole(role: UserRole): role is InternalRole {
 /** A signed-in creator, together with the creator record behind the account. */
 export type CreatorSession = Session & { creatorId: string };
 
+/** A signed-in client contact, together with the institution behind them. */
+export type ClientSession = Session & { clientId: string };
+
+/** Where a signed-in account belongs (FR-M13-02, FR-M14-02). */
+export function homePathFor(role: UserRole): string {
+  if (role === "creator") return "/portal";
+  if (role === "client") return "/klien";
+  return "/dashboard";
+}
+
 /** Returns the signed-in member, or null. Does not redirect. */
 export async function getSession(): Promise<Session | null> {
   const supabase = await createSupabaseServerClient();
@@ -62,12 +72,12 @@ export async function requireSession(): Promise<Session> {
   return session;
 }
 
-/** Guard for the internal app: creators belong in the portal (FR-M13-02). */
+/** Guard for the internal app: portal accounts belong in their own area. */
 export async function requireInternal(): Promise<Session> {
   const session = await requireSession();
 
   if (!isInternalRole(session.profile.role)) {
-    redirect("/portal");
+    redirect(homePathFor(session.profile.role));
   }
 
   return session;
@@ -92,8 +102,8 @@ export async function requireRole(...roles: InternalRole[]): Promise<Session> {
 export async function requireCreator(): Promise<CreatorSession> {
   const session = await requireSession();
 
-  if (isInternalRole(session.profile.role)) {
-    redirect("/dashboard");
+  if (session.profile.role !== "creator") {
+    redirect(homePathFor(session.profile.role));
   }
 
   const supabase = await createSupabaseServerClient();
@@ -104,6 +114,28 @@ export async function requireCreator(): Promise<CreatorSession> {
   }
 
   return { ...session, creatorId: data.id };
+}
+
+/**
+ * Guard for every route inside the `(client)` group (FR-M14-02). The client
+ * id comes from `current_client_id()`, the same helper the portal views
+ * filter on, so a revoked account never gets past here.
+ */
+export async function requireClient(): Promise<ClientSession> {
+  const session = await requireSession();
+
+  if (session.profile.role !== "client") {
+    redirect(homePathFor(session.profile.role));
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.rpc("current_client_id");
+
+  if (!data) {
+    redirect("/keluar?alasan=portal");
+  }
+
+  return { ...session, clientId: data };
 }
 
 export function isOwner(profile: Profile): boolean {

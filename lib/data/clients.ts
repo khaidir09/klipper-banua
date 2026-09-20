@@ -59,3 +59,22 @@ export async function getClient(
   if (error) throw new Error(error.message);
   return data;
 }
+
+export type ClientPortalAccount = { id: string; email: string; is_active: boolean };
+
+/** FR-M14-01: the portal accounts behind a client's contacts, by profile id. */
+export async function getClientPortalAccounts(
+  supabase: SupabaseClient<Database>,
+  profileIds: (string | null)[],
+): Promise<Map<string, ClientPortalAccount>> {
+  const ids = profileIds.filter((id): id is string => Boolean(id));
+  if (!ids.length) return new Map();
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, email, is_active")
+    .in("id", ids);
+
+  if (error) throw new Error(error.message);
+  return new Map(data.map((row) => [row.id, row]));
+}

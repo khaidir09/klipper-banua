@@ -45,7 +45,9 @@ export function safeNextPath(value: string | null | undefined, fallback = "/dash
   return value;
 }
 
-/** Landing page for a role (FR-M13-02). */
+/** Landing page for a role (FR-M13-02, FR-M14-02). */
 export function homePathForRole(role: string): string {
-  return role === "creator" ? "/portal" : "/dashboard";
+  if (role === "creator") return "/portal";
+  if (role === "client") return "/klien";
+  return "/dashboard";
 }

@@ -13,6 +13,7 @@ const ACCOUNT_PREFIXES = {
   owner: "SEED_OWNER",
   manager: "SEED_MANAGER",
   creator: "SEED_CREATOR",
+  client: "SEED_CLIENT",
 } as const;
 
 export function account(role: keyof typeof ACCOUNT_PREFIXES) {
