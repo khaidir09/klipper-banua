@@ -3,8 +3,8 @@
 Sumber acuan global untuk redesign UI/UX. Aturan produk tetap di `PRD.md`;
 aturan teknis tetap di `CLAUDE.md`. Dokumen ini hanya mengatur tampilan.
 
-Status: **Langkah 0, 1, dan 2 selesai** (token, halaman auth, app shell).
-Langkah 3–9 belum.
+Status: **Langkah 0–5 selesai** (token, auth, shell, dasbor, badge & tabel,
+detail kampanye). Langkah 6–9 belum.
 
 ## 1. Posisi produk
 
@@ -122,19 +122,101 @@ Masalah sekarang: `aktif` = hitam, `selesai` = abu, `draft` = outline — status
 tidak terbaca sekilas, padahal itu alasan utama layar ini dibuka. Nilai enum
 mengikuti PRD dan **tidak berubah**; yang berubah hanya pemetaan warnanya.
 
-| Enum              | Arti                     | Token badge        |
-| ----------------- | ------------------------ | ------------------ |
-| `draft`           | belum jalan              | `neutral-soft`     |
-| `aktif`           | sedang berjalan          | `info-soft`        |
-| `selesai`         | tuntas                   | `success-soft`     |
-| `dibatalkan`      | batal                    | `destructive-soft` |
-| `menunggu_review` | butuh tindakan tim       | `warning-soft`     |
-| `terverifikasi`   | kreator lolos verifikasi | `success-soft`     |
-| `diblokir`        | kreator diblokir         | `destructive-soft` |
+Kosakata nada, dipakai konsisten lintas domain — sumbernya satu berkas,
+`components/status/status-tone.ts`:
+
+| Nada          | Arti                               |
+| ------------- | ---------------------------------- |
+| `neutral`     | belum mulai, tidak ada tanggungan  |
+| `info`        | sedang berjalan                    |
+| `success`     | tuntas, disetujui, lunas           |
+| `warning`     | antrean yang harus dikosongkan tim |
+| `destructive` | ditolak, dibatalkan, diblokir      |
+
+| Domain           | Pemetaan                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| Kampanye         | draft·neutral, aktif·info, selesai·success, dibatalkan·destructive                         |
+| Penugasan        | diundang·neutral, bergabung·info, selesai·success, mundur·destructive                      |
+| Kreator          | prospek·neutral, terverifikasi·info, aktif·success, nonaktif·neutral, diblokir·destructive |
+| Review konten    | menunggu_review·warning, revisi·info, disetujui·success, ditolak·destructive               |
+| Status tayang    | belum_tayang·neutral, tayang·success, dihapus·destructive                                  |
+| Honor            | draf·neutral, disetujui·info, dibayar·success                                              |
+| Pembayaran klien | belum_dibayar·warning, sebagian·info, lunas·success                                        |
+| Kiriman kreator  | menunggu·warning, diterima·success, ditolak·destructive                                    |
+
+Nada mengikuti **posisi dalam alur**, bukan kata harfiahnya. Karena itu `aktif`
+pada kampanye berwarna biru (sedang berjalan) sementara `aktif` pada kreator
+berwarna hijau (keadaan sehat terakhir dalam alurnya). Keduanya jarang muncul
+di layar yang sama.
+
+Status yang **menghentikan** pekerjaan (`dibatalkan`, `mundur`, `diblokir`,
+`ditolak`, `dihapus`) membawa ikon Lucide, jadi maknanya tidak bergantung warna
+saja (WCAG 1.4.1).
+
+Terverifikasi di browser: 16 badge unik, 0 gagal, terendah 5.91:1 (terang) dan
+7.90:1 (gelap).
 
 Wajib: warna **tidak boleh** jadi satu-satunya pembawa makna — setiap badge
 tetap membawa teks, dan badge kritis membawa ikon Lucide
 (`ux-guidelines.csv`: _Color Only_, severity High).
+
+## 4b. Kartu dasbor
+
+Dasbor memisahkan dua hal yang dulu tercampur dalam satu baris enam kartu:
+
+| Jenis          | Isi                                                      | Perlakuan                                               |
+| -------------- | -------------------------------------------------------- | ------------------------------------------------------- |
+| Butuh tindakan | konten menunggu review, snapshot jatuh tempo, kiriman    | `warning-soft` + ikon bila > 0; netral + centang bila 0 |
+| Ringkasan      | kampanye aktif, honor belum dibayar, invoice belum lunas | selalu netral — tidak ada yang tertagih                 |
+
+Tiga dan tiga, jadi grid tidak lagi menyisakan kartu yatim. Antrean diletakkan
+**di atas** ringkasan karena PRD §2.2 menilai produk ini dari kecepatan tim
+mengosongkannya.
+
+Di kartu uang, **nominal** yang jadi angka besar dan jumlah dokumen jadi detail
+— bukan sebaliknya.
+
+> **Jangan pudarkan ink di atas permukaan bertint.** `text-<x>-soft-foreground/80`
+> pada `warning-soft` turun ke **4.22:1**. Pakai ink penuh dan biarkan ukuran
+> huruf yang membawa hierarki. Aturan yang sama berlaku untuk seluruh pasangan
+> `-soft` di §10.
+
+## 4c. Empty state tabel
+
+Tabel kosong menyebut **apa yang harus dilakukan**, bukan sekadar "tidak ada
+data". `DataTable` menerima `emptyMessage`, `emptyHint`, dan `emptyAction`, dan
+halaman daftar meneruskan `filtered` sehingga pesannya berbeda antara
+"filter tidak menemukan apa-apa" (tawarkan _Kosongkan filter_) dan
+"memang belum ada isinya" (tawarkan _Buat/Tambah_).
+
+Catatan: kolom responsif tabel (`hidden md:table-cell` dst.) dan
+`overflow-x-auto` pada `components/ui/table.tsx` **sudah ada sebelumnya** dan
+tidak diubah.
+
+## 4d. Detail kampanye
+
+Tujuh tab dengan kerangka bersama:
+
+- **Fact strip di header** — periode, harga paket, dan kreator bergabung
+  tampil di setiap tab, bukan hanya di tab Ringkasan.
+- **Tab bar membawa hitungan.** Tab yang menyimpan pekerjaan belum selesai
+  memakai angka `warning-soft` di sebelah labelnya, jadi tim tahu di mana
+  antreannya tanpa membuka ketujuh tab. Angka, bukan warna saja.
+  - Konten: konten berstatus `menunggu_review`
+  - Metrik: snapshot jatuh tempo + kiriman metrik menunggu + laporan tayang
+    yang belum dikonfirmasi
+- **Ringkasan membuka dengan capaian terhadap target** (konten tayang, views,
+  pendaftar). Sebelumnya angka ini hanya ada di tab Metrik, padahal klien
+  melihatnya di portalnya sendiri.
+
+Data untuk keduanya datang dari satu pemuat `loadCampaignPulse` yang
+di-`cache()` per request — sengaja lebih ringan dari `getCampaignMetrics`
+(tanpa total klik, tanpa signed URL), karena penghitung tab dan progress bar
+tidak membutuhkannya dan signing memakan satu round trip Storage di tiap tab.
+
+Progress bar: angka dan teks "dari N" membawa maknanya sendiri; bar hanya
+menguatkan. Bar memakai `--primary`, berubah `--success` saat target tercapai,
+dan membawa `role="progressbar"` dengan `aria-valuetext`.
 
 ## 5. Tipografi
 

@@ -74,7 +74,10 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Se
         </Button>
       </form>
 
-      <CampaignsTable rows={result.rows} />
+      <CampaignsTable
+        rows={result.rows}
+        filtered={Boolean(query.q || query.status || query.client_id)}
+      />
 
       <ListPagination
         page={result.page}

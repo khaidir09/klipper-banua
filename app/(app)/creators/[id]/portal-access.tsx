@@ -85,9 +85,9 @@ export function PortalAccess({
               <Mail className="size-4 text-muted-foreground" aria-hidden />
               <span className="font-medium">{account.email}</span>
               {account.is_active ? (
-                <Badge>Akses aktif</Badge>
+                <Badge variant="success">Akses aktif</Badge>
               ) : (
-                <Badge variant="outline">Akses dicabut</Badge>
+                <Badge variant="destructive">Akses dicabut</Badge>
               )}
             </div>
             {portalInvitedAt ? (

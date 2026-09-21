@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import {
-  AssignmentStatusBadge,
-  CampaignStatusBadge,
-} from "@/components/campaigns/campaign-status-badge";
+import { AssignmentStatusBadge, CampaignStatusBadge } from "@/components/status/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,

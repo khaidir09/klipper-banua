@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
-import { CampaignStatusBadge } from "@/components/campaigns/campaign-status-badge";
+import { CampaignStatusBadge } from "@/components/status/status-badge";
 import { CumulativeViewsChart } from "@/components/charts/cumulative-views-chart";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";

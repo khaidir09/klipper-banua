@@ -6,7 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleAlert, Plus, Send, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
+import {
+  LiveStatusBadge,
+  ReviewStatusBadge,
+  SubmissionStatusBadge,
+} from "@/components/status/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -25,8 +29,6 @@ import {
   CONTENT_DRAFT_BUCKET,
   CONTENT_DRAFT_MAX_BYTES,
   CONTENT_DRAFT_MIME_TYPES,
-  LIVE_STATUS_LABELS,
-  REVIEW_STATUS_LABELS,
   type LiveStatus,
   type ReviewDecision,
   type ReviewStatus,
@@ -42,7 +44,6 @@ import {
   METRIC_PROOF_BUCKET,
   METRIC_PROOF_MAX_BYTES,
   METRIC_PROOF_MIME_TYPES,
-  SUBMISSION_STATUS_LABELS,
   type MetricCheckpoint,
   type SubmissionStatus,
 } from "@/lib/constants/metrics";
@@ -544,20 +545,6 @@ function MetricDialog({
 /* Panel                                                               */
 /* ------------------------------------------------------------------ */
 
-const REVIEW_VARIANTS: Record<ReviewStatus, React.ComponentProps<typeof Badge>["variant"]> = {
-  menunggu_review: "outline",
-  disetujui: "default",
-  revisi: "secondary",
-  ditolak: "destructive",
-};
-
-const SUBMISSION_VARIANTS: Record<SubmissionStatus, React.ComponentProps<typeof Badge>["variant"]> =
-  {
-    menunggu: "outline",
-    diterima: "default",
-    ditolak: "destructive",
-  };
-
 type DialogState =
   | { kind: "create" }
   | { kind: "edit" | "new-draft" | "posted" | "metric"; content: PortalContentView }
@@ -615,10 +602,8 @@ export function SubmissionsPanel({
               return (
                 <div key={content.id} id={`konten-${content.id}`} className="rounded-lg border p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={REVIEW_VARIANTS[content.reviewStatus]}>
-                      {REVIEW_STATUS_LABELS[content.reviewStatus]}
-                    </Badge>
-                    <Badge variant="outline">{LIVE_STATUS_LABELS[content.liveStatus]}</Badge>
+                    <ReviewStatusBadge status={content.reviewStatus} />
+                    <LiveStatusBadge status={content.liveStatus} />
                     <span className="text-sm text-muted-foreground">
                       {SOCIAL_PLATFORM_LABELS[content.platform]}
                     </span>
@@ -678,9 +663,7 @@ export function SubmissionsPanel({
                     <ul className="mt-3 space-y-2 text-sm">
                       {content.submissions.map((submission) => (
                         <li key={submission.id} className="flex flex-wrap items-center gap-2">
-                          <Badge variant={SUBMISSION_VARIANTS[submission.status]}>
-                            {SUBMISSION_STATUS_LABELS[submission.status]}
-                          </Badge>
+                          <SubmissionStatusBadge status={submission.status} />
                           <span>
                             {CHECKPOINT_LABELS[submission.checkpoint]} ·{" "}
                             {formatNumber(submission.views)} views ·{" "}

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Pencil, UserX } from "lucide-react";
 import { DetailList } from "@/components/layout/detail-list";
 import { PageHeader } from "@/components/layout/page-header";
-import { CreatorStatusBadge } from "@/components/creators/creator-status-badge";
+import { CreatorStatusBadge } from "@/components/status/status-badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

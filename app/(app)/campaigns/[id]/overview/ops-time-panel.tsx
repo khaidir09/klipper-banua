@@ -91,7 +91,9 @@ export function OpsTimePanel({
   return (
     <Card className="lg:col-span-2">
       <CardHeader>
-        <CardTitle>Waktu operasional</CardTitle>
+        <CardTitle>
+          <h2>Waktu operasional</h2>
+        </CardTitle>
         <CardDescription>
           Total {formatMinutes(recap.totalMinutes)} dari {recap.totalEntries} catatan. Rekap ini
           menunjukkan pekerjaan yang paling menyita waktu.

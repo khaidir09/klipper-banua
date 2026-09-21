@@ -100,9 +100,9 @@ export function UsersTable({
                 </TableCell>
                 <TableCell>
                   {profile.is_active ? (
-                    <Badge>Aktif</Badge>
+                    <Badge variant="success">Aktif</Badge>
                   ) : (
-                    <Badge variant="outline">Nonaktif</Badge>
+                    <Badge variant="neutral">Nonaktif</Badge>
                   )}
                 </TableCell>
                 <TableCell className="hidden text-muted-foreground md:table-cell">

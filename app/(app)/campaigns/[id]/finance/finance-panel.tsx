@@ -4,6 +4,7 @@ import { Fragment, useState, useTransition } from "react";
 import { Calculator, ChevronDown, ChevronUp, FileText, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ClientPaymentStatusBadge, PayoutStatusBadge } from "@/components/status/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,12 +28,7 @@ import type { CampaignFinance } from "@/lib/calculations/finance";
 import { INELIGIBLE_REASON_LABELS, type PayoutCalculation } from "@/lib/calculations/payout";
 import type { CampaignStatus } from "@/lib/constants/campaigns";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/constants/creators";
-import {
-  CLIENT_PAYMENT_STATUS_LABELS,
-  PAYOUT_STATUS_LABELS,
-  type ClientPaymentStatus,
-  type PayoutStatus,
-} from "@/lib/constants/finance";
+import { type ClientPaymentStatus, type PayoutStatus } from "@/lib/constants/finance";
 import type { FinanceAssignment } from "@/lib/data/finance";
 import { formatRupiah } from "@/lib/format/currency";
 import { formatCalendarDate, formatDateTime } from "@/lib/format/date";
@@ -95,19 +91,6 @@ type Props = {
   payments: PaymentView[];
   contentInfo: Record<string, { platform: string; posted_url: string | null }>;
 };
-
-const PAYOUT_VARIANTS: Record<PayoutStatus, React.ComponentProps<typeof Badge>["variant"]> = {
-  draf: "outline",
-  disetujui: "secondary",
-  dibayar: "default",
-};
-
-const PAYMENT_VARIANTS: Record<ClientPaymentStatus, React.ComponentProps<typeof Badge>["variant"]> =
-  {
-    belum_dibayar: "outline",
-    sebagian: "secondary",
-    lunas: "default",
-  };
 
 const dash = (value: number | null, format: (v: number) => string) =>
   value === null ? "–" : format(value);
@@ -254,9 +237,7 @@ export function FinancePanel(props: Props) {
                           </TableCell>
                           <TableCell>
                             {payout ? (
-                              <Badge variant={PAYOUT_VARIANTS[payout.status]}>
-                                {PAYOUT_STATUS_LABELS[payout.status]}
-                              </Badge>
+                              <PayoutStatusBadge status={payout.status} />
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground">
                                 {closed ? "Belum dihitung" : "Perkiraan"}
@@ -427,9 +408,7 @@ export function FinancePanel(props: Props) {
                         ) : null}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={PAYMENT_VARIANTS[payment.status]}>
-                          {CLIENT_PAYMENT_STATUS_LABELS[payment.status]}
-                        </Badge>
+                        <ClientPaymentStatusBadge status={payment.status} />
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">

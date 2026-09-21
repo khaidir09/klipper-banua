@@ -130,7 +130,19 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
         </div>
       </form>
 
-      <CreatorsTable rows={result.rows} />
+      <CreatorsTable
+        rows={result.rows}
+        filtered={Boolean(
+          query.q ||
+          query.province ||
+          query.city ||
+          query.niche ||
+          query.tier ||
+          query.status ||
+          query.platform ||
+          query.min_pct !== undefined,
+        )}
+      />
 
       <ListPagination
         page={result.page}

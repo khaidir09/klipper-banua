@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTable, type RowData } from "@tanstack/react-table";
+import { SearchX } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,6 +18,10 @@ type DataTableProps<TData extends RowData> = {
   columns: TableColumnDef<TData>[];
   data: TData[];
   emptyMessage?: string;
+  /** Second line: what to do next, or how to widen the search. */
+  emptyHint?: string;
+  /** A button or link offered alongside the message, e.g. "Buat kampanye". */
+  emptyAction?: React.ReactNode;
   /** When given, the whole row links to the detail page. */
   getRowHref?: (row: TData) => string;
 };
@@ -29,6 +34,8 @@ export function DataTable<TData extends RowData>({
   columns,
   data,
   emptyMessage = "Belum ada data.",
+  emptyHint,
+  emptyAction,
   getRowHref,
 }: DataTableProps<TData>) {
   const router = useRouter();
@@ -67,12 +74,22 @@ export function DataTable<TData extends RowData>({
               );
             })
           ) : (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center text-muted-foreground"
-              >
-                {emptyMessage}
+            <TableRow className="hover:bg-transparent">
+              {/* An empty table should say what to do next, not just sit blank. */}
+              <TableCell colSpan={columns.length} className="px-4 py-12 text-center">
+                <div className="mx-auto flex max-w-sm flex-col items-center gap-2">
+                  <span
+                    aria-hidden
+                    className="flex size-9 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                  >
+                    <SearchX className="size-4" />
+                  </span>
+                  <p className="text-sm font-medium">{emptyMessage}</p>
+                  {emptyHint ? (
+                    <p className="text-sm text-balance text-muted-foreground">{emptyHint}</p>
+                  ) : null}
+                  {emptyAction ? <div className="mt-1">{emptyAction}</div> : null}
+                </div>
               </TableCell>
             </TableRow>
           )}

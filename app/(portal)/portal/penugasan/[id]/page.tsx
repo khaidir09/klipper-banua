@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Download, ExternalLink } from "lucide-react";
-import {
-  AssignmentStatusBadge,
-  CampaignStatusBadge,
-} from "@/components/campaigns/campaign-status-badge";
+import { AssignmentStatusBadge, CampaignStatusBadge } from "@/components/status/status-badge";
 import { CopyButton } from "@/components/forms/copy-button";
 import { DetailList } from "@/components/layout/detail-list";
 import { PageHeader } from "@/components/layout/page-header";

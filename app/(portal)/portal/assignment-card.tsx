@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import {
-  AssignmentStatusBadge,
-  CampaignStatusBadge,
-} from "@/components/campaigns/campaign-status-badge";
+import { AssignmentStatusBadge, CampaignStatusBadge } from "@/components/status/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCalendarRange } from "@/lib/format/date";
 import type { PortalAssignment } from "@/lib/data/portal";

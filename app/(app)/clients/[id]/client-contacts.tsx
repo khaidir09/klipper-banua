@@ -64,7 +64,7 @@ function PortalAccess({
   if (!account) {
     return (
       <div className="mt-2 flex flex-wrap items-center gap-2">
-        <Badge variant="outline">Belum diundang ke portal</Badge>
+        <Badge variant="neutral">Belum diundang ke portal</Badge>
         {contact.email ? (
           <Button size="sm" variant="outline" disabled={isPending} onClick={onInvite}>
             <Send aria-hidden />
@@ -85,9 +85,9 @@ function PortalAccess({
         <Mail className="size-3.5 text-muted-foreground" aria-hidden />
         <span className="text-sm">{account.email}</span>
         {account.is_active ? (
-          <Badge>Akses portal aktif</Badge>
+          <Badge variant="success">Akses portal aktif</Badge>
         ) : (
-          <Badge variant="outline">Akses portal dicabut</Badge>
+          <Badge variant="destructive">Akses portal dicabut</Badge>
         )}
       </div>
       {contact.portal_invited_at ? (

@@ -1,8 +1,11 @@
 "use client";
 
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/tables/data-table";
 import { columnHelper, type TableColumnDef } from "@/components/tables/table-features";
-import { CampaignStatusBadge } from "@/components/campaigns/campaign-status-badge";
+import { CampaignStatusBadge } from "@/components/status/status-badge";
 import { CAMPAIGN_OBJECTIVE_LABELS } from "@/lib/constants/campaigns";
 import type { CampaignListItem } from "@/lib/data/campaigns";
 import { formatRupiah } from "@/lib/format/currency";
@@ -55,12 +58,38 @@ const columns: TableColumnDef<CampaignListItem>[] = helper.columns([
   }),
 ]);
 
-export function CampaignsTable({ rows }: { rows: CampaignListItem[] }) {
+export function CampaignsTable({
+  rows,
+  filtered,
+}: {
+  rows: CampaignListItem[];
+  /** True when a search or filter is active, so the empty state can say so. */
+  filtered: boolean;
+}) {
   return (
     <DataTable
       columns={columns}
       data={rows}
-      emptyMessage="Belum ada kampanye yang cocok."
+      emptyMessage={filtered ? "Tidak ada kampanye yang cocok" : "Belum ada kampanye"}
+      emptyHint={
+        filtered
+          ? "Coba ubah kata kunci, atau kosongkan filter status dan klien."
+          : "Kampanye pertama dimulai dari paket, target, dan brief untuk satu klien."
+      }
+      emptyAction={
+        filtered ? (
+          <Button variant="outline" size="lg" asChild>
+            <Link href="/campaigns">Kosongkan filter</Link>
+          </Button>
+        ) : (
+          <Button size="lg" asChild>
+            <Link href="/campaigns/new">
+              <Plus aria-hidden />
+              Buat kampanye
+            </Link>
+          </Button>
+        )
+      }
       getRowHref={(row) => `/campaigns/${row.id}/overview`}
     />
   );

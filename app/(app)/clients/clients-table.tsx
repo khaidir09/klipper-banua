@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/tables/data-table";
 import { columnHelper, type TableColumnDef } from "@/components/tables/table-features";
 import { Badge } from "@/components/ui/badge";
@@ -48,12 +51,31 @@ const columns: TableColumnDef<ClientListItem>[] = helper.columns([
   }),
 ]);
 
-export function ClientsTable({ rows }: { rows: ClientListItem[] }) {
+export function ClientsTable({ rows, filtered }: { rows: ClientListItem[]; filtered: boolean }) {
   return (
     <DataTable
       columns={columns}
       data={rows}
-      emptyMessage="Belum ada klien yang cocok."
+      emptyMessage={filtered ? "Tidak ada klien yang cocok" : "Belum ada klien"}
+      emptyHint={
+        filtered
+          ? "Coba kata kunci lain, atau kosongkan filter jenis instansi."
+          : "Tambahkan instansi lebih dulu; kampanye selalu dimiliki satu klien."
+      }
+      emptyAction={
+        filtered ? (
+          <Button variant="outline" size="lg" asChild>
+            <Link href="/clients">Kosongkan filter</Link>
+          </Button>
+        ) : (
+          <Button size="lg" asChild>
+            <Link href="/clients/new">
+              <Plus aria-hidden />
+              Tambah klien
+            </Link>
+          </Button>
+        )
+      }
       getRowHref={(row) => `/clients/${row.id}`}
     />
   );

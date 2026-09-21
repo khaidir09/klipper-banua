@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/tables/data-table";
 import { columnHelper, type TableColumnDef } from "@/components/tables/table-features";
 import { Badge } from "@/components/ui/badge";
-import { CreatorStatusBadge } from "@/components/creators/creator-status-badge";
+import { CreatorStatusBadge } from "@/components/status/status-badge";
 import { CREATOR_TIER_LABELS, SOCIAL_PLATFORM_LABELS, nicheLabel } from "@/lib/constants/creators";
 import type { CreatorListItem } from "@/lib/data/creators";
 import { formatNumber } from "@/lib/format/number";
@@ -79,12 +82,31 @@ const columns: TableColumnDef<CreatorListItem>[] = helper.columns([
   }),
 ]);
 
-export function CreatorsTable({ rows }: { rows: CreatorListItem[] }) {
+export function CreatorsTable({ rows, filtered }: { rows: CreatorListItem[]; filtered: boolean }) {
   return (
     <DataTable
       columns={columns}
       data={rows}
-      emptyMessage="Belum ada kreator yang cocok dengan filter."
+      emptyMessage={filtered ? "Tidak ada kreator yang cocok" : "Belum ada kreator"}
+      emptyHint={
+        filtered
+          ? "Coba longgarkan filter status, tier, provinsi, atau niche."
+          : "Mulai dari kreator berstatus prospek, lalu lengkapi bukti audiens Kalimantan."
+      }
+      emptyAction={
+        filtered ? (
+          <Button variant="outline" size="lg" asChild>
+            <Link href="/creators">Kosongkan filter</Link>
+          </Button>
+        ) : (
+          <Button size="lg" asChild>
+            <Link href="/creators/new">
+              <Plus aria-hidden />
+              Tambah kreator
+            </Link>
+          </Button>
+        )
+      }
       getRowHref={(row) => `/creators/${row.id}`}
     />
   );

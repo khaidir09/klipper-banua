@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ProfileForm } from "@/components/forms/profile-form";
 import { DetailList } from "@/components/layout/detail-list";
 import { PageHeader } from "@/components/layout/page-header";
-import { CreatorStatusBadge } from "@/components/creators/creator-status-badge";
+import { CreatorStatusBadge } from "@/components/status/status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCreator } from "@/lib/auth/guards";
 import { CREATOR_TIER_LABELS } from "@/lib/constants/creators";

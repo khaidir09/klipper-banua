@@ -77,7 +77,10 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
         </Button>
       </form>
 
-      <ClientsTable rows={result.rows} />
+      <ClientsTable
+        rows={result.rows}
+        filtered={Boolean(query.q || query.type || query.province)}
+      />
 
       <ListPagination
         page={result.page}

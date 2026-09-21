@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { CampaignStatusBadge } from "@/components/campaigns/campaign-status-badge";
+import { CampaignStatusBadge } from "@/components/status/status-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireClient } from "@/lib/auth/guards";

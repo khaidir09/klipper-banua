@@ -14,6 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { LiveStatusBadge, ReviewStatusBadge } from "@/components/status/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,11 +27,9 @@ import {
 } from "@/components/ui/card";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import {
-  LIVE_STATUS_LABELS,
   REVIEW_DECISION_LABELS,
   REVIEW_STATUSES,
   REVIEW_STATUS_LABELS,
-  type LiveStatus,
   type ReviewDecision,
   type ReviewStatus,
 } from "@/lib/constants/contents";
@@ -62,19 +61,6 @@ type DialogState =
   | { kind: "create" }
   | { kind: "edit-draft" | "new-draft" | "review" | "posted" | "removed"; content: ContentView }
   | null;
-
-const REVIEW_VARIANTS: Record<ReviewStatus, React.ComponentProps<typeof Badge>["variant"]> = {
-  menunggu_review: "outline",
-  disetujui: "default",
-  revisi: "secondary",
-  ditolak: "destructive",
-};
-
-const LIVE_VARIANTS: Record<LiveStatus, React.ComponentProps<typeof Badge>["variant"]> = {
-  belum_tayang: "outline",
-  tayang: "default",
-  dihapus: "destructive",
-};
 
 const DECISION_ICONS: Record<ReviewDecision, React.ReactNode> = {
   disetujui: <CheckCircle2 className="size-4 text-primary" aria-hidden />,
@@ -332,13 +318,9 @@ function ContentItem({
             ) : null}
           </p>
           <div className="flex flex-wrap gap-1.5">
-            <Badge variant={REVIEW_VARIANTS[content.review_status]}>
-              {REVIEW_STATUS_LABELS[content.review_status]}
-            </Badge>
+            <ReviewStatusBadge status={content.review_status} />
             {content.review_status === "disetujui" ? (
-              <Badge variant={LIVE_VARIANTS[content.live_status]}>
-                {LIVE_STATUS_LABELS[content.live_status]}
-              </Badge>
+              <LiveStatusBadge status={content.live_status} />
             ) : null}
           </div>
         </div>

@@ -10,8 +10,15 @@ const badgeVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         secondary: "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+        // Status tones. Each pairs a tinted surface with its own darker ink:
+        // the `bg-<x>/10 text-<x>` shorthand only reaches 4.1–4.5:1 in light
+        // mode. Ratios are recorded in design-system/klipper-banua/MASTER.md.
+        neutral: "bg-neutral-soft text-neutral-soft-foreground [a]:hover:bg-neutral-soft/70",
+        info: "bg-info-soft text-info-soft-foreground [a]:hover:bg-info-soft/70",
+        success: "bg-success-soft text-success-soft-foreground [a]:hover:bg-success-soft/70",
+        warning: "bg-warning-soft text-warning-soft-foreground [a]:hover:bg-warning-soft/70",
         destructive:
-          "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
+          "bg-destructive-soft text-destructive-soft-foreground focus-visible:ring-destructive/30 [a]:hover:bg-destructive-soft/70",
         outline: "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost: "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
