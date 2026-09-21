@@ -8,16 +8,23 @@ import type { PortalAssignment } from "@/lib/data/portal";
 /** One assignment in the portal's lists (FR-M13-03). */
 export function AssignmentCard({ assignment }: { assignment: PortalAssignment }) {
   return (
-    <Card>
+    <Card className="relative">
       <CardHeader className="gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <CampaignStatusBadge status={assignment.campaign_status} />
           <AssignmentStatusBadge status={assignment.status} />
         </div>
         <CardTitle className="text-base">
-          <Link href={`/portal/penugasan/${assignment.id}`} className="hover:underline">
-            {assignment.campaign_name}
-          </Link>
+          <h2>
+            {/* Stretched link: the whole card is the tap target, which beats
+                padding a one-line title out to 44px on a phone. */}
+            <Link
+              href={`/portal/penugasan/${assignment.id}`}
+              className="after:absolute after:inset-0 hover:underline focus-visible:underline"
+            >
+              {assignment.campaign_name}
+            </Link>
+          </h2>
         </CardTitle>
         <p className="text-sm text-muted-foreground">{assignment.client_name}</p>
       </CardHeader>
@@ -40,13 +47,12 @@ export function AssignmentCard({ assignment }: { assignment: PortalAssignment })
             <dd>{assignment.min_live_days} hari</dd>
           </div>
         </dl>
-        <Link
-          href={`/portal/penugasan/${assignment.id}`}
-          className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
-        >
+        {/* Affordance only. The card itself carries the link, so a screen
+            reader announces one target per card instead of two. */}
+        <p className="inline-flex items-center gap-1 text-sm font-medium text-primary">
           Lihat brief
           <ArrowRight className="size-4" aria-hidden />
-        </Link>
+        </p>
       </CardContent>
     </Card>
   );

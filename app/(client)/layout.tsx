@@ -21,7 +21,8 @@ export default async function ClientLayout({ children }: { children: React.React
       timezoneLabel={timezoneLabel(profile.timezone)}
       defaultOpen={await sidebarDefaultOpen()}
     >
-      {children}
+      {/* Clients check progress from a phone too: see `.touch-targets` in globals.css. */}
+      <div className="touch-targets">{children}</div>
     </AppShell>
   );
 }

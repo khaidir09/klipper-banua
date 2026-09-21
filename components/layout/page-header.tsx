@@ -17,7 +17,7 @@ export function PageHeader({ title, description, backHref, backLabel, actions }:
         {backHref ? (
           <Link
             href={backHref}
-            className="mb-1 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            className="mb-1 -ml-1 inline-flex min-h-11 items-center gap-1 px-1 text-sm text-muted-foreground hover:text-foreground md:ml-0 md:min-h-0 md:px-0"
           >
             <ChevronLeft className="size-4" aria-hidden />
             {backLabel ?? "Kembali"}

@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { CampaignStatusBadge } from "@/components/status/status-badge";
 import { CumulativeViewsChart } from "@/components/charts/cumulative-views-chart";
 import { PageHeader } from "@/components/layout/page-header";
+import { TargetProgress } from "@/components/metrics/target-progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -29,24 +30,19 @@ import {
   listClientMetrics,
 } from "@/lib/data/client-portal";
 import { formatCalendarRange, formatDateTime } from "@/lib/format/date";
-import { EMPTY_METRIC, formatNumber, formatPercent } from "@/lib/format/number";
+import { EMPTY_METRIC, formatNumber } from "@/lib/format/number";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Kampanye" };
 
 function StatTile({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div>
       <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
+      <p className="mt-0.5 text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
       {detail ? <p className="mt-1 text-xs text-muted-foreground">{detail}</p> : null}
     </div>
   );
-}
-
-function targetDetail(percent: number | null, target: number): string {
-  if (target <= 0) return "Target belum diatur";
-  return `${percent === null ? EMPTY_METRIC : formatPercent(percent)} dari target ${formatNumber(target)}`;
 }
 
 /** FR-M14-03: one campaign of the client, with its verified numbers. */
@@ -81,42 +77,44 @@ export default async function ClientCampaignPage({ params }: { params: Promise<{
         actions={<CampaignStatusBadge status={campaign.status} />}
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile
-          label="Total views"
-          value={formatNumber(views)}
-          detail={targetDetail(
-            progressPercent(views, campaign.target_views),
-            campaign.target_views,
-          )}
-        />
-        <StatTile
-          label="Klik tautan (non-bot)"
-          value={formatNumber(clicks)}
-          detail="Klik dari tautan kreator"
-        />
-        <StatTile
-          label="Pendaftar"
-          value={formatNumber(registrants)}
-          detail={targetDetail(
-            progressPercent(registrants, campaign.target_registrants),
-            campaign.target_registrants,
-          )}
-        />
-        <StatTile
-          label="Konten tayang"
-          value={formatNumber(liveContents)}
-          detail={
-            campaign.target_contents > 0
-              ? `dari target ${formatNumber(campaign.target_contents)} konten`
-              : "Target belum diatur"
-          }
-        />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <h2>Capaian terhadap target</h2>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <TargetProgress
+            label="Total views"
+            actual={views}
+            target={campaign.target_views}
+            percent={progressPercent(views, campaign.target_views)}
+          />
+          <TargetProgress
+            label="Pendaftar"
+            actual={registrants}
+            target={campaign.target_registrants}
+            percent={progressPercent(registrants, campaign.target_registrants)}
+          />
+          <TargetProgress
+            label="Konten tayang"
+            actual={liveContents}
+            target={campaign.target_contents}
+            percent={progressPercent(liveContents, campaign.target_contents)}
+          />
+          <StatTile
+            label="Klik tautan (non-bot)"
+            value={formatNumber(clicks)}
+            detail="Klik dari tautan kreator"
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Views kumulatif per checkpoint</CardTitle>
+          <CardTitle>
+            <h2>Views kumulatif per checkpoint</h2>
+          </CardTitle>
           <CardDescription>
             Angka yang sudah diverifikasi tim dari tangkapan layar analitik kreator.
           </CardDescription>
@@ -131,7 +129,9 @@ export default async function ClientCampaignPage({ params }: { params: Promise<{
 
       <Card>
         <CardHeader>
-          <CardTitle>Per kreator</CardTitle>
+          <CardTitle>
+            <h2>Per kreator</h2>
+          </CardTitle>
           <CardDescription>
             Kode referal dipakai untuk mencocokkan pendaftar dengan kreatornya.
           </CardDescription>
@@ -170,7 +170,9 @@ export default async function ClientCampaignPage({ params }: { params: Promise<{
 
       <Card>
         <CardHeader>
-          <CardTitle>Konten tayang</CardTitle>
+          <CardTitle>
+            <h2>Konten tayang</h2>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {contents.length ? (
@@ -200,6 +202,7 @@ export default async function ClientCampaignPage({ params }: { params: Promise<{
                       href={content.posted_url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      data-cta
                       className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
                     >
                       <ExternalLink className="size-4" aria-hidden />

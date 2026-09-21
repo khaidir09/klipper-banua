@@ -3,8 +3,8 @@
 Sumber acuan global untuk redesign UI/UX. Aturan produk tetap di `PRD.md`;
 aturan teknis tetap di `CLAUDE.md`. Dokumen ini hanya mengatur tampilan.
 
-Status: **Langkah 0–5 selesai** (token, auth, shell, dasbor, badge & tabel,
-detail kampanye). Langkah 6–9 belum.
+Status: **Langkah 0–7 selesai** (token, auth, shell, dasbor, badge & tabel,
+detail kampanye, portal kreator, portal klien). Langkah 8–9 belum.
 
 ## 1. Posisi produk
 
@@ -217,6 +217,76 @@ tidak membutuhkannya dan signing memakan satu round trip Storage di tiap tab.
 Progress bar: angka dan teks "dari N" membawa maknanya sendiri; bar hanya
 menguatkan. Bar memakai `--primary`, berubah `--success` saat target tercapai,
 dan membawa `role="progressbar"` dengan `aria-valuetext`.
+
+## 4e. Portal kreator — target sentuh
+
+Kreator membuka portal dari HP, jadi setiap kontrol melewati 44x44px di bawah
+`md`. Dipasang sebagai **satu aturan** `.touch-targets` di `globals.css` yang
+dipakai `(portal)/layout.tsx`, bukan override ukuran per tombol — supaya
+kontrol yang ditambahkan nanti tidak bisa melorot lagi di bawah minimum.
+
+Yang **dikecualikan**: tautan di tengah kalimat. WCAG 2.5.8 membebaskannya, dan
+memberinya padding akan merusak paragraf brief. Contohnya "buka konten" pada
+"Tayang sejak 17 Sep 2026, 21.23 WITA · buka konten" — sengaja dibiarkan 18px.
+Tautan blok yang memang tombol aksi memakai atribut `data-cta` untuk ikut
+aturan.
+
+Kartu penugasan memakai **stretched link** (`after:absolute after:inset-0`):
+seluruh kartu jadi area sentuh, lebih baik daripada memaksa judul satu baris
+menjadi setinggi 44px. Tautan "Lihat brief" yang dulu menuju tempat sama
+diturunkan jadi teks penanda, sehingga pembaca layar mendengar satu target per
+kartu, bukan dua. Terverifikasi lewat hit-test: kartu 343x344px merespons di
+ketiga sudut, dan menyentuh tengahnya membuka detail.
+
+Kontrol header (pemicu sidebar, tombol tema, menu pengguna) ikut naik ke 44px
+di bawah `md` untuk **semua** area — pengguna internal pun kadang membuka dari
+HP.
+
+Hasil audit 375px, sebelum → sesudah, kontrol di bawah 44px:
+beranda 5→0, penugasan 6→0, profil 6→0, detail penugasan 13→0
+(tidak menghitung dua tautan inline yang memang dikecualikan).
+
+### Catatan patch kedua pada `components/ui/sidebar.tsx`
+
+`SidebarInset` bawaan shadcn merender `<main>`, sementara app shell menaruh
+`<header>` dan `<main>`-nya sendiri di dalamnya — dua landmark `main`
+bersarang, HTML tidak valid. `SidebarInset` sekarang `<div>`; ia memang
+kontainer tata letak, bukan landmark.
+
+## 4f. Capaian terhadap target
+
+Satu komponen, `components/metrics/target-progress.tsx`, dipakai di tiga
+tempat: ringkasan kampanye internal, beranda portal klien, dan detail kampanye
+klien. Capaian dibaca sama di mana pun, dan hanya ada satu tempat untuk
+mengubahnya.
+
+Aturannya: **angka dan teks "dari N" membawa maknanya sendiri**; bar hanya
+menguatkan. Bar memakai `--primary`, berubah `--success` saat target tercapai,
+dan membawa `role="progressbar"` dengan `aria-valuetext` berisi angka asli
+("13.300 dari 80.000"), bukan persentase saja.
+
+Metrik **tanpa target** — misalnya klik tautan non-bot — tidak diberi bar.
+Bar tanpa target adalah bar tanpa makna.
+
+Kontras isi bar terhadap jalurnya: 10.34:1 (terang) dan 5.84:1 (gelap), jauh
+di atas 3:1 yang dibutuhkan indikator non-teks.
+
+## 4g. Portal klien
+
+Nada "laporan", bukan konsol: kampus membuka ini untuk tahu kampanyenya sampai
+mana.
+
+- Kartu kampanye memakai **stretched link** seperti portal kreator; tautan
+  "Lihat detail" turun jadi teks penanda, jadi satu target per kartu.
+- Angka capaian yang dulu teks polos ("13.300 dari 80.000 (16,6%)") kini
+  memakai `TargetProgress`.
+- Empty state menjelaskan apa yang akan terjadi, bukan sekadar menyatakan
+  kosong.
+- `.touch-targets` juga dipasang di `(client)/layout.tsx` — klien pun membuka
+  dari HP.
+
+Audit 375px setelah perubahan: detail dan profil **0** kontrol di bawah 44px;
+beranda hanya menyisakan judul kartu yang justru area sentuhnya sekartu penuh.
 
 ## 5. Tipografi
 

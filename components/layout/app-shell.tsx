@@ -159,7 +159,7 @@ export function AppShell({
           <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur">
             <Tooltip>
               <TooltipTrigger asChild>
-                <SidebarTrigger className="-ml-1" />
+                <SidebarTrigger className="-ml-1 size-11 md:size-8" />
               </TooltipTrigger>
               <TooltipContent side="bottom">Buka/tutup menu (Ctrl+B)</TooltipContent>
             </Tooltip>
@@ -172,7 +172,11 @@ export function AppShell({
               <ThemeToggle />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2 px-2" aria-label="Menu pengguna">
+                  <Button
+                    variant="ghost"
+                    className="h-11 gap-2 px-2 md:h-8"
+                    aria-label="Menu pengguna"
+                  >
                     <Avatar className="size-7">
                       <AvatarFallback className="text-xs">
                         {initials(fullName, email)}

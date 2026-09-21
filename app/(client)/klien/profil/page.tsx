@@ -19,7 +19,9 @@ export default async function ClientProfilePage() {
 
       <Card className="max-w-xl">
         <CardHeader>
-          <CardTitle>Akun portal</CardTitle>
+          <CardTitle>
+            <h2>Akun portal</h2>
+          </CardTitle>
           <CardDescription>{user.email}</CardDescription>
         </CardHeader>
         <CardContent>

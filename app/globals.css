@@ -213,6 +213,23 @@
   }
 }
 
+/*
+ * Creator portal (PRD M13): a phone is the primary device, so every control
+ * clears the 44x44px target below `md`. One rule rather than a size override
+ * per button, so controls added later cannot drift back under the minimum.
+ *
+ * Deliberately not applied to links inside prose: WCAG 2.5.8 exempts inline
+ * text links, and padding them out would wreck the brief's paragraphs. Block
+ * links that act as calls to action carry `data-cta` and opt in.
+ */
+@media (max-width: 767px) {
+  .touch-targets :is(button, [role="button"], a[data-cta], select, textarea),
+  .touch-targets input:not([type="checkbox"], [type="radio"], [type="hidden"]) {
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+  }
+}
+
 /* Motion 2/10. Honour the OS setting for everyone who asks for less movement. */
 @media (prefers-reduced-motion: reduce) {
   *,

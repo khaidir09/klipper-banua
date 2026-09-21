@@ -145,7 +145,9 @@ export default async function PortalAssignmentPage({
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Brief</CardTitle>
+            <CardTitle>
+              <h2>Brief</h2>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm whitespace-pre-line">
@@ -170,7 +172,9 @@ export default async function PortalAssignmentPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Yang wajib</CardTitle>
+            <CardTitle>
+              <h2>Yang wajib</h2>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <List items={assignment.must_do} empty="Belum ada poin wajib." />
@@ -179,7 +183,9 @@ export default async function PortalAssignmentPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Larangan</CardTitle>
+            <CardTitle>
+              <h2>Larangan</h2>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <List items={assignment.must_not} empty="Belum ada larangan." />
@@ -188,7 +194,9 @@ export default async function PortalAssignmentPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Kode referal dan tautan</CardTitle>
+            <CardTitle>
+              <h2>Kode referal dan tautan</h2>
+            </CardTitle>
             <CardDescription>
               Cantumkan tautan ini di bio atau keterangan, dan minta audiens memakai kode referal
               saat mendaftar.
@@ -221,7 +229,9 @@ export default async function PortalAssignmentPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Kesepakatan honor</CardTitle>
+            <CardTitle>
+              <h2>Kesepakatan honor</h2>
+            </CardTitle>
             <CardDescription>
               Honor dihitung setelah kampanye selesai dan konten memenuhi minimal hari tayang.
             </CardDescription>
@@ -254,7 +264,9 @@ export default async function PortalAssignmentPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Honor saya</CardTitle>
+            <CardTitle>
+              <h2>Honor saya</h2>
+            </CardTitle>
             <CardDescription>
               {payout
                 ? payout.status === "draf"
@@ -309,7 +321,9 @@ export default async function PortalAssignmentPage({
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Materi kampanye</CardTitle>
+            <CardTitle>
+              <h2>Materi kampanye</h2>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {assets.length ? (
@@ -330,6 +344,7 @@ export default async function PortalAssignmentPage({
                           href={href}
                           target="_blank"
                           rel="noopener noreferrer"
+                          data-cta
                           className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
                         >
                           {asset.file_path ? (

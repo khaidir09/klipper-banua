@@ -21,7 +21,8 @@ export default async function PortalLayout({ children }: { children: React.React
       timezoneLabel={timezoneLabel(profile.timezone)}
       defaultOpen={await sidebarDefaultOpen()}
     >
-      {children}
+      {/* Creators work from a phone: see the `.touch-targets` rule in globals.css. */}
+      <div className="touch-targets">{children}</div>
     </AppShell>
   );
 }

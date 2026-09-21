@@ -1,71 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DetailList } from "@/components/layout/detail-list";
+import { TargetProgress } from "@/components/metrics/target-progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { opsTimeRecap } from "@/lib/calculations/ops-time";
 import { CAMPAIGN_OBJECTIVE_LABELS } from "@/lib/constants/campaigns";
 import { listOpsTimeLogs } from "@/lib/data/ops-time";
 import { formatRupiah } from "@/lib/format/currency";
 import { formatCalendarDate, formatDateInput, formatDateTime } from "@/lib/format/date";
-import { formatNumber, formatPercent } from "@/lib/format/number";
-import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/format/number";
 import { loadCampaign, loadCampaignPulse } from "../data";
 import { OpsTimePanel } from "./ops-time-panel";
 
 export const metadata: Metadata = { title: "Ringkasan kampanye" };
-
-/**
- * Progress against one campaign target. The figure and the "dari N" text carry
- * the reading on their own; the bar only reinforces it, so nothing is lost when
- * the bar cannot be seen.
- */
-function TargetProgress({
-  label,
-  actual,
-  target,
-  percent,
-}: {
-  label: string;
-  actual: number;
-  target: number;
-  percent: number | null;
-}) {
-  const reached = percent !== null && percent >= 100;
-  const width = percent === null ? 0 : Math.min(100, percent);
-
-  return (
-    <div>
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5">
-        <span className="text-2xl font-semibold tracking-tight tabular-nums">
-          {formatNumber(actual)}
-        </span>
-        <span className="text-sm text-muted-foreground tabular-nums">
-          {target > 0 ? `dari ${formatNumber(target)}` : "tanpa target"}
-          {percent === null ? "" : ` · ${formatPercent(percent)}`}
-        </span>
-      </p>
-      <div
-        className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted"
-        role="progressbar"
-        aria-label={label}
-        aria-valuenow={percent === null ? undefined : Math.round(percent)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuetext={
-          target > 0
-            ? `${formatNumber(actual)} dari ${formatNumber(target)}`
-            : `${formatNumber(actual)}, tanpa target`
-        }
-      >
-        <div
-          className={cn("h-full rounded-full", reached ? "bg-success" : "bg-primary")}
-          style={{ width: `${width}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 export default async function CampaignOverviewPage({
   params,

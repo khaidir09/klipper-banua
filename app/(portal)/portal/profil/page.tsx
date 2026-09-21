@@ -27,7 +27,9 @@ export default async function PortalProfilePage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Data kreator</CardTitle>
+            <CardTitle>
+              <h2>Data kreator</h2>
+            </CardTitle>
             {creator ? (
               <CardDescription>
                 <CreatorStatusBadge status={creator.status} />
@@ -56,7 +58,9 @@ export default async function PortalProfilePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Akun portal</CardTitle>
+            <CardTitle>
+              <h2>Akun portal</h2>
+            </CardTitle>
             <CardDescription>{user.email}</CardDescription>
           </CardHeader>
           <CardContent>
