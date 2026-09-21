@@ -1,4 +1,8 @@
-/** Indonesian provinces. Kalimantan first because that is where the team works. */
+/**
+ * The team only works in Kalimantan (PRD section 1), so the province list is
+ * limited to the five Kalimantan provinces. `province` is a plain `text`
+ * column; the allowed set is enforced here and in the Zod schemas.
+ */
 export const KALIMANTAN_PROVINCES = [
   "Kalimantan Barat",
   "Kalimantan Tengah",
@@ -7,45 +11,12 @@ export const KALIMANTAN_PROVINCES = [
   "Kalimantan Utara",
 ] as const;
 
-export const OTHER_PROVINCES = [
-  "Aceh",
-  "Sumatera Utara",
-  "Sumatera Barat",
-  "Riau",
-  "Kepulauan Riau",
-  "Jambi",
-  "Sumatera Selatan",
-  "Kepulauan Bangka Belitung",
-  "Bengkulu",
-  "Lampung",
-  "DKI Jakarta",
-  "Jawa Barat",
-  "Banten",
-  "Jawa Tengah",
-  "DI Yogyakarta",
-  "Jawa Timur",
-  "Bali",
-  "Nusa Tenggara Barat",
-  "Nusa Tenggara Timur",
-  "Sulawesi Utara",
-  "Gorontalo",
-  "Sulawesi Tengah",
-  "Sulawesi Barat",
-  "Sulawesi Selatan",
-  "Sulawesi Tenggara",
-  "Maluku",
-  "Maluku Utara",
-  "Papua",
-  "Papua Barat",
-  "Papua Barat Daya",
-  "Papua Tengah",
-  "Papua Pegunungan",
-  "Papua Selatan",
-] as const;
-
-export const PROVINCES = [...KALIMANTAN_PROVINCES, ...OTHER_PROVINCES] as const;
+export const PROVINCES = KALIMANTAN_PROVINCES;
 
 export type Province = (typeof PROVINCES)[number];
+
+/** Home province of the team; the default for every new client and creator. */
+export const DEFAULT_PROVINCE: Province = "Kalimantan Selatan";
 
 export function isProvince(value: string): value is Province {
   return (PROVINCES as readonly string[]).includes(value);

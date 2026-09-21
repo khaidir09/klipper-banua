@@ -6,6 +6,12 @@ import { ProvinceSelect } from "@/components/forms/province-select";
 import { ListPagination } from "@/components/tables/list-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { requireInternal } from "@/lib/auth/guards";
 import {
@@ -46,6 +52,17 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
     min_pct: query.min_pct !== undefined ? String(query.min_pct) : undefined,
   };
 
+  const filtered = Boolean(
+    query.q ||
+    query.province ||
+    query.city ||
+    query.niche ||
+    query.tier ||
+    query.status ||
+    query.platform ||
+    query.min_pct !== undefined,
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -61,7 +78,7 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
         }
       />
 
-      <form className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4" role="search">
+      <form className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" role="search">
         <div className="relative sm:col-span-2">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -73,13 +90,19 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
           />
         </div>
         <ProvinceSelect
+          className="w-full"
           name="province"
           defaultValue={query.province ?? ""}
           allowEmpty
           aria-label="Provinsi"
         />
         <Input name="city" defaultValue={query.city} placeholder="Kota" aria-label="Kota" />
-        <NativeSelect name="niche" defaultValue={query.niche ?? ""} aria-label="Niche">
+        <NativeSelect
+          className="w-full"
+          name="niche"
+          defaultValue={query.niche ?? ""}
+          aria-label="Niche"
+        >
           <NativeSelectOption value="">Semua niche</NativeSelectOption>
           {NICHES.map((niche) => (
             <NativeSelectOption key={niche} value={niche}>
@@ -87,7 +110,12 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
             </NativeSelectOption>
           ))}
         </NativeSelect>
-        <NativeSelect name="tier" defaultValue={query.tier ?? ""} aria-label="Tier">
+        <NativeSelect
+          className="w-full"
+          name="tier"
+          defaultValue={query.tier ?? ""}
+          aria-label="Tier"
+        >
           <NativeSelectOption value="">Semua tier</NativeSelectOption>
           {CREATOR_TIERS.map((tier) => (
             <NativeSelectOption key={tier} value={tier}>
@@ -95,7 +123,12 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
             </NativeSelectOption>
           ))}
         </NativeSelect>
-        <NativeSelect name="status" defaultValue={query.status ?? ""} aria-label="Status">
+        <NativeSelect
+          className="w-full"
+          name="status"
+          defaultValue={query.status ?? ""}
+          aria-label="Status"
+        >
           <NativeSelectOption value="">Semua status</NativeSelectOption>
           {CREATOR_STATUSES.map((status) => (
             <NativeSelectOption key={status} value={status}>
@@ -103,7 +136,12 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
             </NativeSelectOption>
           ))}
         </NativeSelect>
-        <NativeSelect name="platform" defaultValue={query.platform ?? ""} aria-label="Platform">
+        <NativeSelect
+          className="w-full"
+          name="platform"
+          defaultValue={query.platform ?? ""}
+          aria-label="Platform"
+        >
           <NativeSelectOption value="">Semua platform</NativeSelectOption>
           {SOCIAL_PLATFORMS.map((platform) => (
             <NativeSelectOption key={platform} value={platform}>
@@ -111,38 +149,35 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
             </NativeSelectOption>
           ))}
         </NativeSelect>
-        <Input
-          name="min_pct"
-          type="number"
-          min={0}
-          max={100}
-          defaultValue={query.min_pct ?? ""}
-          placeholder="Min. % audiens Kalimantan"
-          aria-label="Persentase audiens Kalimantan minimum"
-        />
-        <div className="flex gap-2 sm:col-span-2 lg:col-span-2">
-          <Button type="submit" variant="outline">
+        {/* The unit stays visible once a number is typed; a bare "50" in the
+            filter bar says nothing on its own. */}
+        <InputGroup className="sm:col-span-2 xl:col-span-1">
+          <InputGroupInput
+            name="min_pct"
+            type="number"
+            min={0}
+            max={100}
+            defaultValue={query.min_pct ?? ""}
+            placeholder="Min. audiens"
+            aria-label="Persentase audiens Kalimantan minimum"
+          />
+          <InputGroupAddon align="inline-end">
+            <InputGroupText>% Kalimantan</InputGroupText>
+          </InputGroupAddon>
+        </InputGroup>
+        <div className="flex gap-2 sm:col-span-2 xl:col-span-3 xl:justify-end">
+          <Button type="submit" variant="outline" className="flex-1 xl:flex-none">
             Terapkan filter
           </Button>
-          <Button type="button" variant="ghost" asChild>
-            <Link href="/creators">Reset</Link>
-          </Button>
+          {filtered ? (
+            <Button type="button" variant="ghost" asChild>
+              <Link href="/creators">Reset</Link>
+            </Button>
+          ) : null}
         </div>
       </form>
 
-      <CreatorsTable
-        rows={result.rows}
-        filtered={Boolean(
-          query.q ||
-          query.province ||
-          query.city ||
-          query.niche ||
-          query.tier ||
-          query.status ||
-          query.platform ||
-          query.min_pct !== undefined,
-        )}
-      />
+      <CreatorsTable rows={result.rows} filtered={filtered} />
 
       <ListPagination
         page={result.page}

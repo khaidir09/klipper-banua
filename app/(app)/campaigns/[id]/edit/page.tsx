@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
 import { listClientOptions } from "@/lib/data/campaigns";
 import { CampaignForm } from "../../campaign-form";
 import { campaignToFormValues } from "../../form-values";
@@ -15,15 +14,13 @@ export default async function EditCampaignPage({ params }: { params: Promise<{ i
 
   const clients = await listClientOptions(supabase);
 
+  // No card wrapper: the form brings its own two-column shell with a summary
+  // aside, which a card would box into the left half of the page.
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <CampaignForm
-          campaignId={id}
-          clients={clients}
-          defaultValues={campaignToFormValues(campaign)}
-        />
-      </CardContent>
-    </Card>
+    <CampaignForm
+      campaignId={id}
+      clients={clients}
+      defaultValues={campaignToFormValues(campaign)}
+    />
   );
 }
