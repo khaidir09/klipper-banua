@@ -3,8 +3,7 @@
 Sumber acuan global untuk redesign UI/UX. Aturan produk tetap di `PRD.md`;
 aturan teknis tetap di `CLAUDE.md`. Dokumen ini hanya mengatur tampilan.
 
-Status: **Langkah 0–7 selesai** (token, auth, shell, dasbor, badge & tabel,
-detail kampanye, portal kreator, portal klien). Langkah 8–9 belum.
+Status: **Langkah 0–9 selesai.** Seluruh rencana redesign tuntas.
 
 ## 1. Posisi produk
 
@@ -287,6 +286,97 @@ mana.
 
 Audit 375px setelah perubahan: detail dan profil **0** kontrol di bawah 44px;
 beranda hanya menyisakan judul kartu yang justru area sentuhnya sekartu penuh.
+
+## 4h. Laporan klien & cetak
+
+Artefak yang diserahkan ke klien, jadi diuji dengan data sungguhan, bukan
+diperkirakan.
+
+**Penguncian tema saat cetak terbukti bekerja pada laporan, bukan hanya
+halaman masuk.** Dari sesi bertema gelap (`#0B1220`, teks `#E8EDF5`), media
+cetak menghasilkan `#FFFFFF` dengan teks `#0F172A` — identik dengan sesi
+terang, dan PDF-nya sama persis: 132 KB, 2 halaman A4.
+
+Terverifikasi pada dokumen cetak:
+
+| Hal                             | Hasil                                                     |
+| ------------------------------- | --------------------------------------------------------- |
+| Teks isi di atas putih          | 17.85:1                                                   |
+| Teks sekunder di atas putih     | 7.58:1                                                    |
+| Garis chart                     | `#1E3A5F` (`--chart-1`), bukan lagi tambalan `--series-1` |
+| Kontrol layar (`.print-hidden`) | `display: none` saat cetak                                |
+| Hierarki heading                | H1 → H2 x5                                                |
+| Tinggi chart                    | 26.8% satu halaman A4                                     |
+
+**Tautan publik `/laporan/[token]`** — yang benar-benar dikirim ke klien —
+diuji dari konteks tanpa sesi sama sekali: HTTP 200, `noindex, nofollow`,
+satu landmark `main`, dan **tidak ada angka keuangan yang bocor** (FR-M9-03).
+
+**Luapan tabel dikurung per tabel.** Sebelumnya `overflow-x-auto` hanya ada di
+pembungkus terluar, jadi di layar ponsel seluruh dokumen yang terseret ke
+samping saat tabel kreator (6 kolom) tidak muat. Kini tiap tabel punya
+pembungkus geser sendiri dengan `print:overflow-visible` supaya cetak tidak
+terpotong. Hasil di 375px: halaman, dokumen, dan pembungkus luar semuanya nol
+luapan; hanya tabel kreator yang bergeser 86px di dalam kotaknya.
+
+Kartu "Ringkasan capaian" memakai `report-keep` agar empat ubinnya tidak
+terbelah antar halaman.
+
+> **Belum terverifikasi langsung:** posisi persis pemotongan halaman. Aturan
+> `.report-document h2 { break-after: avoid }` dan `tr { break-inside: avoid }`
+> yang mengaturnya, tapi perkakas di sini tidak bisa membaca isi tiap halaman
+> PDF untuk memastikannya. Jumlah halaman dan warna sudah dipastikan.
+
+## 4i. Sapuan a11y & responsif (Langkah 9)
+
+Audit otomatis menelusuri **setiap rute yang sudah login** sebagai tiga persona,
+di 375 / 768 / 1024 / 1440px dan dua tema: **168 pemuatan halaman**. Skripnya
+disimpan di `scripts/a11y-audit.mjs` supaya bisa dijalankan ulang.
+
+Yang diperiksa: satu landmark `main`, satu `h1` tanpa level terlompat, id ganda,
+nama aksesibel, label form, kontras teks (4.5:1; 3:1 untuk teks besar), dan
+scroll horizontal.
+
+Hasil: **14 temuan → 0.**
+
+### Dua regresi dari Langkah 2 yang tertangkap di sini
+
+1. **`min-w-0` hilang dari kolom konten.** Shell lama memakai
+   `flex min-w-0 flex-1 flex-col`; `SidebarInset` shadcn tidak membawanya. Item
+   flex default `min-width: auto`, jadi satu tabel lebar menyeret seluruh
+   halaman ke samping begitu sidebar mengambil 16rem di `md` ke atas. Ini
+   penyebab **11 dari 12** kasus scroll horizontal, dan besarannya persis
+   256px — selebar sidebar.
+2. **`h1` ganda di tab Laporan.** `CampaignReportDocument` membawa `h1` sendiri
+   sementara halaman sudah punya satu. Komponen kini menerima `embedded`:
+   judulnya turun ke `h2` dan bagiannya ke `h3` saat disematkan, tetap `h1`
+   saat berdiri sendiri di `/print` dan `/laporan`.
+
+### Kolom grid implisit
+
+Satu URL 46 karakter di tab Brief melebarkan halaman 66px di 375px. Penyebabnya
+bukan `Card` (yang sudah `min-w-0`) melainkan **track grid implisit**: grid
+tanpa `grid-cols-*` eksplisit memakai track `auto` yang minimumnya selebar
+min-content. Ada 55+ grid semacam itu di proyek, jadi diperbaiki sekali di
+`@layer base`:
+
+```css
+:where(.grid) {
+  grid-auto-columns: minmax(0, auto);
+}
+```
+
+Template eksplisit tidak terpengaruh — Tailwind sudah menulis `grid-cols-N`
+sebagai `minmax(0, 1fr)`. Aman karena proyek tidak memakai `grid-flow-col`.
+
+### Fokus keyboard & gerak
+
+115 perhentian tab diuji di empat rute: **nol** tanpa indikator fokus terlihat.
+Lima yang tercatat adalah elemen `NEXTJS-PORTAL`, yaitu indikator mode
+pengembangan Next.js, bukan kode aplikasi.
+
+`prefers-reduced-motion: reduce` menurunkan durasi transisi ke `1e-05s` —
+override `!important` di `globals.css` bekerja.
 
 ## 5. Tipografi
 

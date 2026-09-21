@@ -57,6 +57,7 @@ export default async function CampaignReportPage({ params }: { params: Promise<{
                 clientName: campaign.client?.name ?? null,
               }}
               report={report}
+              embedded
               timezone={session.profile.timezone}
               generatedAt={new Date()}
             />

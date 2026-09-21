@@ -211,6 +211,19 @@
   td {
     font-variant-numeric: tabular-nums;
   }
+  /*
+   * A grid with no explicit column template lays its items in an implicit
+   * `auto` track, whose minimum is the content's min-content width. One long
+   * unbreakable string — a campaign asset URL, say — then widens the track past
+   * the viewport and the whole page scrolls sideways on a phone.
+   *
+   * `minmax(0, auto)` lets the track shrink instead, which is what a stacked
+   * single-column layout wants. Explicit templates (`grid-cols-*`) are
+   * unaffected; Tailwind already writes those as `minmax(0, 1fr)`.
+   */
+  :where(.grid) {
+    grid-auto-columns: minmax(0, auto);
+  }
 }
 
 /*
