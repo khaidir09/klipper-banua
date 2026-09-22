@@ -1,44 +1,40 @@
 /**
  * Contact links for the public site (FR-M15-07). The site has no form and
- * stores nothing: a visitor writes to the team on WhatsApp or by email, and
- * the team records whatever is agreed inside the app.
+ * stores nothing: a visitor writes to the team on WhatsApp, and the team
+ * records whatever is agreed inside the app.
  *
- * Pure builders only — the numbers themselves come from the environment and
- * are read by the component, so these stay testable.
+ * Pure builders only — the number itself comes from the environment and is
+ * read by the component, so these stay testable.
  */
 export type ContactIntent = "client" | "creator";
 
-type Intent = {
-  /** Prefilled WhatsApp opener, so the team knows which side wrote first. */
-  message: string;
-  /** Email subject for the same purpose. */
-  subject: string;
-};
-
-export const CONTACT_INTENTS: Record<ContactIntent, Intent> = {
-  client: {
-    message: "Halo, saya dari instansi dan ingin bertanya soal kampanye kreator lokal Kalimantan.",
-    subject: "Tanya kampanye kreator lokal",
-  },
-  creator: {
-    message: "Halo, saya kreator di Kalimantan dan ingin bergabung sebagai mitra.",
-    subject: "Pendaftaran mitra kreator",
-  },
+/** Prefilled openers, so the team knows which side wrote first. */
+export const CONTACT_MESSAGES: Record<ContactIntent, string> = {
+  client: "Halo, saya dari instansi dan ingin bertanya soal kampanye kreator lokal Kalimantan.",
+  creator: "Halo, saya kreator di Kalimantan dan ingin bergabung sebagai mitra.",
 };
 
 /**
  * `wa.me` expects an international number without `+` or separators. Returns
- * null when the number is not configured, so the button is simply left out
- * instead of pointing nowhere.
+ * null when the number is missing or too short to be real, so the button is
+ * left out instead of pointing nowhere.
  */
-export function whatsappUrl(phone: string | undefined, intent: ContactIntent): string | null {
+function digitsOnly(phone: string | undefined): string | null {
   if (!phone) return null;
+
   const digits = phone.replace(/\D/g, "");
-  if (digits.length < 8) return null;
-  return `https://wa.me/${digits}?text=${encodeURIComponent(CONTACT_INTENTS[intent].message)}`;
+  return digits.length >= 8 ? digits : null;
 }
 
-export function mailtoUrl(email: string | undefined, intent: ContactIntent): string | null {
-  if (!email) return null;
-  return `mailto:${email}?subject=${encodeURIComponent(CONTACT_INTENTS[intent].subject)}`;
+export function whatsappUrl(phone: string | undefined, intent: ContactIntent): string | null {
+  const number = digitsOnly(phone);
+  if (!number) return null;
+
+  return `https://wa.me/${number}?text=${encodeURIComponent(CONTACT_MESSAGES[intent])}`;
+}
+
+/** The number as a reader sees it, for prose that cannot hold a button. */
+export function whatsappDisplay(phone: string | undefined): string | null {
+  const number = digitsOnly(phone);
+  return number ? `+${number}` : null;
 }

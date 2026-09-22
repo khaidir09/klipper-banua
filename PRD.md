@@ -337,7 +337,7 @@ Situs publik memperkenalkan platform kepada **calon klien** (pesan utama) dan **
 - **FR-M15-04** `/privasi` dan `/syarat` berisi konten statis yang disetujui `owner`. Halaman privasi wajib menyebut bahwa platform tidak menyimpan data pribadi pendaftar atau calon mahasiswa (Bagian 9), mencatat persetujuan kreator, dan menyediakan penghapusan data kreator atas permintaan.
 - **FR-M15-05** Indeksasi selektif: layout grup `(marketing)` menimpa `robots` bawaan aplikasi menjadi `index, follow`; `app/robots.ts` hanya mengizinkan empat rute publik dan melarang `/dashboard`, `/portal`, `/klien`, `/laporan`, `/r`, `/api`, `/login`, `/lupa-sandi`, dan `/atur-sandi`; `app/sitemap.ts` hanya memuat rute publik. `public/robots.txt` dihapus agar tidak bertabrakan dengan `app/robots.ts`.
 - **FR-M15-06** Klaim, angka, dan nama di situs publik hanya berupa konten statis yang disetujui `owner`. Tidak ada angka kampanye, nama, atau logo klien yang ditarik dari database; nama dan logo klien hanya tampil dengan izin tertulis. Studi kasus berangka tidak masuk fase ini.
-- **FR-M15-07** Ajakan menghubungi memakai WhatsApp (`wa.me` dengan pesan awal berbeda untuk calon klien dan calon kreator) serta email, dari `NEXT_PUBLIC_CONTACT_WA` dan `NEXT_PUBLIC_CONTACT_EMAIL`. Tanpa formulir, tanpa penyimpanan, tanpa pelacak.
+- **FR-M15-07** Ajakan menghubungi hanya memakai WhatsApp (`wa.me` dengan pesan awal berbeda untuk calon klien dan calon kreator), dari `NEXT_PUBLIC_CONTACT_WA`. Nomor yang sama ditulis pada bagian kontak halaman `/privasi` dan `/syarat`. Tanpa formulir, tanpa email, tanpa penyimpanan, tanpa pelacak.
 - **FR-M15-08** Nama rute pemasaran tidak boleh bertabrakan dengan area ber-sesi: `/portal`, `/klien`, `/laporan`, `/r`, `/api`, dan seluruh rute `(app)` terlarang sebagai nama halaman publik.
 
 **Aturan keamanan M15**
@@ -543,7 +543,7 @@ types/database.ts
 
 ### 10.3 Variabel lingkungan
 
-`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, `DEFAULT_TIMEZONE=Asia/Makassar`, dan sejak v1.1 `REMINDER_API_TOKEN` (opsional; tanpa nilai ini endpoint pengingat nonaktif). Sejak v3.1: `NEXT_PUBLIC_CONTACT_WA` dan `NEXT_PUBLIC_CONTACT_EMAIL`, dipakai tombol hubungi di situs publik (M15).
+`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, `DEFAULT_TIMEZONE=Asia/Makassar`, dan sejak v1.1 `REMINDER_API_TOKEN` (opsional; tanpa nilai ini endpoint pengingat nonaktif). Sejak v3.1: `NEXT_PUBLIC_CONTACT_WA`, dipakai tombol hubungi di situs publik (M15).
 
 ---
 
@@ -686,7 +686,7 @@ Kerjakan berurutan. Satu fase = satu atau beberapa sesi Claude Code = satu commi
 
 ### Fase 13 — v3.1: Situs Publik Pengenalan Platform
 
-**Cakupan:** FR-M15-01 sampai FR-M15-08. Grup rute `app/(marketing)` berisi `/`, `/kreator`, `/privasi`, dan `/syarat` beserta layout, header, dan footer publik; `app/robots.ts`, `app/sitemap.ts`, `app/opengraph-image.tsx`; komponen di `components/marketing/`; penambahan rute publik di `lib/supabase/middleware.ts` dan perbaikan pengalihan `/login` memakai `homePathFor()`; variabel `NEXT_PUBLIC_CONTACT_WA` dan `NEXT_PUBLIC_CONTACT_EMAIL`. **Tanpa migrasi database.**
+**Cakupan:** FR-M15-01 sampai FR-M15-08. Grup rute `app/(marketing)` berisi `/`, `/kreator`, `/privasi`, dan `/syarat` beserta layout, header, dan footer publik; `app/robots.ts`, `app/sitemap.ts`, `app/opengraph-image.tsx`; komponen di `components/marketing/`; penambahan rute publik di `lib/supabase/middleware.ts` dan perbaikan pengalihan `/login` memakai `homePathFor()`; variabel `NEXT_PUBLIC_CONTACT_WA`. **Tanpa migrasi database.**
 **Kriteria penerimaan:**
 
 - [ ] Pengunjung anonim dapat membuka `/`, `/kreator`, `/privasi`, dan `/syarat` tanpa dialihkan ke `/login`.
@@ -755,4 +755,4 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | 0.3   | 20 Sep 2026 | v2.0: modul M13 (portal kreator), peran `creator`, view `creator_portal_*`, tabel `metric_submissions`, Fase 9 dan Fase 10. Portal kreator keluar dari daftar "di luar cakupan"; portal klien tetap di luar cakupan |
 | 0.4   | 20 Sep 2026 | Fase 10: FR-M13-09 (laporan tayang dari kreator sebagai usulan), kartu kiriman kreator pada FR-M10-01, kolom `contents.proposed_posted_*`, view `creator_portal_submissions` |
 | 0.5   | 20 Sep 2026 | v3.0: modul M14 (portal klien), peran `client`, persetujuan konten dua tahap opsional (FR-M14-04, penyesuaian FR-M6-04), usulan laporan pendaftar dari klien (FR-M14-06, penyesuaian FR-M7-04), tabel `client_content_reviews` dan `registrant_submissions`, view `client_portal_*`, Fase 11 dan Fase 12. Tautan laporan v1.1 tetap berlaku berdampingan |
-| 0.6   | 22 Sep 2026 | v3.1: modul M15 (situs publik), peran pengunjung `anonim`, alur 5.0, NFR SEO, grup rute `app/(marketing)` beserta `robots.ts`/`sitemap.ts`, variabel `NEXT_PUBLIC_CONTACT_WA` dan `NEXT_PUBLIC_CONTACT_EMAIL`, Fase 13. Situs publik keluar dari daftar "di luar cakupan"; formulir dan penyimpanan data calon tetap di luar cakupan. Tanpa tabel, migrasi, atau perubahan RLS |
+| 0.6   | 22 Sep 2026 | v3.1: modul M15 (situs publik), peran pengunjung `anonim`, alur 5.0, NFR SEO, grup rute `app/(marketing)` beserta `robots.ts`/`sitemap.ts`, variabel `NEXT_PUBLIC_CONTACT_WA` (kontak publik hanya WhatsApp), Fase 13. Situs publik keluar dari daftar "di luar cakupan"; formulir dan penyimpanan data calon tetap di luar cakupan. Tanpa tabel, migrasi, atau perubahan RLS |

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { LegalArticle, type LegalSection } from "@/components/marketing/legal-article";
 import { publicEnv } from "@/lib/env";
+import { whatsappDisplay } from "@/lib/marketing/contact";
+
+/** The public site contacts the team on WhatsApp only (FR-M15-07). */
+const WHATSAPP = whatsappDisplay(publicEnv.NEXT_PUBLIC_CONTACT_WA);
 
 const DESCRIPTION =
   "Ketentuan pemakaian layanan pengelolaan kampanye kreator lokal: siapa yang dapat mengakses aplikasi, kewajiban instansi klien dan kreator, serta bagaimana honor dan persetujuan konten diatur.";
@@ -111,9 +115,9 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Menghubungi kami",
     body: [
-      publicEnv.NEXT_PUBLIC_CONTACT_EMAIL
-        ? `Pertanyaan mengenai ketentuan ini dapat dikirim ke ${publicEnv.NEXT_PUBLIC_CONTACT_EMAIL}.`
-        : "Pertanyaan mengenai ketentuan ini dapat dikirim lewat kanal kontak yang tercantum di halaman utama.",
+      WHATSAPP
+        ? `Pertanyaan mengenai ketentuan ini dapat disampaikan lewat WhatsApp ke ${WHATSAPP}.`
+        : "Pertanyaan mengenai ketentuan ini dapat disampaikan lewat WhatsApp tim, tombolnya ada di halaman utama.",
     ],
   },
 ];

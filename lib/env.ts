@@ -20,9 +20,9 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-  // Public site (PRD M15). International format, digits only.
+  // Public site (PRD M15): the WhatsApp number behind the contact button.
+  // International format, digits only.
   NEXT_PUBLIC_CONTACT_WA: optional(z.string().regex(/^\+?[\d\s-]{8,20}$/)),
-  NEXT_PUBLIC_CONTACT_EMAIL: optional(z.email()),
 });
 
 const parsed = publicEnvSchema.safeParse({
@@ -31,7 +31,6 @@ const parsed = publicEnvSchema.safeParse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_CONTACT_WA: process.env.NEXT_PUBLIC_CONTACT_WA,
-  NEXT_PUBLIC_CONTACT_EMAIL: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
 });
 
 if (!parsed.success) {

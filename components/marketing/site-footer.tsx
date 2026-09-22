@@ -77,7 +77,6 @@ export function SiteFooter() {
           <p>
             © {year} {publicEnv.NEXT_PUBLIC_APP_NAME}
           </p>
-          <p>Aplikasi pengelolaannya internal. Pendaftaran akun publik dinonaktifkan.</p>
         </div>
       </Container>
     </footer>

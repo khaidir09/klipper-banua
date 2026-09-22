@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { LegalArticle, type LegalSection } from "@/components/marketing/legal-article";
 import { publicEnv } from "@/lib/env";
+import { whatsappDisplay } from "@/lib/marketing/contact";
+
+/** The public site contacts the team on WhatsApp only (FR-M15-07). */
+const WHATSAPP = whatsappDisplay(publicEnv.NEXT_PUBLIC_CONTACT_WA);
 
 const DESCRIPTION =
   "Bagaimana kami menangani data anggota tim, kontak instansi, dan kreator mitra — serta mengapa kami tidak menyimpan data pribadi calon pendaftar.";
@@ -108,9 +112,9 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Menghubungi kami",
     body: [
-      publicEnv.NEXT_PUBLIC_CONTACT_EMAIL
-        ? `Pertanyaan atau permintaan terkait data pribadi dapat dikirim ke ${publicEnv.NEXT_PUBLIC_CONTACT_EMAIL}.`
-        : "Pertanyaan atau permintaan terkait data pribadi dapat dikirim lewat kanal kontak yang tercantum di halaman utama.",
+      WHATSAPP
+        ? `Pertanyaan atau permintaan terkait data pribadi dapat disampaikan lewat WhatsApp ke ${WHATSAPP}.`
+        : "Pertanyaan atau permintaan terkait data pribadi dapat disampaikan lewat WhatsApp tim, tombolnya ada di halaman utama.",
     ],
   },
 ];

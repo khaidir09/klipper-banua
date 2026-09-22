@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BadgeCheck, Banknote, TrendingUp, UserCheck } from "lucide-react";
 import { ContactCta } from "@/components/marketing/contact-cta";
+import { ImagePlaceholder } from "@/components/marketing/image-placeholder";
 import { FaqList, type FaqItem } from "@/components/marketing/faq-list";
 import { Container, Section } from "@/components/marketing/section";
 
@@ -99,23 +100,26 @@ export default function CreatorPage() {
     <>
       <section className="bg-brand-panel text-brand-panel-foreground">
         <Container className="py-16 lg:py-20">
-          <div className="max-w-3xl">
-            <p className="text-sm font-medium text-brand-panel-muted">Untuk kreator</p>
-            <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl">
-              Kerja sama kreator lokal: syaratnya jelas, honornya disampaikan sebelum Anda mulai.
-            </h1>
-            <p className="mt-5 max-w-[60ch] text-base text-pretty text-brand-panel-muted">
-              Kami mengelola kampanye untuk instansi di Kalimantan dan menugaskan kreator yang
-              audiensnya memang di sini. Halaman ini menjelaskan siapa yang kami cari, bagaimana
-              honor dihitung, dan apa saja tahapannya.
-            </p>
-            <ContactCta
-              intent="creator"
-              tone="brand"
-              className="mt-8"
-              whatsappLabel="Daftar jadi mitra lewat WhatsApp"
-              emailLabel="Kirim profil lewat email"
-            />
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-center lg:gap-16">
+            <div>
+              <p className="text-sm font-medium text-brand-panel-muted">Untuk kreator</p>
+              <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl">
+                Kerja sama kreator lokal: syaratnya jelas, honornya disampaikan sebelum Anda mulai.
+              </h1>
+              <p className="mt-5 max-w-[60ch] text-base text-pretty text-brand-panel-muted">
+                Kami mengelola kampanye untuk instansi di Kalimantan dan menugaskan kreator yang
+                audiensnya memang di sini. Halaman ini menjelaskan siapa yang kami cari, bagaimana
+                honor dihitung, dan apa saja tahapannya.
+              </p>
+              <ContactCta
+                intent="creator"
+                tone="brand"
+                className="mt-8"
+                whatsappLabel="Daftar jadi kreator lewat WhatsApp"
+              />
+            </div>
+
+            <ImagePlaceholder tone="brand" label="Foto kreator lokal Kalimantan" />
           </div>
         </Container>
       </section>
@@ -163,27 +167,26 @@ export default function CreatorPage() {
             </li>
           ))}
         </ul>
-        <p className="mt-6 max-w-[65ch] text-sm text-muted-foreground">
-          Halaman ini sengaja tidak memuat angka rupiah: skema honor berbeda antar kampanye, dan
-          angka yang tertulis di sini berisiko basi. Anda menerima rinciannya lebih dulu, lalu dapat
-          melihat perhitungan honor Anda sendiri di portal kreator.
-        </p>
       </Section>
 
       <Section id="tahapan" eyebrow="Tahapan" title="Lima langkah sampai Anda siap ditugaskan">
-        <ol className="max-w-[65ch] space-y-4">
-          {STAGES.map((stage, index) => (
-            <li key={stage} className="flex gap-4">
-              <span
-                aria-hidden
-                className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-info-soft text-sm font-semibold text-info-soft-foreground"
-              >
-                {index + 1}
-              </span>
-              <p className="pt-1.5 text-sm text-pretty text-muted-foreground">{stage}</p>
-            </li>
-          ))}
-        </ol>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.75fr)] lg:items-start lg:gap-16">
+          <ol className="space-y-4">
+            {STAGES.map((stage, index) => (
+              <li key={stage} className="flex gap-4">
+                <span
+                  aria-hidden
+                  className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-info-soft text-sm font-semibold text-info-soft-foreground"
+                >
+                  {index + 1}
+                </span>
+                <p className="pt-1.5 text-sm text-pretty text-muted-foreground">{stage}</p>
+              </li>
+            ))}
+          </ol>
+
+          <ImagePlaceholder label="Foto kreator saat verifikasi audiens" />
+        </div>
       </Section>
 
       <Section
@@ -192,7 +195,7 @@ export default function CreatorPage() {
         eyebrow="Perlu diketahui"
         title="Hal yang sering ditanyakan sebelum menandatangani apa pun"
       >
-        <ul className="max-w-[70ch] space-y-3">
+        <ul className="max-w-full space-y-3">
           {GOOD_TO_KNOW.map((item) => (
             <li key={item} className="flex gap-3 rounded-xl border bg-card p-4">
               <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-border" />
@@ -208,20 +211,14 @@ export default function CreatorPage() {
         title="Pertanyaan dari kreator"
         description="Pertanyaan lain bisa langsung ditanyakan ke tim."
         layout="split"
-        action={
-          <ContactCta
-            intent="creator"
-            whatsappLabel="Tanya lewat WhatsApp"
-            emailLabel="Tanya lewat email"
-          />
-        }
+        action={<ContactCta intent="creator" whatsappLabel="Tanya lewat WhatsApp" />}
       >
         <FaqList items={FAQ} />
       </Section>
 
       <section className="border-t bg-brand-panel text-brand-panel-foreground">
         <Container className="py-16 lg:py-20">
-          <div className="max-w-[55ch]">
+          <div className="mx-auto max-w-[55ch] text-center">
             <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
               Audiens Anda di Kalimantan?
             </h2>
@@ -232,9 +229,8 @@ export default function CreatorPage() {
             <ContactCta
               intent="creator"
               tone="brand"
-              className="mt-7"
+              className="mt-7 sm:justify-center"
               whatsappLabel="Kirim profil lewat WhatsApp"
-              emailLabel="Kirim profil lewat email"
             />
           </div>
         </Container>

@@ -142,31 +142,35 @@ export default function LandingPage() {
           `--primary` in dark mode (design system §11). */}
       <section className="bg-brand-panel text-brand-panel-foreground">
         <Container className="py-16 lg:py-24">
-          <div className="max-w-3xl">
-            <p className="text-sm font-medium text-brand-panel-muted">
-              Kampanye kreator lokal, dikelola tim
-            </p>
-            <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
-              Promosi yang menjangkau audiens Kalimantan, dengan bukti yang bisa Anda serahkan.
-            </h1>
-            <p className="mt-5 max-w-[60ch] text-base text-pretty text-brand-panel-muted sm:text-lg">
-              {DESCRIPTION}
-            </p>
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-center lg:gap-16">
+            <div>
+              <p className="text-sm font-medium text-brand-panel-muted">
+                Kampanye kreator lokal, dikelola tim
+              </p>
+              <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
+                Promosi yang menjangkau audiens Kalimantan, dengan bukti yang bisa Anda serahkan.
+              </h1>
+              <p className="mt-5 max-w-[60ch] text-base text-pretty text-brand-panel-muted sm:text-lg">
+                {DESCRIPTION}
+              </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <ContactCta intent="client" tone="brand" />
-              <Button
-                asChild
-                variant="ghost"
-                size="lg"
-                className="h-11 px-4 text-sm text-brand-panel-foreground hover:bg-brand-panel-foreground/10 hover:text-brand-panel-foreground"
-              >
-                <Link href="#cara-kerja" data-cta>
-                  Lihat cara kerja
-                  <ArrowRight aria-hidden />
-                </Link>
-              </Button>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <ContactCta intent="client" tone="brand" />
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="lg"
+                  className="h-11 px-4 text-sm text-brand-panel-foreground hover:bg-brand-panel-foreground/10 hover:text-brand-panel-foreground"
+                >
+                  <Link href="#cara-kerja" data-cta>
+                    Lihat cara kerja
+                    <ArrowRight aria-hidden />
+                  </Link>
+                </Button>
+              </div>
             </div>
+
+            <ImagePlaceholder tone="brand" label="Foto kampanye kreator lokal bersama instansi" />
           </div>
 
           <ul className="mt-14 grid gap-6 sm:grid-cols-3 sm:gap-8">
@@ -228,7 +232,6 @@ export default function LandingPage() {
         <ContactCta
           intent="client"
           whatsappLabel="Bicarakan kampanye Anda"
-          emailLabel="Kirim pertanyaan lewat email"
           className="mt-8 lg:justify-center"
         />
       </Section>
@@ -306,22 +309,22 @@ export default function LandingPage() {
         title="Pertanyaan yang paling sering masuk"
         description="Belum terjawab? Kirim pertanyaannya langsung ke tim."
         layout="split"
-        action={<ContactCta intent="client" emailLabel="Tanya lewat email" />}
+        action={<ContactCta intent="client" />}
       >
         <FaqList items={FAQ} />
       </Section>
 
       <section className="border-t bg-brand-panel text-brand-panel-foreground">
         <Container className="py-16 lg:py-20">
-          <div className="max-w-[55ch]">
+          <div className="mx-auto max-w-[55ch] text-center">
             <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
               Punya target yang harus dilaporkan periode ini?
             </h2>
             <p className="mt-3 text-base text-pretty text-brand-panel-muted">
-              Ceritakan targetnya lewat WhatsApp atau email. Kami jawab dengan perkiraan jumlah
-              kreator, periode, dan bentuk laporan yang akan Anda terima.
+              Ceritakan targetnya lewat WhatsApp. Kami jawab dengan perkiraan jumlah kreator,
+              periode, dan bentuk laporan yang akan Anda terima.
             </p>
-            <ContactCta intent="client" tone="brand" className="mt-7" />
+            <ContactCta intent="client" tone="brand" className="mt-7 sm:justify-center" />
           </div>
         </Container>
       </section>
