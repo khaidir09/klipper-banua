@@ -10,8 +10,9 @@ export const config = {
   matcher: [
     /*
      * Run on every request except static assets, image files, the public
-     * tracking redirect `/r/<slug>` and the health probe (no session needed).
+     * tracking redirect `/r/<slug>`, the crawler files of the public site
+     * (PRD M15) and the health probe (no session needed).
      */
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|r/|healthz|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|opengraph-image|r/|healthz|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

@@ -2,11 +2,11 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi              | 0.5 (MVP rilis pilot; v1.1: tautan laporan klien dan pengingat Telegram; v2.0: portal kreator; v3.0: portal klien) |
-| Tanggal            | 20 September 2026                                                                           |
-| Status             | Fase 0–10 selesai (v2.0 lengkap); v3.0 (portal klien) dirancang di Fase 11–12               |
+| Versi              | 0.6 (MVP rilis pilot; v1.1: tautan laporan klien dan pengingat Telegram; v2.0: portal kreator; v3.0: portal klien; v3.1: situs publik) |
+| Tanggal            | 22 September 2026                                                                           |
+| Status             | Fase 0–11 dan Fase 13 selesai (v2.0 lengkap; portal klien: akses dan pantau; situs publik v3.1); Fase 12 (persetujuan konten dan laporan pendaftar klien) dirancang, belum dikerjakan |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
-| Pengguna versi ini | Tim internal (`owner`, `manager`); kreator lewat portal sejak v2.0; klien lewat portal sejak v3.0 |
+| Pengguna versi ini | Tim internal (`owner`, `manager`); kreator lewat portal sejak v2.0; klien lewat portal sejak v3.0; pengunjung anonim membaca situs publik sejak v3.1 |
 
 ---
 
@@ -42,6 +42,8 @@ Aplikasi web **internal** untuk tim pengelola kampanye (model _managed marketpla
 
 Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui WhatsApp, dan seluruh data dicatat tim di aplikasi.
 
+Sejak **v3.1** ada **situs publik** (M15) yang memperkenalkan platform kepada calon klien dan calon kreator, lalu mengarahkan mereka menghubungi tim. Situs itu statis, tidak terhubung ke database, dan tidak menggantikan satu pun alur kerja di aplikasi.
+
 ### 1.3 Model bisnis yang didukung aplikasi
 
 - Klien membeli **paket kampanye harga tetap** dengan target (konten, views, pendaftar).
@@ -67,6 +69,7 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 | Selisih hitungan honor dengan hitungan manual                      | 0                                                        |
 | Konten tayang tanpa melalui persetujuan                            | 0                                                        |
 | Metrik bisnis yang dapat ditarik per kampanye                      | Views, klik, pendaftar, biaya per pendaftar, CPM, margin |
+| Percakapan masuk yang berasal dari situs publik (v3.1)             | Dicatat manual oleh tim; dipakai menilai apakah situs perlu dikembangkan |
 
 ---
 
@@ -78,8 +81,9 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 | `manager` | Pengelola kampanye | Semua fitur operasional (klien, kreator, kampanye, konten, metrik, laporan). **Tidak bisa** melihat nomor rekening lengkap (tampil tersamar), mengelola pengguna, atau menyetujui pembayaran |
 | `creator` | Kreator mitra _(v2.0)_ | Hanya portal kreator di `/portal`, hanya data penugasannya sendiri. **Tidak punya akses** ke aplikasi internal, data klien, kreator lain, harga paket, margin, atau log aktivitas |
 | `client`  | Kontak klien _(v3.0)_  | Hanya portal klien di `/klien`, hanya kampanye milik instansinya. Memantau capaian, menyetujui konten bila kampanye mewajibkannya, mengunduh laporan, dan melaporkan jumlah pendaftar. **Tidak melihat** honor kreator, margin, biaya internal, data pribadi kreator, klien lain, atau log aktivitas |
+| `anonim`  | Pengunjung situs publik _(v3.1)_ | Hanya halaman publik M15 (`/`, `/kreator`, `/privasi`, `/syarat`) dan redirect pelacakan `/r/<slug>`. **Tanpa akun, tanpa sesi, dan tanpa satu pun bacaan database** |
 
-- Pendaftaran publik **dinonaktifkan**. Akun tim dibuat lewat undangan oleh `owner`; akun kreator lewat undangan dari halaman kreator (v2.0); akun klien lewat undangan dari halaman klien (v3.0).
+- Pendaftaran publik **dinonaktifkan**. Akun tim dibuat lewat undangan oleh `owner`; akun kreator lewat undangan dari halaman kreator (v2.0); akun klien lewat undangan dari halaman klien (v3.0). Situs publik v3.1 hanya menampilkan tombol hubungi tim: tidak ada formulir pendaftaran maupun pembuatan akun dari situs.
 - Pengguna yang dinonaktifkan (`is_active = false`) tidak bisa mengakses data apa pun.
 - Peran `creator` dan `client` bukan anggota internal: setiap pemeriksaan "anggota internal" di database (`is_active_member()`) menolak keduanya.
 
@@ -105,21 +109,30 @@ Klien dan kreator **belum login** di versi ini. Mereka dilayani tim melalui What
 | M12  | Catatan waktu operasional                           | Sebaiknya ada |
 | M13  | Portal kreator (akses, brief, kiriman, honor)       | v2.0          |
 | M14  | Portal klien (pantau, persetujuan konten, laporan)  | v3.0          |
+| M15  | Situs publik pengenalan platform                     | v3.1          |
 
 ### 4.2 Di luar cakupan (JANGAN dibangun di MVP)
 
-- Marketplace terbuka dan fitur di luar daftar modul. Portal **kreator** masuk cakupan sejak v2.0 (M13), portal **klien** sejak v3.0 (M14).
+- Marketplace terbuka dan fitur di luar daftar modul. Portal **kreator** masuk cakupan sejak v2.0 (M13), portal **klien** sejak v3.0 (M14), dan **situs publik pengenalan platform** sejak v3.1 (M15).
 - Kreator melamar kampanye sendiri (tetap ditugaskan tim).
 - Payment gateway, top-up saldo, atau transfer honor otomatis.
 - Integrasi API TikTok, Instagram, YouTube, atau Facebook untuk menarik metrik otomatis.
 - Notifikasi WhatsApp/email otomatis. Pengecualian sejak v1.1: pengingat Telegram harian **untuk owner internal** (FR-M10-05).
 - Penyimpanan data pribadi calon mahasiswa/pendaftar.
 - Aplikasi mobile native, multi-bahasa, multi-tenant.
+- Di situs publik (M15): formulir atau penyimpanan data calon klien/kreator, blog atau CMS, harga paket yang ditampilkan publik, multi-bahasa, analitik dan pelacak pihak ketiga, logo/nama/testimoni klien tanpa izin tertulis, serta pembuatan akun sendiri.
 - Fitur AI.
 
 ---
 
 ## 5. Alur Utama
+
+### 5.0 Dari situs publik ke tim _(v3.1)_
+
+1. Calon klien atau calon kreator membaca situs publik (M15) dan memahami cara kerja, batasan, serta syaratnya.
+2. Mereka menekan tombol hubungi (WhatsApp atau email). Tim melanjutkan ke alur 5.1 (kreator baru) atau 5.2 (kampanye baru) dan mencatat sendiri datanya di aplikasi.
+
+Tidak ada jalur otomatis dari situs publik ke database: situs tidak menyimpan apa pun dan tidak membuat akun.
 
 ### 5.1 Onboarding kreator
 
@@ -312,11 +325,35 @@ Portal klien memindahkan tiga percakapan WhatsApp ke aplikasi: "sudah sampai man
 - Ekspresi kebijakan tidak boleh menyentuh tabel ber-RLS lain; pakai helper `security definer` seperti pada M13.
 - Setiap tulisan dari portal klien lewat Server Action yang memvalidasi Zod, memeriksa kepemilikan kampanye di server, lalu ditegakkan ulang oleh RLS dan trigger.
 
+### M15 — Situs Publik _(v3.1)_
+
+Situs publik memperkenalkan platform kepada **calon klien** (pesan utama) dan **calon kreator** (jalur kedua), lalu mengarahkan keduanya menghubungi tim. Prinsipnya satu: situs ini **lapisan pemasaran statis**, bukan pintu masuk baru ke data. Tidak ada tabel baru, tidak ada kueri database, dan tidak ada penyimpanan data calon.
+
+**Fase 13 — halaman publik**
+
+- **FR-M15-01** `/` menjadi halaman landing publik untuk semua pengunjung, dirender statis dan tanpa membaca cookie sesi. Tombol utama "Masuk" mengarah ke `/login`; pengguna yang sudah punya sesi diteruskan oleh guard yang ada ke area masing-masing, sehingga halaman tetap dapat di-cache penuh. Pengalihan `/login` bagi sesi yang sudah ada wajib memakai `homePathFor(role)` agar kreator dan klien tidak memantul lewat `/dashboard`.
+- **FR-M15-02** Landing memuat, berurutan: proposisi nilai; masalah yang diangkat (Bagian 1.1); cara kerja dalam empat langkah (ringkasan Bagian 5.2); alasan memilih kreator lokal (bukti audiens Kalimantan, persetujuan konten sebelum tayang, laporan yang bisa dipertanggungjawabkan); untuk siapa platform ini; cuplikan jalur kreator beserta tautan ke `/kreator`; FAQ; ajakan menghubungi tim; footer berisi tautan legal dan "Masuk".
+- **FR-M15-03** `/kreator` menjelaskan syarat bergabung (usia minimal 18 tahun, mayoritas audiens di Kalimantan, akun media sosial aktif), alur onboarding (Bagian 5.1), dan skema honor secara konseptual (honor dasar per konten + bonus per 1.000 views + bonus per pendaftar) **tanpa angka rupiah**. Halaman menyatakan tegas bahwa kreator ditugaskan oleh tim: tidak ada pendaftaran akun sendiri dan tidak ada fitur melamar kampanye (Bagian 4.2).
+- **FR-M15-04** `/privasi` dan `/syarat` berisi konten statis yang disetujui `owner`. Halaman privasi wajib menyebut bahwa platform tidak menyimpan data pribadi pendaftar atau calon mahasiswa (Bagian 9), mencatat persetujuan kreator, dan menyediakan penghapusan data kreator atas permintaan.
+- **FR-M15-05** Indeksasi selektif: layout grup `(marketing)` menimpa `robots` bawaan aplikasi menjadi `index, follow`; `app/robots.ts` hanya mengizinkan empat rute publik dan melarang `/dashboard`, `/portal`, `/klien`, `/laporan`, `/r`, `/api`, `/login`, `/lupa-sandi`, dan `/atur-sandi`; `app/sitemap.ts` hanya memuat rute publik. `public/robots.txt` dihapus agar tidak bertabrakan dengan `app/robots.ts`.
+- **FR-M15-06** Klaim, angka, dan nama di situs publik hanya berupa konten statis yang disetujui `owner`. Tidak ada angka kampanye, nama, atau logo klien yang ditarik dari database; nama dan logo klien hanya tampil dengan izin tertulis. Studi kasus berangka tidak masuk fase ini.
+- **FR-M15-07** Ajakan menghubungi memakai WhatsApp (`wa.me` dengan pesan awal berbeda untuk calon klien dan calon kreator) serta email, dari `NEXT_PUBLIC_CONTACT_WA` dan `NEXT_PUBLIC_CONTACT_EMAIL`. Tanpa formulir, tanpa penyimpanan, tanpa pelacak.
+- **FR-M15-08** Nama rute pemasaran tidak boleh bertabrakan dengan area ber-sesi: `/portal`, `/klien`, `/laporan`, `/r`, `/api`, dan seluruh rute `(app)` terlarang sebagai nama halaman publik.
+
+**Aturan keamanan M15**
+
+- Grup `(marketing)` tidak mengimpor `lib/supabase/*`, `lib/auth/*`, maupun modul `server-only` apa pun. Halaman publik nol kueri: tidak ada bacaan, jadi tidak ada yang bisa bocor.
+- `proxy.ts` hanya menambahkan rute publik M15 ke daftar yang boleh diakses tanpa sesi. Seluruh rute lain tetap tertutup seperti sebelumnya.
+- Tidak ada skrip, font, atau pelacak pihak ketiga selain yang sudah dipakai aplikasi, sesuai batasan privasi Bagian 9.
+- Situs publik tidak membuat akun, tidak mengirim undangan, dan tidak menulis ke `activity_logs`.
+
 ---
 
 ## 7. Model Data
 
 > Konvensi: nama tabel dan kolom memakai bahasa Inggris (`snake_case`). Nilai enum memakai bahasa Indonesia sesuai istilah di UI. Semua tabel memiliki `id uuid` (default `gen_random_uuid()`), `created_at` dan `updated_at` (`timestamptz`). Nominal uang memakai `bigint` dalam Rupiah utuh (tanpa desimal).
+
+> M15 (situs publik, v3.1) tidak menambah tabel, kolom, view, maupun kebijakan RLS: halaman publik tidak membaca database sama sekali.
 
 | Tabel                     | Kolom utama                                                                                                                                                                                                                                                                                                                                                                                                    | Catatan                                                                            |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -445,8 +482,9 @@ gross_margin_pct     = gross_margin / package_price × 100
 | Keamanan         | RLS aktif di **semua** tabel; kunci `service_role` hanya di server; validasi input dengan Zod di server; bucket privat; batasi ukuran dan tipe berkas; rate limit sederhana pada `/r/[slug]` |
 | Privasi (UU PDP) | Kumpulkan data pribadi seminimal mungkin; tidak menyimpan data pendaftar; catat persetujuan kreator; hash IP klik dengan salt rahasia; sediakan fungsi hapus data kreator atas permintaan    |
 | Keandalan        | Migrasi database lewat file SQL berversi; ekspor CSV untuk cadangan manual                                                                                                                   |
-| Kinerja          | Halaman daftar dengan paginasi di server; target muat halaman < 2 detik untuk data pilot                                                                                                     |
+| Kinerja          | Halaman daftar dengan paginasi di server; target muat halaman < 2 detik untuk data pilot. Halaman publik M15 dirender statis tanpa kueri; target LCP < 2,5 detik pada jaringan 4G           |
 | Aksesibilitas    | Kontras cukup, label pada setiap input, dapat dioperasikan dengan keyboard                                                                                                                   |
+| SEO (v3.1)       | Hanya halaman publik M15 yang diindeks: metadata per halaman, gambar Open Graph, `sitemap.xml`, dan `robots.txt` yang melarang seluruh area ber-sesi                                        |
 
 ---
 
@@ -483,9 +521,13 @@ app/
   (app)/activity/
   (portal)/portal/{penugasan,profil}/   # v2.0, peran `creator`
   (client)/klien/{kampanye,laporan}/    # v3.0, peran `client`
+  (marketing)/{kreator,privasi,syarat}/ # v3.1, publik (landing di (marketing)/page.tsx)
   r/[slug]/route.ts
   api/export/[type]/route.ts
-components/{ui,forms,tables,charts,layout}/
+  robots.ts                            # v3.1, hanya rute publik yang diizinkan
+  sitemap.ts
+  opengraph-image.tsx
+components/{ui,forms,tables,charts,layout,marketing}/
 lib/
   supabase/{server,client,middleware}.ts
   calculations/{payout,campaign-metrics}.ts (+ .test.ts)
@@ -501,7 +543,7 @@ types/database.ts
 
 ### 10.3 Variabel lingkungan
 
-`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, `DEFAULT_TIMEZONE=Asia/Makassar`, dan sejak v1.1 `REMINDER_API_TOKEN` (opsional; tanpa nilai ini endpoint pengingat nonaktif).
+`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, `DEFAULT_TIMEZONE=Asia/Makassar`, dan sejak v1.1 `REMINDER_API_TOKEN` (opsional; tanpa nilai ini endpoint pengingat nonaktif). Sejak v3.1: `NEXT_PUBLIC_CONTACT_WA` dan `NEXT_PUBLIC_CONTACT_EMAIL`, dipakai tombol hubungi di situs publik (M15).
 
 ---
 
@@ -642,6 +684,21 @@ Kerjakan berurutan. Satu fase = satu atau beberapa sesi Claude Code = satu commi
 - [ ] Laporan dan CSV yang diunduh klien tidak memuat data keuangan internal (FR-M9-03).
 - [ ] Setiap tabel dan view baru tercakup di `scripts/rls-check.sql` untuk `owner`, `manager`, `creator`, `client`, dan anonim.
 
+### Fase 13 — v3.1: Situs Publik Pengenalan Platform
+
+**Cakupan:** FR-M15-01 sampai FR-M15-08. Grup rute `app/(marketing)` berisi `/`, `/kreator`, `/privasi`, dan `/syarat` beserta layout, header, dan footer publik; `app/robots.ts`, `app/sitemap.ts`, `app/opengraph-image.tsx`; komponen di `components/marketing/`; penambahan rute publik di `lib/supabase/middleware.ts` dan perbaikan pengalihan `/login` memakai `homePathFor()`; variabel `NEXT_PUBLIC_CONTACT_WA` dan `NEXT_PUBLIC_CONTACT_EMAIL`. **Tanpa migrasi database.**
+**Kriteria penerimaan:**
+
+- [ ] Pengunjung anonim dapat membuka `/`, `/kreator`, `/privasi`, dan `/syarat` tanpa dialihkan ke `/login`.
+- [ ] Pengunjung anonim tetap ditolak di `/dashboard`, `/portal`, `/klien`, `/laporan` tanpa token, dan `/api/reminders/*`.
+- [ ] Halaman publik tidak melakukan satu pun kueri Supabase: keempat rute berstatus statis pada keluaran build dan tidak ada impor `lib/supabase/*` atau `lib/auth/*` di `app/(marketing)`.
+- [ ] `robots.txt` hanya mengizinkan rute publik M15 dan `sitemap.xml` tidak memuat rute ber-sesi; area `(app)`, `(portal)`, dan `(client)` tetap `noindex`.
+- [ ] Tidak ada berkas migrasi baru; `npm run db:rls-check` dan `npm run db:guards-check` tetap lulus tanpa entri tambahan.
+- [ ] Sesi `owner`, `creator`, dan `client` yang membuka `/` tetap melihat landing, dan tombol "Masuk" mengantar ke area yang benar dalam satu langkah.
+- [ ] Tidak ada nama, logo, atau angka klien nyata di halaman publik.
+- [ ] Checklist design system terpenuhi: kontras ≥ 4.5:1 di mode terang dan gelap, hierarki heading berurutan, 375/768/1024/1440px tanpa scroll horizontal, `prefers-reduced-motion` dihormati.
+- [ ] `npm run lint && npm run typecheck && npm run test && npm run build` lulus.
+
 ---
 
 ## 12. Peta Jalan Setelah Pilot (Indikatif)
@@ -654,6 +711,7 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | 1.2   | Pengingat WhatsApp otomatis ke tim (ditunda dari 1.1) |
 | 2.0   | Portal kreator: login, lihat brief, kirim draf, unggah bukti metrik, lihat status honor (M13; Fase 9 dan Fase 10) — **sedang dikerjakan** |
 | 3.0   | Portal klien: pantau kampanye berjalan, setujui konten, unduh laporan, kirim laporan pendaftar (M14; Fase 11 dan Fase 12) — **sedang dikerjakan** |
+| 3.1   | Situs publik pengenalan platform: landing, halaman kreator, dan halaman legal (M15; Fase 13) — **selesai** |
 | 4.0   | Integrasi API resmi platform media sosial untuk metrik otomatis (bergantung persetujuan akses API)                               |
 | 5.0   | Pembayaran honor terintegrasi; perluasan ke segmen bank daerah, BUMD, dan Pemda (invoice, dokumen pengadaan)                     |
 
@@ -673,7 +731,7 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 
 | No  | Pertanyaan                                                                                | Dijawab lewat              |
 | --- | ----------------------------------------------------------------------------------------- | -------------------------- |
-| 1   | Nama produk dan domain                                                                    | Founder                    |
+| 1   | Nama produk dan domain — **penghalang rilis Fase 13** (situs publik)                      | Founder                    |
 | 2   | Checkpoint metrik yang paling praktis (apakah H+1, H+3, H+7 terlalu banyak?)              | Pilot                      |
 | 3   | Berapa minimal hari konten wajib tayang yang wajar bagi kreator?                          | Wawancara kreator          |
 | 4   | Apakah bonus per pendaftar menarik bagi kreator, atau lebih suka honor tetap lebih besar? | Pilot                      |
@@ -683,6 +741,8 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | 8   | Hosting: Vercel berbayar atau VPS sendiri?                                                | Founder                    |
 | 9   | Berapa lama tenggat wajar persetujuan konten oleh klien sebelum tim menagih atau melanjutkan? | Pilot v3.0             |
 | 10  | Apakah klien bersedia mengisi laporan pendaftar sendiri di portal, atau tetap lewat WhatsApp? | Pilot v3.0             |
+| 11  | Isi halaman Kebijakan Privasi dan Syarat Layanan publik                                   | Founder + konsultasi hukum |
+| 12  | Apakah kisaran harga paket boleh ditampilkan di situs publik?                              | Founder                    |
 
 ---
 
@@ -695,3 +755,4 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | 0.3   | 20 Sep 2026 | v2.0: modul M13 (portal kreator), peran `creator`, view `creator_portal_*`, tabel `metric_submissions`, Fase 9 dan Fase 10. Portal kreator keluar dari daftar "di luar cakupan"; portal klien tetap di luar cakupan |
 | 0.4   | 20 Sep 2026 | Fase 10: FR-M13-09 (laporan tayang dari kreator sebagai usulan), kartu kiriman kreator pada FR-M10-01, kolom `contents.proposed_posted_*`, view `creator_portal_submissions` |
 | 0.5   | 20 Sep 2026 | v3.0: modul M14 (portal klien), peran `client`, persetujuan konten dua tahap opsional (FR-M14-04, penyesuaian FR-M6-04), usulan laporan pendaftar dari klien (FR-M14-06, penyesuaian FR-M7-04), tabel `client_content_reviews` dan `registrant_submissions`, view `client_portal_*`, Fase 11 dan Fase 12. Tautan laporan v1.1 tetap berlaku berdampingan |
+| 0.6   | 22 Sep 2026 | v3.1: modul M15 (situs publik), peran pengunjung `anonim`, alur 5.0, NFR SEO, grup rute `app/(marketing)` beserta `robots.ts`/`sitemap.ts`, variabel `NEXT_PUBLIC_CONTACT_WA` dan `NEXT_PUBLIC_CONTACT_EMAIL`, Fase 13. Situs publik keluar dari daftar "di luar cakupan"; formulir dan penyimpanan data calon tetap di luar cakupan. Tanpa tabel, migrasi, atau perubahan RLS |

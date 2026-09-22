@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { appUrl } from "@/lib/app-url";
 import { publicEnv } from "@/lib/env";
 import "./globals.css";
 
@@ -16,11 +17,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Canonical and Open Graph URLs on the public site are written relative
+  // (PRD M15); this is what they resolve against.
+  metadataBase: appUrl("/"),
   title: {
     default: publicEnv.NEXT_PUBLIC_APP_NAME,
     template: `%s · ${publicEnv.NEXT_PUBLIC_APP_NAME}`,
   },
   description: "Aplikasi internal pengelolaan kampanye kreator lokal Kalimantan.",
+  // Default for the whole deployment. The public marketing group overrides
+  // it with `index: true` (FR-M15-05).
   robots: { index: false, follow: false },
 };
 

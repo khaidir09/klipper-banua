@@ -2,10 +2,19 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { appUrl } from "@/lib/app-url";
 import { publicEnv } from "@/lib/env";
+import { isMarketingPath, MARKETING_FILES, MARKETING_PATHS } from "@/lib/marketing/routes";
+import { homePathForRole } from "@/lib/validation/auth";
 import type { Database } from "@/types/database";
 
 /** Routes reachable without a session. Everything else requires login (FR-M1-03). */
-const PUBLIC_PATHS = ["/login", "/lupa-sandi", "/atur-sandi", "/auth/callback"];
+const PUBLIC_PATHS = [
+  ...MARKETING_PATHS,
+  ...MARKETING_FILES,
+  "/login",
+  "/lupa-sandi",
+  "/atur-sandi",
+  "/auth/callback",
+];
 
 /**
  * Public tracking redirect (FR-M5-05), the client report link (FR-M9-05) and
@@ -24,6 +33,12 @@ function isPublicPath(pathname: string) {
  * Called from `proxy.ts` (formerly `middleware.ts`, renamed in Next.js 16).
  */
 export async function updateSession(request: NextRequest) {
+  // The public site (PRD M15) is static and reads nothing: skipping the
+  // Supabase client here keeps those pages free of any auth round trip.
+  if (isMarketingPath(request.nextUrl.pathname)) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(
@@ -64,7 +79,15 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && (pathname === "/login" || pathname === "/lupa-sandi")) {
-    return NextResponse.redirect(appUrl("/dashboard"));
+    // Send them where they belong (FR-M15-01): a creator or client bounced
+    // through `/dashboard` would only be redirected again by the guard.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    return NextResponse.redirect(appUrl(homePathForRole(profile?.role ?? "")));
   }
 
   return response;

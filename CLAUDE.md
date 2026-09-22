@@ -4,7 +4,7 @@ Sumber kebenaran kebutuhan produk ada di `PRD.md`. Baca bagian yang relevan sebe
 
 ## Konteks singkat
 
-Aplikasi web internal untuk mengelola kampanye promosi instansi regional (dimulai dari kampus swasta di Kalimantan) menggunakan kreator lokal. Pengguna inti adalah tim internal (`owner`, `manager`); sejak v2.0 kreator memakai portal `/portal` (peran `creator`), dan sejak v3.0 klien memakai portal `/klien` (peran `client`).
+Aplikasi web internal untuk mengelola kampanye promosi instansi regional (dimulai dari kampus swasta di Kalimantan) menggunakan kreator lokal. Pengguna inti adalah tim internal (`owner`, `manager`); sejak v2.0 kreator memakai portal `/portal` (peran `creator`), dan sejak v3.0 klien memakai portal `/klien` (peran `client`). Sejak v3.1 ada situs publik statis di grup `(marketing)` untuk mengenalkan platform (PRD M15).
 
 ## Stack
 
@@ -24,6 +24,7 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 - **Peran portal (`creator` M13, `client` M14):** `public.is_active_member()` berarti **anggota internal** (`owner`/`manager`) saja. Bacaan portal lewat view `creator_portal_*` yang memfilter `public.current_creator_id()` dan hanya memuat kolom aman. Bacaan portal klien lewat view `client_portal_*` yang memfilter `public.current_client_id()`. Pengecualian yang diizinkan hanya baris milik pengguna portal sendiri yang memang perlu ditulis dari portal (`contents`, `metric_submissions`): Postgres butuh izin `select` sebelum `update`/`delete`. Ekspresi kebijakan tidak boleh menyentuh tabel ber-RLS lain — pakai helper `security definer` (`creator_owns_assignment`, `creator_owns_content`, `client_owns_campaign`). Tulisan dari portal lewat Server Action + RLS + trigger, bukan service role.
 - **Kiriman kreator:** angka yang memengaruhi honor (metrik) dan status tayang tidak pernah resmi tanpa tindakan tim — lihat `review_metric_submission()` dan kolom `contents.proposed_posted_*`.
 - **Guard rute:** rute `(app)` memakai `requireInternal()` / `requireRole()`, `(portal)` memakai `requireCreator()`, `(client)` memakai `requireClient()`. `requireSession()` hanya untuk yang dipakai lintas area (mis. profil sendiri). Tujuan setiap peran ada di `homePathFor()`.
+- **Situs publik (M15, v3.1):** grup `app/(marketing)` (`/`, `/kreator`, `/privasi`, `/syarat`) publik dan statis. Jangan mengimpor `lib/supabase/*`, `lib/auth/*`, atau rahasia server ke dalamnya, dan jangan menarik data kampanye/klien nyata — seluruh isinya konten statis yang disetujui `owner`. Indeks mesin pencari hanya untuk grup ini (`app/robots.ts`, `app/sitemap.ts`); area ber-sesi tetap `noindex`. Nama rute publik baru tidak boleh memakai `/portal`, `/klien`, `/laporan`, `/r`, `/api`, atau rute `(app)`. Tombol hubungi memakai `NEXT_PUBLIC_CONTACT_WA` / `NEXT_PUBLIC_CONTACT_EMAIL`: tanpa formulir dan tanpa penyimpanan data calon.
 - **Rahasia:** `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, dan `REMINDER_API_TOKEN` hanya dipakai di kode server. Jangan pernah mengimpornya ke komponen client.
 - **Validasi:** setiap Server Action memvalidasi input dengan Zod dan memeriksa peran pengguna di server, bukan hanya di UI.
 - **Uang:** nominal Rupiah disimpan sebagai `bigint` utuh. Jangan memakai float untuk uang.
@@ -52,6 +53,7 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 | `npm run db:guards-check`              | Uji trigger aturan kampanye/penugasan (`scripts/guards-check.sql`) |
 | `npm run seed:demo` / `seed:demo:reset` | Data demo lokal / kembalikan kampanye demo ke draft |
 | `npm run test:e2e`                     | Uji alur kritis Playwright (butuh Supabase lokal + data demo) |
+| `npm run test:e2e:publik`              | Uji situs publik M15 saja (tanpa Docker/data demo)            |
 
 Sebelum menyelesaikan fase, jalankan: `npm run lint && npm run typecheck && npm run test && npm run build`.
 

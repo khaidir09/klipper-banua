@@ -3,7 +3,8 @@
 Sumber acuan global untuk redesign UI/UX. Aturan produk tetap di `PRD.md`;
 aturan teknis tetap di `CLAUDE.md`. Dokumen ini hanya mengatur tampilan.
 
-Status: **Langkah 0–9 selesai.** Seluruh rencana redesign tuntas.
+Status: **Langkah 0–10 selesai.** Langkah 10 (situs publik, bagian 13)
+dikerjakan bersama Fase 13 PRD.
 
 ## 1. Posisi produk
 
@@ -22,7 +23,8 @@ Dial: variance 3/10, motion 2/10, density 8/10.
 
 Catatan: lapisan "Pattern" pada tool berorientasi landing page
 ("Real-Time / Operations Landing") dan **tidak dipakai** untuk area yang sudah
-login. Hanya lapisan style, color, dan UX yang diambil.
+login. Hanya lapisan style, color, dan UX yang diambil. Sejak v3.1 lapisan
+pattern itu dipakai **hanya** di grup `app/(marketing)` — lihat bagian 13.
 
 ## 2. Keputusan terkunci
 
@@ -477,3 +479,25 @@ akan menyilaukan.
 - [ ] Diuji di 375 / 768 / 1024 / 1440px, tanpa scroll horizontal
 - [ ] Hierarki heading berurutan, tidak melompat
 - [ ] `npm run lint && npm run typecheck && npm run test && npm run build`
+
+## 13. Situs publik (Langkah 10, v3.1)
+
+Bagian 1 menyatakan produk ini konsol operasional, bukan situs pemasaran, dan
+lapisan pattern landing page **tidak dipakai** untuk area yang sudah login.
+Aturan itu tetap berlaku. Grup `app/(marketing)` adalah satu-satunya
+pengecualian: di sanalah lapisan pattern landing page justru dipakai.
+
+| Aspek      | Aturan di `(marketing)`                                                                      |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| Dial       | variance 5/10, motion 3/10, density 4/10 — lapang, bukan padat seperti dasbor (density 8/10) |
+| Warna      | Token yang sama, tanpa warna mentah. Hero memakai `--brand-panel` (bagian 11) karena permukaan itu tidak ikut membalik di mode gelap |
+| Tipografi  | Hero satu tingkat di atas heading aplikasi (bagian 5); hierarki tetap berurutan, tidak melompat |
+| Ritme      | Satu pesan per seksi; padding vertikal 64px di ponsel, 96px pada ≥1024px; lebar teks maks. 65ch |
+| CTA        | Satu tindakan utama per seksi: tombol `default` untuk hubungi tim, `outline` untuk "Masuk"    |
+| Ikon       | Tetap Lucide, tanpa emoji (bagian 9)                                                         |
+| Gerak      | Hanya fade/translate halus ≤ 200ms, dihentikan `prefers-reduced-motion`; tanpa parallax dan tanpa carousel otomatis |
+| Gambar     | Aset statis di `public/` lewat `next/image` dengan ukuran eksplisit; tanpa foto stok yang mengesankan klien nyata |
+
+Larangan bagian 9 dan checklist bagian 12 berlaku penuh di halaman publik.
+Isi teks, angka, dan nama di situs tunduk pada PRD FR-M15-06: konten statis yang
+disetujui `owner`, bukan tarikan database.

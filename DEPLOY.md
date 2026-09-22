@@ -97,6 +97,9 @@ Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan me
    NEXT_PUBLIC_APP_URL="https://app.contoh.id"
    NEXT_PUBLIC_SUPABASE_URL="https://<project-ref>.supabase.co"
    NEXT_PUBLIC_SUPABASE_ANON_KEY="<anon public key>"
+   # Situs publik (v3.1): tombol hubungi. Kosongkan bila belum dipakai.
+   NEXT_PUBLIC_CONTACT_WA="628xxxxxxxxxx"
+   NEXT_PUBLIC_CONTACT_EMAIL="tim@contoh.id"
    SUPABASE_SERVICE_ROLE_KEY="<service_role key>"
    CLICK_IP_HASH_SALT="<hasil: openssl rand -hex 32>"
    DEFAULT_TIMEZONE="Asia/Makassar"
@@ -108,6 +111,8 @@ Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan me
    - Isi URL persis satu kali `https://`, tanpa `/` di akhir. Salah ketik seperti
      `https://https://…` membuat setiap login gagal dengan pesan "Email atau kata sandi salah".
    - `NEXT_PUBLIC_*` ditanam ke bundle browser saat build. Jika diubah, build ulang.
+   - `NEXT_PUBLIC_CONTACT_WA` dan `NEXT_PUBLIC_CONTACT_EMAIL` mengisi tombol hubungi di
+     situs publik (`/`, `/kreator`). Bila keduanya kosong, tombolnya tidak ditampilkan.
    - `SUPABASE_SERVICE_ROLE_KEY` dan `CLICK_IP_HASH_SALT` hanya dibaca server saat runtime dan
      tidak masuk ke image.
    - **Jangan ganti `CLICK_IP_HASH_SALT`** setelah kampanye berjalan; hash IP klik lama tidak

@@ -29,6 +29,9 @@ export default defineConfig({
   },
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
+    // Public site (PRD M15): no session and no demo data, so it depends on
+    // nothing and can run on its own.
+    { name: "publik", testMatch: /publik\.spec\.ts/ },
     {
       name: "owner",
       testMatch: /(critical-flow|portal-access)\.spec\.ts/,
