@@ -38,6 +38,9 @@ ENV NODE_ENV=production \
 # at build time, so they are not baked into any image layer.
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
+# `public/` must exist in the repository or this COPY fails the build. Since
+# `robots.txt` moved to `app/robots.ts` (PRD M15) the folder holds no tracked
+# file of its own, so `public/.gitkeep` keeps it in git.
 COPY --from=build --chown=node:node /app/public ./public
 USER node
 EXPOSE 3000
