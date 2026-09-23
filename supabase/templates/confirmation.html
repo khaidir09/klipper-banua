@@ -1,0 +1,14 @@
+<h2>Konfirmasi pendaftaran klipper</h2>
+
+<p>
+  Terima kasih sudah mendaftar sebagai klipper. Klik tautan berikut untuk mengonfirmasi email Anda
+  dan mulai melengkapi akun:
+</p>
+
+<p>
+  <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=signup&next=/portal/mulai">
+    Konfirmasi email
+  </a>
+</p>
+
+<p>Tautan berlaku 1 jam. Jika Anda tidak merasa mendaftar, abaikan saja email ini.</p>

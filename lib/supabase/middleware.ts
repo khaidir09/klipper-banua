@@ -11,6 +11,8 @@ const PUBLIC_PATHS = [
   ...MARKETING_PATHS,
   ...MARKETING_FILES,
   "/login",
+  // Klipper self-registration (PRD M16, v4.0).
+  "/daftar",
   "/lupa-sandi",
   "/atur-sandi",
   "/auth/callback",
@@ -78,7 +80,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && (pathname === "/login" || pathname === "/lupa-sandi")) {
+  if (user && (pathname === "/login" || pathname === "/daftar" || pathname === "/lupa-sandi")) {
     // Send them where they belong (FR-M15-01): a creator or client bounced
     // through `/dashboard` would only be redirected again by the guard.
     const { data: profile } = await supabase

@@ -71,3 +71,22 @@ export function nicheLabel(value: string): string {
 
 /** Minimum age at registration (FR-M3-02). */
 export const MINIMUM_CREATOR_AGE = 18;
+
+export type SignupSource = Database["public"]["Enums"]["signup_source"];
+
+export const SIGNUP_SOURCE_LABELS: Record<SignupSource, string> = {
+  undangan: "Didaftarkan tim",
+  mandiri: "Daftar mandiri",
+};
+
+export const SIGNUP_SOURCES = Object.keys(SIGNUP_SOURCE_LABELS) as SignupSource[];
+
+/**
+ * Version of the klipper terms (Syarat Klipper) a registration agrees to
+ * (FR-M3-04, FR-M16-01). Bump it whenever /syarat changes materially: from
+ * Phase 16 on, joining a campaign asks for the latest version again.
+ */
+export const CREATOR_TERMS_VERSION = "2026-10";
+
+/** Minimum Kalimantan audience share for the local badge (FR-M3-05). */
+export const LOCAL_BADGE_MIN_PCT = 50;

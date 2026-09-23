@@ -53,6 +53,14 @@ export const ACTIVITY_ACTION_LABELS = {
   propose_posted: "Melaporkan konten tayang",
   submit_metric: "Mengirim bukti metrik",
   verify_submission: "Memverifikasi kiriman kreator",
+  self_signup: "Mendaftar mandiri sebagai klipper",
+  badge_request: "Mengajukan lencana Klipper Lokal",
+  badge_grant: "Memberi lencana Klipper Lokal",
+  badge_reject: "Menolak pengajuan lencana",
+  badge_revoke: "Mencabut lencana Klipper Lokal",
+  block: "Memblokir klipper",
+  unblock: "Membuka blokir klipper",
+  deletion_request: "Meminta penghapusan akun",
 } as const;
 
 export type ActivityAction = keyof typeof ACTIVITY_ACTION_LABELS;

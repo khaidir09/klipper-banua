@@ -77,7 +77,7 @@ export const AREA_CHROME: Record<ShellArea, AreaChrome> = {
     sidebarVars: {},
   },
   portal: {
-    label: "Portal Kreator",
+    label: "Portal Klipper",
     icon: ClipboardList,
     markClass: "bg-info text-info-foreground",
     sidebarVars: {
@@ -107,6 +107,6 @@ export function navItemsFor(area: ShellArea, role: UserRole): NavItem[] {
 export const ROLE_LABELS: Record<UserRole, string> = {
   owner: "Owner",
   manager: "Manager",
-  creator: "Kreator",
+  creator: "Klipper",
   client: "Klien",
 };

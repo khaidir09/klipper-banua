@@ -179,3 +179,59 @@ export const anonymizeCreatorSchema = z.object({
     message: `Ketik ${ANONYMIZE_CONFIRMATION} untuk mengonfirmasi.`,
   }),
 });
+
+/* ------------------------------------------------------------------ */
+/* Klipper self-service (M16, v4.0)                                    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * FR-M3-03 from the portal: the account itself. The audience claim travels
+ * with a badge request instead, and the verification stamp stays with the team.
+ */
+export const portalSocialAccountSchema = socialAccountSchema.pick({
+  platform: true,
+  handle: true,
+  profile_url: true,
+  followers_count: true,
+});
+
+export type PortalSocialAccountFormInput = z.input<typeof portalSocialAccountSchema>;
+export type PortalSocialAccountInput = z.output<typeof portalSocialAccountSchema>;
+
+/** FR-M16-08: the claim behind a local badge request; the screenshot is separate. */
+export const badgeRequestSchema = z.object({
+  account_id: uuidField,
+  kalimantan_audience_pct: z.coerce
+    .number({ message: "Isi persentase audiens Kalimantan." })
+    .min(0, { message: "Persentase minimal 0." })
+    .max(100, { message: "Persentase maksimal 100." }),
+  top_cities: z.string().trim().min(1, { message: "Isi kota audiens teratas." }).max(200),
+});
+
+export type BadgeRequestInput = z.output<typeof badgeRequestSchema>;
+
+/** FR-M3-05: the team's answer to a badge request. */
+export const badgeDecisionSchema = z
+  .object({
+    account_id: uuidField,
+    decision: z.enum(["beri", "tolak"]),
+    notes: z.string().trim().max(500).default(""),
+  })
+  .refine((value) => value.decision === "beri" || value.notes.length > 0, {
+    path: ["notes"],
+    message: "Tulis alasan penolakan agar klipper tahu yang perlu diperbaiki.",
+  });
+
+export type BadgeDecisionInput = z.output<typeof badgeDecisionSchema>;
+
+/** FR-M3-09: blocking always carries a reason; unblocking is owner-only. */
+export const blockCreatorSchema = z.object({
+  creator_id: uuidField,
+  reason: z
+    .string()
+    .trim()
+    .min(5, { message: "Tulis alasan pemblokiran (minimal 5 karakter)." })
+    .max(500),
+});
+
+export type BlockCreatorInput = z.output<typeof blockCreatorSchema>;

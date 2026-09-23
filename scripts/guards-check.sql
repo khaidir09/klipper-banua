@@ -352,7 +352,8 @@ select
   '88888888-0000-0000-0000-0000000000f1'::uuid as creator_user_id;
 
 -- The account is created the way an invitation creates it: `handle_new_user`
--- turns the auth user into a profile with the role from its metadata.
+-- turns the auth user into a profile with the role from its app_metadata
+-- (Phase 15: user_metadata.role is ignored).
 insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values (
   '88888888-0000-0000-0000-0000000000f1',
@@ -360,8 +361,8 @@ values (
   'authenticated',
   'authenticated',
   'guard.portal@example.test',
-  '{}'::jsonb,
-  jsonb_build_object('full_name', 'Guard Portal Creator', 'role', 'creator'),
+  jsonb_build_object('role', 'creator'),
+  jsonb_build_object('full_name', 'Guard Portal Creator'),
   now(),
   now()
 );
@@ -429,8 +430,8 @@ values (
   'authenticated',
   'authenticated',
   'guard.portal10@example.test',
-  '{}'::jsonb,
-  jsonb_build_object('full_name', 'Guard Portal Creator 10', 'role', 'creator'),
+  jsonb_build_object('role', 'creator'),
+  jsonb_build_object('full_name', 'Guard Portal Creator 10'),
   now(),
   now()
 );
@@ -538,8 +539,8 @@ values (
   'authenticated',
   'authenticated',
   'guard.klien@example.test',
-  '{}'::jsonb,
-  jsonb_build_object('full_name', 'Guard Portal Client', 'role', 'client'),
+  jsonb_build_object('role', 'client'),
+  jsonb_build_object('full_name', 'Guard Portal Client'),
   now(),
   now()
 );
@@ -609,8 +610,8 @@ values (
   'authenticated',
   'authenticated',
   'guard.portal14@example.test',
-  '{}'::jsonb,
-  jsonb_build_object('full_name', 'Guard Portal Creator 14', 'role', 'creator'),
+  jsonb_build_object('role', 'creator'),
+  jsonb_build_object('full_name', 'Guard Portal Creator 14'),
   now(),
   now()
 );
@@ -669,6 +670,132 @@ reset role;
 select set_config('request.jwt.claims', json_build_object('sub','55555555-0000-0000-0000-0000000000f1','role','authenticated')::text, true) is not null as creator_claims;
 set local role authenticated;
 insert into public.metric_submissions (content_id, checkpoint, captured_at, proof_path) values ('55555555-0000-0000-0000-0000000000d1','H+3', now() - interval '1 day', 'x/p3.png');
+reset role;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 15 (v4.0): klipper self-registration (PRD M16, FR-M3-03..09)
+-- ---------------------------------------------------------------------------
+begin;
+create temporary table p15_roles on commit drop as
+select
+  (select id from public.profiles where role = 'owner' and is_active limit 1) as owner_id,
+  (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id;
+
+\echo 'P15-1. sign-up that claims role owner in user_metadata (expect creator / prospek / mandiri / t / t / t)'
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values (
+  '15151515-0000-0000-0000-0000000000f1',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated',
+  'authenticated',
+  'guard.signup@example.test',
+  '{"provider": "email"}'::jsonb,
+  jsonb_build_object(
+    'role', 'owner', 'signup', 'mandiri', 'full_name', 'Guard Signup', 'stage_name', 'guardsignup',
+    'birth_date', '2000-01-01', 'phone_wa', '6281515150001', 'city', 'Banjarmasin',
+    'province', 'Kalimantan Selatan', 'terms_version', '2026-10'
+  ),
+  now(),
+  now()
+);
+select p.role, c.status, c.signup_source, c.verification_code ~ '^KB-[A-HJ-NP-Z2-9]{6}$' as code_ok,
+       c.terms_agreed_at is not null as terms_recorded,
+       exists (select 1 from public.activity_logs a where a.entity_id = c.id and a.action = 'self_signup') as logged
+from public.profiles p join public.creators c on c.profile_id = p.id
+where p.id = '15151515-0000-0000-0000-0000000000f1';
+
+\echo 'P15-2. sign-up claiming role manager without klipper data (expect creator / 0)'
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values ('15151515-0000-0000-0000-0000000000f2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+  'guard.bare@example.test', '{}'::jsonb, '{"role": "manager"}'::jsonb, now(), now());
+select role, (select count(*) from public.creators where profile_id = '15151515-0000-0000-0000-0000000000f2') as creator_rows
+from public.profiles where id = '15151515-0000-0000-0000-0000000000f2';
+
+\echo 'P15-3. under-18 sign-up (expect creators_adult_check)'
+savepoint a;
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values ('15151515-0000-0000-0000-0000000000f3', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+  'guard.young@example.test', '{}'::jsonb,
+  jsonb_build_object('signup', 'mandiri', 'full_name', 'Young', 'stage_name', 'young', 'birth_date', (current_date - interval '17 years')::date,
+    'phone_wa', '6281515150003', 'city', 'Banjarmasin', 'province', 'Kalimantan Selatan', 'terms_version', '2026-10'),
+  now(), now());
+rollback to savepoint a;
+
+\echo 'P15-4. sign-up with a WhatsApp number already registered (expect SIGNUP_INVALID, number not echoed)'
+savepoint b;
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values ('15151515-0000-0000-0000-0000000000f4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+  'guard.dup@example.test', '{}'::jsonb,
+  jsonb_build_object('signup', 'mandiri', 'full_name', 'Dup', 'stage_name', 'dup', 'birth_date', '2000-01-01',
+    'phone_wa', '6281515150001', 'city', 'Banjarmasin', 'province', 'Kalimantan Selatan', 'terms_version', '2026-10'),
+  now(), now());
+rollback to savepoint b;
+
+\echo 'P15-5. sign-up with a malformed WhatsApp number (expect SIGNUP_INVALID)'
+savepoint c;
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values ('15151515-0000-0000-0000-0000000000f5', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+  'guard.badphone@example.test', '{}'::jsonb,
+  jsonb_build_object('signup', 'mandiri', 'full_name', 'Bad', 'stage_name', 'bad', 'birth_date', '2000-01-01',
+    'phone_wa', '12345', 'city', 'Banjarmasin', 'province', 'Kalimantan Selatan', 'terms_version', '2026-10'),
+  now(), now());
+rollback to savepoint c;
+
+-- A second klipper, so cross-account writes have a target.
+insert into public.creators (id, full_name, birth_date, province, status) values
+  ('15151515-0000-0000-0000-0000000000a2', 'Other Klipper', '1995-01-01', 'Kalimantan Selatan', 'aktif');
+insert into public.creator_social_accounts (id, creator_id, platform, handle) values
+  ('15151515-0000-0000-0000-0000000000e2', '15151515-0000-0000-0000-0000000000a2', 'tiktok', 'guard.other');
+
+select set_config('request.jwt.claims', json_build_object('sub', '15151515-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_claims;
+set local role authenticated;
+\echo 'P15-6. klipper stamps their own account as verified (expect PORTAL_FIELD_LOCKED)'
+savepoint d;
+insert into public.creator_social_accounts (creator_id, platform, handle, last_verified_at)
+select id, 'tiktok', 'guard.self', now() from public.creator_portal_profile;
+rollback to savepoint d;
+\echo 'P15-7. klipper adds their first account (expect INSERT 0 1, then aktif)'
+insert into public.creator_social_accounts (id, creator_id, platform, handle)
+select '15151515-0000-0000-0000-0000000000e1', id, 'tiktok', 'guard.self' from public.creator_portal_profile;
+select status from public.creator_portal_profile;
+\echo 'P15-8. klipper edits another klipper account (expect UPDATE 0)'
+update public.creator_social_accounts set followers_count = 1 where id = '15151515-0000-0000-0000-0000000000e2';
+\echo 'P15-9. klipper reads the internal creators table (expect 0)'
+select count(*) as creators_visible from public.creators;
+\echo 'P15-10. klipper asks for account deletion (expect t)'
+select public.request_creator_account_deletion();
+select deletion_requested_at is not null as requested from public.creator_portal_profile;
+reset role;
+
+\echo 'P15-11. the team verifies the account; a new audience claim withdraws it (expect t, then f)'
+select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from p15_roles), 'role', 'authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+update public.creator_social_accounts set kalimantan_audience_pct = 70, last_verified_at = now() where id = '15151515-0000-0000-0000-0000000000e1';
+select last_verified_at is not null as verified from public.creator_social_accounts where id = '15151515-0000-0000-0000-0000000000e1';
+reset role;
+select set_config('request.jwt.claims', json_build_object('sub', '15151515-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_claims;
+set local role authenticated;
+update public.creator_social_accounts set kalimantan_audience_pct = 90 where id = '15151515-0000-0000-0000-0000000000e1';
+select last_verified_at is not null as still_verified from public.creator_portal_social_accounts where id = '15151515-0000-0000-0000-0000000000e1';
+reset role;
+
+\echo 'P15-12. manager blocks without a reason (expect creators_blocked_reason_check)'
+select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from p15_roles), 'role', 'authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+savepoint e; update public.creators set status = 'diblokir' where id = '15151515-0000-0000-0000-0000000000a2'; rollback to savepoint e;
+\echo 'P15-13. manager blocks with a reason (expect diblokir / t)'
+update public.creators set status = 'diblokir', blocked_reason = 'Views palsu terbukti' where id = '15151515-0000-0000-0000-0000000000a2';
+select status, blocked_at is not null as stamped from public.creators where id = '15151515-0000-0000-0000-0000000000a2';
+\echo 'P15-14. manager unblocks (expect OWNER_ONLY)'
+savepoint f; update public.creators set status = 'aktif' where id = '15151515-0000-0000-0000-0000000000a2'; rollback to savepoint f;
+reset role;
+\echo 'P15-15. owner unblocks (expect aktif / t)'
+select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p15_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+update public.creators set status = 'aktif' where id = '15151515-0000-0000-0000-0000000000a2';
+select status, blocked_at is null and blocked_reason is null as cleared from public.creators where id = '15151515-0000-0000-0000-0000000000a2';
 reset role;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;

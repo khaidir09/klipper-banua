@@ -13,6 +13,7 @@ import {
 } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
 import { requireInternal, requireRole } from "@/lib/auth/guards";
+import { assignInvitedRole } from "@/lib/auth/invite-role";
 import { publicEnv } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -238,7 +239,7 @@ export async function inviteClientPortalAction(values: unknown): Promise<ActionR
 
   const admin = createSupabaseAdminClient();
   const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    data: { full_name: contact.name, role: "client" },
+    data: { full_name: contact.name },
     redirectTo: PORTAL_REDIRECT,
   });
 
@@ -247,6 +248,12 @@ export async function inviteClientPortalAction(values: unknown): Promise<ActionR
       return fail("Email tersebut sudah dipakai akun lain.");
     }
     return fail(`Undangan gagal dikirim: ${inviteError.message}`);
+  }
+
+  const { error: roleError } = await assignInvitedRole(admin, invited.user.id, "client");
+  if (roleError) {
+    await admin.auth.admin.deleteUser(invited.user.id);
+    return fail("Undangan gagal disiapkan. Coba lagi.");
   }
 
   const { error } = await supabase

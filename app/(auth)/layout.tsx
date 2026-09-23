@@ -1,24 +1,24 @@
 import Link from "next/link";
-import { FileBarChart2, Megaphone, MapPinned, ShieldCheck } from "lucide-react";
+import { MapPinned, Megaphone, ShieldCheck, Wallet } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { publicEnv } from "@/lib/env";
 
-/** The three things the platform promises, per PRD 1.2. */
+/** The three things the platform promises, per PRD 1.2 (v4.0). */
 const POINTS = [
   {
     icon: MapPinned,
-    title: "Kreator lokal terverifikasi",
-    body: "Audiens Kalimantan dibuktikan, bukan diklaim.",
+    title: "Kampanye instansi Kalimantan",
+    body: "Pilih kampanye dari katalog, kerjakan dari akunmu sendiri.",
   },
   {
     icon: ShieldCheck,
-    title: "Konten disetujui sebelum tayang",
-    body: "Setiap draf melewati review tim lebih dulu.",
+    title: "Setiap klip diverifikasi",
+    body: "Kepemilikan akun, kepatuhan brief, dan keaslian views diperiksa tim.",
   },
   {
-    icon: FileBarChart2,
-    title: "Laporan siap diserahkan",
-    body: "Views, klik, dan pendaftar dalam satu dokumen.",
+    icon: Wallet,
+    title: "Honor dari views asli",
+    body: "Saldo bertambah saat klip disetujui, lalu tarik ke rekeningmu.",
   },
 ];
 
@@ -46,7 +46,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Both auto margins centre the pitch in the space the brand leaves. */}
         <div className="my-auto max-w-md">
           <p className="text-3xl leading-tight font-semibold tracking-tight text-balance">
-            Kampanye kreator lokal, dari brief sampai laporan.
+            Klip lokal, dibayar dari views asli.
           </p>
           <ul className="mt-9 space-y-6">
             {POINTS.map((point) => (

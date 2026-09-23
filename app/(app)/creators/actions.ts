@@ -14,6 +14,7 @@ import {
 } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
 import { requireInternal, requireRole } from "@/lib/auth/guards";
+import { assignInvitedRole } from "@/lib/auth/invite-role";
 import { AUDIENCE_PROOF_BUCKET } from "@/lib/data/creators";
 import { publicEnv } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -56,7 +57,7 @@ export async function createCreatorAction(values: unknown): Promise<ActionResult
     .insert({ ...parsed.data, created_by: session.user.id })
     .select("id")
     .single();
-  if (error) return fail("Kreator gagal disimpan.");
+  if (error) return fail(dbRuleMessage(error, "Kreator gagal disimpan."));
 
   await logActivity(supabase, {
     actorId: session.user.id,
@@ -81,7 +82,7 @@ export async function updateCreatorAction(id: string, values: unknown): Promise<
   // Blocked creators cannot be assigned anywhere (PRD 8.5); status changes
   // away from `terverifikasi` keep the verification stamp for the audit trail.
   const { error } = await supabase.from("creators").update(parsed.data).eq("id", id);
-  if (error) return fail("Kreator gagal diperbarui.");
+  if (error) return fail(dbRuleMessage(error, "Kreator gagal diperbarui."));
 
   await logActivity(supabase, {
     actorId: session.user.id,
@@ -565,7 +566,7 @@ export async function invitePortalAccessAction(values: unknown): Promise<ActionR
 
   const admin = createSupabaseAdminClient();
   const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    data: { full_name: "", role: "creator" },
+    data: { full_name: "" },
     redirectTo: PORTAL_REDIRECT,
   });
 
@@ -574,6 +575,12 @@ export async function invitePortalAccessAction(values: unknown): Promise<ActionR
       return fail("Email tersebut sudah dipakai akun lain.");
     }
     return fail(`Undangan gagal dikirim: ${inviteError.message}`);
+  }
+
+  const { error: roleError } = await assignInvitedRole(admin, invited.user.id, "creator");
+  if (roleError) {
+    await admin.auth.admin.deleteUser(invited.user.id);
+    return fail("Undangan gagal disiapkan. Coba lagi.");
   }
 
   const { error } = await supabase

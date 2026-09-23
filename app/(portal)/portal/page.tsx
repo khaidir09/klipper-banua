@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCreator } from "@/lib/auth/guards";
-import { listPortalAssignments } from "@/lib/data/portal";
+import { getPortalProfile, listPortalAssignments } from "@/lib/data/portal";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AssignmentCard } from "./assignment-card";
 
@@ -12,7 +13,12 @@ export const metadata: Metadata = { title: "Beranda" };
 export default async function PortalHomePage() {
   const { profile } = await requireCreator();
   const supabase = await createSupabaseServerClient();
-  const assignments = await listPortalAssignments(supabase);
+  const [creator, assignments] = await Promise.all([
+    getPortalProfile(supabase),
+    listPortalAssignments(supabase),
+  ]);
+  // FR-M16-05: a new klipper finishes their account before anything else.
+  if (creator?.status === "prospek") redirect("/portal/mulai");
 
   const running = assignments.filter((row) => row.campaign_status === "aktif");
   const committed = running.reduce((total, row) => total + row.contents_committed, 0);

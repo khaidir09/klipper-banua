@@ -119,6 +119,13 @@ insert into public.campaign_creators (id, campaign_id, creator_id, referral_code
 values ('f1000000-0000-4000-8000-000000000096', 'f1000000-0000-4000-8000-000000000094', 'f1000000-0000-4000-8000-000000000003', 'RLSCCC', 'rls-fixture-c', 'diundang');
 insert into public.contents (id, campaign_creator_id, platform, draft_url, review_status, posted_url, posted_at, live_status)
 values ('f1000000-0000-4000-8000-000000000095', 'f1000000-0000-4000-8000-000000000096', 'tiktok', 'https://example.com/draft-c', 'disetujui', 'https://example.com/live-c', now() - interval '2 days', 'tayang');
+-- Phase 15 (M16): another klipper's social account, and audience proofs in
+-- each klipper's own folder (`<creator_id>/<file>`).
+insert into public.creator_social_accounts (id, creator_id, platform, handle)
+values ('f1000000-0000-4000-8000-000000000093', 'f1000000-0000-4000-8000-000000000004', 'tiktok', 'rls.other');
+insert into storage.objects (bucket_id, name) values
+  ('audience-proofs', 'f1000000-0000-4000-8000-000000000003/rls-own.png'),
+  ('audience-proofs', 'f1000000-0000-4000-8000-000000000004/rls-other.png');
 -- Campaign material is stored as `<campaign_id>/<file>` (lib/storage/upload.ts).
 insert into storage.objects (bucket_id, name) values
   ('campaign-assets', 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'),
@@ -211,7 +218,7 @@ insert into rls_cases values
   ('campaign_assets', 'delete', $q$delete from public.campaign_assets where id = 'f1000000-0000-4000-8000-000000000008'$q$),
 
   ('campaign_creators', 'select', $q$select count(*) from public.campaign_creators where id = 'f1000000-0000-4000-8000-000000000009'$q$),
-  ('campaign_creators', 'insert', $q$insert into public.campaign_creators (campaign_id, creator_id, referral_code, tracking_slug) values ('f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000020', 'RLSCCC', 'rls-insert-c')$q$),
+  ('campaign_creators', 'insert', $q$insert into public.campaign_creators (campaign_id, creator_id, referral_code, tracking_slug) values ('f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000020', 'RLSDDD', 'rls-insert-c')$q$),
   ('campaign_creators', 'update', $q$update public.campaign_creators set contents_committed = contents_committed where id = 'f1000000-0000-4000-8000-000000000009'$q$),
   ('campaign_creators', 'delete', $q$delete from public.campaign_creators where id = 'f1000000-0000-4000-8000-000000000010'$q$),
 
@@ -318,6 +325,21 @@ insert into rls_cases values
   ('storage:content-drafts-assigned', 'insert', $q$insert into storage.objects (bucket_id, name) values ('content-drafts', 'f1000000-0000-4000-8000-000000000007/rls-new.mp4')$q$),
   ('storage:metric-proofs-assigned', 'select', $q$select count(*) from storage.objects where bucket_id = 'metric-proofs' and name = 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'$q$),
   ('storage:metric-proofs-assigned', 'insert', $q$insert into storage.objects (bucket_id, name) values ('metric-proofs', 'f1000000-0000-4000-8000-000000000007/rls-new.png')$q$);
+
+-- Phase 15 (M16): a klipper manages their own social accounts and proofs.
+insert into rls_cases values
+  ('creator_portal_social_accounts', 'select', $q$select count(*) from public.creator_portal_social_accounts$q$),
+  ('creator_portal_social_accounts_other', 'select', $q$select count(*) from public.creator_portal_social_accounts where id = 'f1000000-0000-4000-8000-000000000093'$q$),
+  ('creator_social_accounts_other', 'select', $q$select count(*) from public.creator_social_accounts where id = 'f1000000-0000-4000-8000-000000000093'$q$),
+  ('creator_social_accounts_other', 'insert', $q$insert into public.creator_social_accounts (creator_id, platform, handle) values ('f1000000-0000-4000-8000-000000000004', 'instagram', 'rls.other.insert')$q$),
+  ('creator_social_accounts_other', 'update', $q$update public.creator_social_accounts set top_cities = top_cities where id = 'f1000000-0000-4000-8000-000000000093'$q$),
+  ('creator_social_accounts_other', 'delete', $q$delete from public.creator_social_accounts where id = 'f1000000-0000-4000-8000-000000000093'$q$),
+  ('storage:audience-proofs-own', 'select', $q$select count(*) from storage.objects where bucket_id = 'audience-proofs' and name = 'f1000000-0000-4000-8000-000000000003/rls-own.png'$q$),
+  ('storage:audience-proofs-own', 'insert', $q$insert into storage.objects (bucket_id, name) values ('audience-proofs', 'f1000000-0000-4000-8000-000000000003/rls-new.png')$q$),
+  ('storage:audience-proofs-own', 'delete', $q$delete from storage.objects where bucket_id = 'audience-proofs' and name = 'f1000000-0000-4000-8000-000000000003/rls-own.png'$q$),
+  ('storage:audience-proofs-other', 'select', $q$select count(*) from storage.objects where bucket_id = 'audience-proofs' and name = 'f1000000-0000-4000-8000-000000000004/rls-other.png'$q$),
+  ('storage:audience-proofs-other', 'insert', $q$insert into storage.objects (bucket_id, name) values ('audience-proofs', 'f1000000-0000-4000-8000-000000000004/rls-new.png')$q$),
+  ('storage:audience-proofs-other', 'delete', $q$delete from storage.objects where bucket_id = 'audience-proofs' and name = 'f1000000-0000-4000-8000-000000000004/rls-other.png'$q$);
 
 -- Client portal (M14): the portal reads through views, and the contact row
 -- that carries the account must stay out of the client's own reach.
@@ -523,6 +545,24 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) valu
   ('storage:content-drafts-assigned', 'insert', 'a', 'a', 'd', 'd', 'a'),
   ('storage:metric-proofs-assigned', 'select', 'a', 'a', 'd', 'd', 'a'),
   ('storage:metric-proofs-assigned', 'insert', 'a', 'a', 'd', 'd', 'a');
+
+-- Phase 15 (M16): the fixture account f1…05 is the portal creator's own, so
+-- the base-table rows open up for them; another klipper's stays closed.
+update rls_expected set creator = 'a'
+  where tbl = 'creator_social_accounts' and op in ('select', 'insert', 'update', 'delete');
+insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) values
+  ('creator_portal_social_accounts', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_social_accounts_other', 'select', 'd', 'd', 'd', 'd', 'd'),
+  ('creator_social_accounts_other', 'select', 'a', 'a', 'd', 'd', 'd'),
+  ('creator_social_accounts_other', 'insert', 'a', 'a', 'd', 'd', 'd'),
+  ('creator_social_accounts_other', 'update', 'a', 'a', 'd', 'd', 'd'),
+  ('creator_social_accounts_other', 'delete', 'a', 'a', 'd', 'd', 'd'),
+  ('storage:audience-proofs-own', 'select', 'a', 'a', 'd', 'd', 'a'),
+  ('storage:audience-proofs-own', 'insert', 'a', 'a', 'd', 'd', 'a'),
+  ('storage:audience-proofs-own', 'delete', 'a', 'a', 'd', 'd', 'a'),
+  ('storage:audience-proofs-other', 'select', 'a', 'a', 'd', 'd', 'd'),
+  ('storage:audience-proofs-other', 'insert', 'a', 'a', 'd', 'd', 'd'),
+  ('storage:audience-proofs-other', 'delete', 'a', 'a', 'd', 'd', 'd');
 
 -- ---------------------------------------------------------------------------
 -- Run every case for every role.

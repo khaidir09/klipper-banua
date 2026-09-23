@@ -65,7 +65,7 @@ async function seedAccount(admin: SupabaseClient, account: SeedAccount) {
     ? await updateAccount(admin, existing.id, account)
     : await createAccount(admin, account);
 
-  // The auth trigger creates the profile with the metadata role; make sure an
+  // The auth trigger creates the profile with the app_metadata role; make sure an
   // account that already existed carries the intended role and is active.
   const { error: profileError } = await admin
     .from("profiles")
@@ -85,7 +85,9 @@ async function createAccount(admin: SupabaseClient, account: SeedAccount): Promi
     email: account.email,
     password: account.password,
     email_confirm: true,
-    user_metadata: { full_name: account.fullName, role: account.role },
+    user_metadata: { full_name: account.fullName },
+    // The role lives in app_metadata: handle_new_user ignores user_metadata.role.
+    app_metadata: { role: account.role },
   });
 
   if (error || !data.user) {
@@ -103,7 +105,9 @@ async function updateAccount(
 ): Promise<string> {
   const { error } = await admin.auth.admin.updateUserById(userId, {
     password: account.password,
-    user_metadata: { full_name: account.fullName, role: account.role },
+    user_metadata: { full_name: account.fullName },
+    // The role lives in app_metadata: handle_new_user ignores user_metadata.role.
+    app_metadata: { role: account.role },
   });
 
   if (error) {

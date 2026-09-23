@@ -214,13 +214,16 @@ async function seedPortalAccount(
   if (listError) throw new Error(`portal account: ${listError.message}`);
 
   const existing = list.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
-  const metadata = { full_name: options.fullName, role: options.role };
+  const metadata = { full_name: options.fullName };
+  // The role lives in app_metadata: handle_new_user ignores user_metadata.role.
+  const appMetadata = { role: options.role };
 
   let userId: string;
   if (existing) {
     const { error } = await admin.auth.admin.updateUserById(existing.id, {
       password,
       user_metadata: metadata,
+      app_metadata: appMetadata,
     });
     if (error) throw new Error(`portal account: ${error.message}`);
     userId = existing.id;
@@ -230,6 +233,7 @@ async function seedPortalAccount(
       password,
       email_confirm: true,
       user_metadata: metadata,
+      app_metadata: appMetadata,
     });
     if (error || !data.user) throw new Error(`portal account: ${error?.message ?? "unknown"}`);
     userId = data.user.id;

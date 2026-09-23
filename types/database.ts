@@ -711,6 +711,8 @@ export type Database = {
       creator_social_accounts: {
         Row: {
           audience_proof_path: string | null
+          badge_requested_at: string | null
+          badge_review_notes: string | null
           created_at: string
           creator_id: string
           followers_count: number
@@ -725,6 +727,8 @@ export type Database = {
         }
         Insert: {
           audience_proof_path?: string | null
+          badge_requested_at?: string | null
+          badge_review_notes?: string | null
           created_at?: string
           creator_id: string
           followers_count?: number
@@ -739,6 +743,8 @@ export type Database = {
         }
         Update: {
           audience_proof_path?: string | null
+          badge_requested_at?: string | null
+          badge_review_notes?: string | null
           created_at?: string
           creator_id?: string
           followers_count?: number
@@ -772,9 +778,12 @@ export type Database = {
         Row: {
           anonymized_at: string | null
           birth_date: string | null
+          blocked_at: string | null
+          blocked_reason: string | null
           city: string
           created_at: string
           created_by: string | null
+          deletion_requested_at: string | null
           email: string
           full_name: string
           id: string
@@ -784,21 +793,26 @@ export type Database = {
           portal_invited_at: string | null
           profile_id: string | null
           province: string
+          signup_source: Database["public"]["Enums"]["signup_source"]
           stage_name: string
           status: Database["public"]["Enums"]["creator_status"]
           terms_agreed_at: string | null
           terms_version: string | null
           tier: Database["public"]["Enums"]["creator_tier"]
           updated_at: string
+          verification_code: string
           verified_at: string | null
           verified_by: string | null
         }
         Insert: {
           anonymized_at?: string | null
           birth_date?: string | null
+          blocked_at?: string | null
+          blocked_reason?: string | null
           city?: string
           created_at?: string
           created_by?: string | null
+          deletion_requested_at?: string | null
           email?: string
           full_name: string
           id?: string
@@ -808,21 +822,26 @@ export type Database = {
           portal_invited_at?: string | null
           profile_id?: string | null
           province?: string
+          signup_source?: Database["public"]["Enums"]["signup_source"]
           stage_name?: string
           status?: Database["public"]["Enums"]["creator_status"]
           terms_agreed_at?: string | null
           terms_version?: string | null
           tier?: Database["public"]["Enums"]["creator_tier"]
           updated_at?: string
+          verification_code?: string
           verified_at?: string | null
           verified_by?: string | null
         }
         Update: {
           anonymized_at?: string | null
           birth_date?: string | null
+          blocked_at?: string | null
+          blocked_reason?: string | null
           city?: string
           created_at?: string
           created_by?: string | null
+          deletion_requested_at?: string | null
           email?: string
           full_name?: string
           id?: string
@@ -832,12 +851,14 @@ export type Database = {
           portal_invited_at?: string | null
           profile_id?: string | null
           province?: string
+          signup_source?: Database["public"]["Enums"]["signup_source"]
           stage_name?: string
           status?: Database["public"]["Enums"]["creator_status"]
           terms_agreed_at?: string | null
           terms_version?: string | null
           tier?: Database["public"]["Enums"]["creator_tier"]
           updated_at?: string
+          verification_code?: string
           verified_at?: string | null
           verified_by?: string | null
         }
@@ -1904,45 +1925,57 @@ export type Database = {
       creator_portal_profile: {
         Row: {
           city: string | null
+          deletion_requested_at: string | null
           email: string | null
           full_name: string | null
           id: string | null
+          local_badge_at: string | null
           phone_wa: string | null
           portal_invited_at: string | null
           province: string | null
+          signup_source: Database["public"]["Enums"]["signup_source"] | null
           stage_name: string | null
           status: Database["public"]["Enums"]["creator_status"] | null
           terms_agreed_at: string | null
           terms_version: string | null
           tier: Database["public"]["Enums"]["creator_tier"] | null
+          verification_code: string | null
         }
         Insert: {
           city?: string | null
+          deletion_requested_at?: string | null
           email?: string | null
           full_name?: string | null
           id?: string | null
+          local_badge_at?: string | null
           phone_wa?: string | null
           portal_invited_at?: string | null
           province?: string | null
+          signup_source?: Database["public"]["Enums"]["signup_source"] | null
           stage_name?: string | null
           status?: Database["public"]["Enums"]["creator_status"] | null
           terms_agreed_at?: string | null
           terms_version?: string | null
           tier?: Database["public"]["Enums"]["creator_tier"] | null
+          verification_code?: string | null
         }
         Update: {
           city?: string | null
+          deletion_requested_at?: string | null
           email?: string | null
           full_name?: string | null
           id?: string | null
+          local_badge_at?: string | null
           phone_wa?: string | null
           portal_invited_at?: string | null
           province?: string | null
+          signup_source?: Database["public"]["Enums"]["signup_source"] | null
           stage_name?: string | null
           status?: Database["public"]["Enums"]["creator_status"] | null
           terms_agreed_at?: string | null
           terms_version?: string | null
           tier?: Database["public"]["Enums"]["creator_tier"] | null
+          verification_code?: string | null
         }
         Relationships: []
       }
@@ -1977,6 +2010,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      creator_portal_social_accounts: {
+        Row: {
+          audience_proof_path: string | null
+          badge_requested_at: string | null
+          badge_review_notes: string | null
+          created_at: string | null
+          followers_count: number | null
+          handle: string | null
+          id: string | null
+          kalimantan_audience_pct: number | null
+          last_verified_at: string | null
+          platform: Database["public"]["Enums"]["social_platform"] | null
+          profile_url: string | null
+          top_cities: string | null
+        }
+        Insert: {
+          audience_proof_path?: string | null
+          badge_requested_at?: string | null
+          badge_review_notes?: string | null
+          created_at?: string | null
+          followers_count?: number | null
+          handle?: string | null
+          id?: string | null
+          kalimantan_audience_pct?: number | null
+          last_verified_at?: string | null
+          platform?: Database["public"]["Enums"]["social_platform"] | null
+          profile_url?: string | null
+          top_cities?: string | null
+        }
+        Update: {
+          audience_proof_path?: string | null
+          badge_requested_at?: string | null
+          badge_review_notes?: string | null
+          created_at?: string | null
+          followers_count?: number | null
+          handle?: string | null
+          id?: string | null
+          kalimantan_audience_pct?: number | null
+          last_verified_at?: string | null
+          platform?: Database["public"]["Enums"]["social_platform"] | null
+          profile_url?: string | null
+          top_cities?: string | null
+        }
+        Relationships: []
       }
       creator_portal_submissions: {
         Row: {
@@ -2038,6 +2116,14 @@ export type Database = {
         Args: { target_campaign_id: string }
         Returns: boolean
       }
+      creator_joined_assignment: {
+        Args: { target_assignment_id: string }
+        Returns: boolean
+      }
+      creator_joined_content: {
+        Args: { target_content_id: string }
+        Returns: boolean
+      }
       creator_owns_assignment: {
         Args: { target_assignment_id: string }
         Returns: boolean
@@ -2052,6 +2138,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      generate_verification_code: { Args: never; Returns: string }
       get_masked_bank_account: {
         Args: { p_creator_id: string }
         Returns: {
@@ -2065,6 +2152,7 @@ export type Database = {
         Args: { p_token_hash: string }
         Returns: string
       }
+      request_creator_account_deletion: { Args: never; Returns: undefined }
       review_metric_submission: {
         Args: { p_accept: boolean; p_id: string; p_notes?: string }
         Returns: string
@@ -2105,6 +2193,7 @@ export type Database = {
       payout_status: "draf" | "disetujui" | "dibayar"
       review_decision: "disetujui" | "revisi" | "ditolak"
       review_status: "menunggu_review" | "disetujui" | "revisi" | "ditolak"
+      signup_source: "undangan" | "mandiri"
       social_platform: "tiktok" | "instagram" | "youtube" | "facebook"
       submission_status: "menunggu" | "diterima" | "ditolak"
       user_role: "owner" | "manager" | "creator" | "client"
@@ -2275,6 +2364,7 @@ export const Constants = {
       payout_status: ["draf", "disetujui", "dibayar"],
       review_decision: ["disetujui", "revisi", "ditolak"],
       review_status: ["menunggu_review", "disetujui", "revisi", "ditolak"],
+      signup_source: ["undangan", "mandiri"],
       social_platform: ["tiktok", "instagram", "youtube", "facebook"],
       submission_status: ["menunggu", "diterima", "ditolak"],
       user_role: ["owner", "manager", "creator", "client"],

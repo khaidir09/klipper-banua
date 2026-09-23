@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { CAMPAIGN_ASSET_BUCKET } from "./campaigns";
+import { AUDIENCE_PROOF_BUCKET } from "./creators";
 
 /**
  * Reads for the creator portal (PRD M13). Everything here goes through the
@@ -27,10 +28,15 @@ type SubmissionView = Database["public"]["Views"]["creator_portal_submissions"][
 type PayoutView = Database["public"]["Views"]["creator_portal_payouts"]["Row"];
 type AssignmentView = Database["public"]["Views"]["creator_portal_assignments"]["Row"];
 type AssetView = Database["public"]["Views"]["creator_portal_assets"]["Row"];
+type SocialAccountView = Database["public"]["Views"]["creator_portal_social_accounts"]["Row"];
 
 export type PortalProfile = NonNullableExcept<
   ProfileView,
-  "terms_version" | "terms_agreed_at" | "portal_invited_at"
+  | "terms_version"
+  | "terms_agreed_at"
+  | "portal_invited_at"
+  | "local_badge_at"
+  | "deletion_requested_at"
 >;
 export type PortalAssignment = NonNullableExcept<
   AssignmentView,
@@ -52,6 +58,14 @@ export type PortalReview = NonNullableExcept<ReviewView, never>;
 export type PortalMetric = NonNullableExcept<MetricView, never>;
 export type PortalSubmission = NonNullableExcept<SubmissionView, "reviewed_at">;
 export type PortalPayout = NonNullableExcept<PayoutView, "paid_at">;
+export type PortalSocialAccount = NonNullableExcept<
+  SocialAccountView,
+  | "kalimantan_audience_pct"
+  | "audience_proof_path"
+  | "last_verified_at"
+  | "badge_requested_at"
+  | "badge_review_notes"
+> & { proof_url: string | null };
 
 const SIGNED_URL_SECONDS = 60;
 
@@ -197,4 +211,36 @@ export async function getPortalPayout(
 
   if (error) throw new Error(error.message);
   return data ? (data as PortalPayout) : null;
+}
+
+/**
+ * FR-M3-03, FR-M16-08: the creator's own social accounts, with a short-lived
+ * link to each audience screenshot (the storage policy limits it to their
+ * own folder).
+ */
+export async function listPortalSocialAccounts(
+  supabase: SupabaseClient<Database>,
+): Promise<PortalSocialAccount[]> {
+  const { data, error } = await supabase
+    .from("creator_portal_social_accounts")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+
+  const rows = (data ?? []) as Omit<PortalSocialAccount, "proof_url">[];
+  const paths = rows.map((row) => row.audience_proof_path).filter((path): path is string => !!path);
+  const urls = new Map<string, string>();
+  if (paths.length) {
+    const { data: signed } = await supabase.storage
+      .from(AUDIENCE_PROOF_BUCKET)
+      .createSignedUrls(paths, SIGNED_URL_SECONDS);
+    for (const item of signed ?? []) {
+      if (item.path && item.signedUrl) urls.set(item.path, item.signedUrl);
+    }
+  }
+
+  return rows.map((row) => ({
+    ...row,
+    proof_url: row.audience_proof_path ? (urls.get(row.audience_proof_path) ?? null) : null,
+  }));
 }

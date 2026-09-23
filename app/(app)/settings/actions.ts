@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { fail, invalid, ok, type ActionResult } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
 import { requireRole, requireSession } from "@/lib/auth/guards";
+import { assignInvitedRole } from "@/lib/auth/invite-role";
 import { countActiveOwners } from "@/lib/data/users";
 import { publicEnv } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -23,7 +24,7 @@ export async function inviteUserAction(values: unknown): Promise<ActionResult> {
 
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin.auth.admin.inviteUserByEmail(parsed.data.email, {
-    data: { full_name: parsed.data.full_name, role: parsed.data.role },
+    data: { full_name: parsed.data.full_name },
     redirectTo: `${publicEnv.NEXT_PUBLIC_APP_URL}/auth/callback?next=/atur-sandi`,
   });
 
@@ -32,6 +33,13 @@ export async function inviteUserAction(values: unknown): Promise<ActionResult> {
       return fail("Email tersebut sudah terdaftar sebagai pengguna.");
     }
     return fail(`Undangan gagal dikirim: ${error.message}`);
+  }
+
+  const { error: roleError } = await assignInvitedRole(admin, data.user.id, parsed.data.role);
+  if (roleError) {
+    // Never leave an account behind with a role nobody chose.
+    await admin.auth.admin.deleteUser(data.user.id);
+    return fail("Undangan gagal disiapkan. Coba lagi.");
   }
 
   const supabase = await createSupabaseServerClient();

@@ -66,8 +66,7 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   OPS_LOG_OWNER_FIXED: "Kampanye dan pencatat waktu tidak dapat diubah.",
   PORTAL_LINK_INTERNAL_ONLY: "Akses portal kreator hanya dapat diubah oleh tim internal.",
   PORTAL_FIELD_LOCKED: "Bagian itu hanya dapat diubah tim, bukan dari portal kreator.",
-  PORTAL_CONFIRM_ONLY:
-    "Penugasan ini sudah dikonfirmasi atau tidak lagi menunggu konfirmasi Anda.",
+  PORTAL_CONFIRM_ONLY: "Penugasan ini sudah dikonfirmasi atau tidak lagi menunggu konfirmasi Anda.",
   SUBMISSION_NEEDS_LIVE_CONTENT: "Bukti metrik hanya untuk konten yang sudah tayang.",
   SUBMISSION_BEFORE_POSTING: "Waktu pengambilan tidak boleh sebelum waktu tayang.",
   SUBMISSION_NOT_PENDING: "Kiriman ini sudah diverifikasi tim.",
@@ -91,6 +90,9 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
   client_payments_invoice_number_key: "Nomor invoice sudah dipakai.",
   client_payments_paid_at_check: "Tanggal bayar wajib diisi jika ada pembayaran.",
   ops_time_logs_minutes_check: "Durasi harus antara 1 dan 1.440 menit.",
+  creators_phone_wa_key: "Nomor WhatsApp tersebut sudah dipakai kreator lain.",
+  creators_blocked_reason_check:
+    "Kreator diblokir lewat tombol Blokir di halaman kreator, beserta alasannya.",
 };
 
 /** Maps a trigger or constraint violation to Indonesian text; falls back otherwise. */

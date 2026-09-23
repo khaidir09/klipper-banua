@@ -6,6 +6,8 @@ import { safeNextPath } from "@/lib/validation/auth";
 
 const EMAIL_OTP_TYPES: EmailOtpType[] = [
   "recovery",
+  // Confirmation of a klipper registration (FR-M16-02).
+  "signup",
   "invite",
   "email",
   "email_change",
@@ -13,8 +15,9 @@ const EMAIL_OTP_TYPES: EmailOtpType[] = [
 ];
 
 /**
- * Exchanges the code from a password-recovery or invitation email for a
- * session, then sends the user on to pick a password (FR-M1-02, FR-M1-04).
+ * Exchanges the code from a password-recovery, invitation or sign-up
+ * confirmation email for a session, then sends the user on: to pick a
+ * password (FR-M1-02, FR-M1-04) or to finish a klipper account (FR-M16-05).
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
