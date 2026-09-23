@@ -9,16 +9,16 @@ const GROUPS = [
     links: [
       { href: "/#masalah", label: "Masalah yang dibereskan" },
       { href: "/#cara-kerja", label: "Cara kerja" },
-      { href: "/#kenapa-lokal", label: "Kenapa kreator lokal" },
+      { href: "/#kenapa-lokal", label: "Kenapa klipper lokal" },
       { href: "/#faq", label: "Tanya jawab" },
     ],
   },
   {
-    title: "Kreator",
+    title: "Klipper",
     links: [
-      { href: "/kreator", label: "Syarat bergabung" },
+      { href: "/daftar", label: "Daftar jadi Klipper" },
+      { href: "/kreator#cara-kerja", label: "Cara kerja" },
       { href: "/kreator#honor", label: "Cara honor dihitung" },
-      { href: "/kreator#tahapan", label: "Tahapan bergabung" },
     ],
   },
   {
@@ -49,8 +49,8 @@ export function SiteFooter() {
               <span className="font-semibold tracking-tight">{publicEnv.NEXT_PUBLIC_APP_NAME}</span>
             </div>
             <p className="mt-3 text-sm text-pretty text-muted-foreground">
-              Kampanye kreator lokal Kalimantan yang dikelola tim: brief, persetujuan konten,
-              pelacakan hasil, sampai laporan untuk instansi.
+              Marketplace klipper lokal Kalimantan: instansi memasang kampanye, klipper
+              mengerjakannya, dan setiap klip diverifikasi sebelum dibayar.
             </p>
           </div>
 

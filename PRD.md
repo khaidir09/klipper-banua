@@ -4,7 +4,7 @@
 | ------------------ | ------------------------------------------------------------------------------------------- |
 | Versi dokumen      | 1.0 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
 | Tanggal            | 23 September 2026                                                                           |
-| Status             | Fase 0–11, 13, dan 14 selesai (fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan). **Tahap A (klipper mandiri, Fase 15–18) dirancang, belum dikerjakan.** Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
+| Status             | Fase 0–11, 13, 14, dan **15** selesai (fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri). **Tahap A lanjutan (Fase 16–18) dirancang, belum dikerjakan.** Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
 | Acuan model        | ayoklip.com (klipper daftar sendiri → pilih kampanye → posting → kirim tautan + bukti views → diverifikasi → saldo → tarik) dengan pembeda lokal Kalimantan |
 | Pengguna versi ini | Tim internal (`owner`, `manager`); **klipper mendaftar sendiri** (peran `creator`); klien lewat undangan (Tahap A) dan mendaftar sendiri (Tahap B); pengunjung anonim membaca situs publik |
@@ -587,14 +587,16 @@ Kerjakan berurutan. Setiap fase wajib: migrasi baru (tidak mengedit migrasi lama
 **Cakupan:** M16 (FR-M16-01 s.d. FR-M16-09), FR-M1-01, FR-M1-03, FR-M3-01 s.d. FR-M3-05, FR-M3-09. Perbaikan trigger `handle_new_user` dan semua jalur undangan ke `app_metadata`; kolom baru `creators`; normalisasi dan keunikan WhatsApp; rate limit di memori; halaman `/daftar`, `/portal/mulai`, profil portal (akun sosial, kode verifikasi, pengajuan lencana, permintaan hapus akun); templat email konfirmasi; antrean lencana lokal dan pemblokiran di aplikasi tim; perubahan M15 (ajakan daftar, `/kreator`, robots, sitemap).
 **Kriteria penerimaan:**
 
-- [ ] Pengunjung dapat mendaftar di `/daftar`, menerima email konfirmasi, lalu masuk ke `/portal/mulai`; sebelum konfirmasi tidak dapat masuk.
-- [ ] `signUp` dengan `options.data.role = 'owner'` (atau `manager`/`client`) tetap menghasilkan profil `creator` — diuji di `scripts/rls-check.sql` atau `guards-check.sql` dengan menyisipkan `auth.users` bermetadata palsu.
-- [ ] Undangan internal, kreator, dan klien yang sudah ada tetap menghasilkan peran yang benar.
-- [ ] Usia < 18, email sekali pakai, WhatsApp ganda, dan pendaftaran berulang melewati batas per IP ditolak dengan pesan yang jelas.
-- [ ] Klipper baru berstatus `prospek`, menjadi `aktif` setelah menambah akun sosial pertama, dan memiliki `verification_code` unik.
-- [ ] Klipper hanya dapat membaca dan menulis akun sosial serta bukti audiensnya sendiri.
-- [ ] Tim dapat memberi/mencabut lencana lokal dan memblokir/membuka blokir dengan alasan; semuanya tercatat di log.
-- [ ] Situs publik tetap statis tanpa kueri; `/daftar` masuk sitemap; area ber-sesi tetap `noindex`.
+- [x] Pengunjung dapat mendaftar di `/daftar`, menerima email konfirmasi, lalu masuk ke `/portal/mulai`; sebelum konfirmasi tidak dapat masuk.
+- [x] `signUp` dengan `options.data.role = 'owner'` (atau `manager`/`client`) tetap menghasilkan profil `creator` — diuji di `scripts/rls-check.sql` atau `guards-check.sql` dengan menyisipkan `auth.users` bermetadata palsu.
+- [x] Undangan internal, kreator, dan klien yang sudah ada tetap menghasilkan peran yang benar.
+- [x] Usia < 18, email sekali pakai, WhatsApp ganda, dan pendaftaran berulang melewati batas per IP ditolak dengan pesan yang jelas.
+- [x] Klipper baru berstatus `prospek`, menjadi `aktif` setelah menambah akun sosial pertama, dan memiliki `verification_code` unik.
+- [x] Klipper hanya dapat membaca dan menulis akun sosial serta bukti audiensnya sendiri.
+- [x] Tim dapat memberi/mencabut lencana lokal dan memblokir/membuka blokir dengan alasan; semuanya tercatat di log.
+- [x] Situs publik tetap statis tanpa kueri; `/daftar` masuk sitemap; area ber-sesi tetap `noindex`.
+
+_Catatan implementasi:_ klipper berstatus `diblokir` masih dikeluarkan dari portal (seperti v3.2) karena `current_creator_id()` menjadi dasar seluruh kebijakan tulis portal; akses baca saldo bagi klipper yang diblokir (FR-M3-09) dibuka di Fase 18. Provinsi pendaftaran memakai daftar provinsi Kalimantan yang sudah ada.
 
 ### Fase 16 — v4.0: Kampanye Terbuka dan Katalog
 
@@ -642,7 +644,7 @@ Kerjakan berurutan. Setiap fase wajib: migrasi baru (tidak mengedit migrasi lama
 | Versi | Fitur |
 | ----- | ----- |
 | 1.1–3.2 | Tautan laporan, pengingat Telegram, portal kreator, portal klien, situs publik, konfirmasi penugasan — **selesai** (kecuali Fase 12) |
-| **4.0** | **Tahap A — klipper mandiri** (Fase 15–18) |
+| **4.0** | **Tahap A — klipper mandiri** (Fase 15–18) — Fase 15 **selesai** |
 | 4.0.x | Fase 12 yang direvisi: laporan dan usulan pendaftar dari portal klien |
 | **4.1** | **Tahap B — klien mandiri** (garis besar, PRD dirinci sebelum dikerjakan): pendaftaran klien/instansi dengan verifikasi tim; dompet klien dengan **deposit manual** (transfer + bukti, dikonfirmasi `owner`); klien membuat kampanye `per_views` sendiri (anggaran, tarif, brief, materi) yang ditinjau tim sebelum tayang di katalog; biaya platform (acuan 5%) dan add-on (khusus Klipper Lokal); anggaran terkunci saat kampanye aktif dan sisa dikembalikan ke dompet saat selesai; klien menandai klip bermasalah; invoice/kuitansi otomatis |
 | 4.2 | Penarikan terjadwal (batch) dan pengingat penarikan; papan peringkat di portal (nama panggung) |

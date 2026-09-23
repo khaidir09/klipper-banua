@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalArticle, type LegalSection } from "@/components/marketing/legal-article";
+import { CREATOR_TERMS_VERSION, MINIMUM_CREATOR_AGE } from "@/lib/constants/creators";
 import { publicEnv } from "@/lib/env";
 import { whatsappDisplay } from "@/lib/marketing/contact";
 
@@ -7,7 +8,7 @@ import { whatsappDisplay } from "@/lib/marketing/contact";
 const WHATSAPP = whatsappDisplay(publicEnv.NEXT_PUBLIC_CONTACT_WA);
 
 const DESCRIPTION =
-  "Ketentuan pemakaian layanan pengelolaan kampanye kreator lokal: siapa yang dapat mengakses aplikasi, kewajiban instansi klien dan kreator, serta bagaimana honor dan persetujuan konten diatur.";
+  "Ketentuan pemakaian platform klipper lokal: pendaftaran klipper, kewajiban instansi klien dan klipper, verifikasi klip, honor per views, saldo, dan penarikan.";
 
 export const metadata: Metadata = {
   title: "Syarat Layanan",
@@ -23,59 +24,64 @@ export const metadata: Metadata = {
 };
 
 /**
- * Mirrors the rules the application already enforces (PRD M1–M8), so nothing
- * here promises behaviour the product does not have. Campaign contracts remain
- * the more specific document; this page is the general frame.
+ * Mirrors the rules the application enforces (PRD M1–M8, v4.0: M16–M19), so
+ * nothing here promises behaviour the product does not have. A registration
+ * at /daftar agrees to this page as version `CREATOR_TERMS_VERSION`; bump it
+ * with any material change. DRAFT: the wording awaits the owner and legal
+ * review (PRD 13.2 no. 5).
  */
 const SECTIONS: LegalSection[] = [
   {
     heading: "Tentang layanan ini",
     body: [
-      "Kami mengelola kampanye promosi instansi regional bersama kreator lokal: menyusun brief, menugaskan kreator, meninjau konten sebelum tayang, melacak hasil, menghitung honor kreator, dan menyusun laporan untuk instansi.",
-      "Layanan dijalankan oleh tim kami. Kami bukan marketplace terbuka: instansi tidak memilih kreator sendiri dari katalog, dan kreator tidak melamar kampanye sendiri.",
+      "Kami menjalankan platform yang mempertemukan instansi regional dengan klipper: orang yang memotong materi video kampanye menjadi klip pendek lalu mempostingnya di akun media sosialnya sendiri.",
+      "Instansi memasang kampanye bersama tim kami. Klipper mendaftar sendiri, memilih kampanye dari katalog, dan dibayar dari views klip yang sudah diverifikasi tim.",
     ],
   },
   {
     heading: "Akses ke aplikasi",
     bullets: [
-      "Pendaftaran akun publik dinonaktifkan. Akun dibuat lewat undangan: anggota tim diundang oleh owner, kreator diundang setelah terverifikasi, dan kontak instansi klien diundang untuk portal klien.",
+      `Klipper mendaftar sendiri di halaman Daftar jadi Klipper, wajib berusia minimal ${MINIMUM_CREATOR_AGE} tahun, dan mengonfirmasi alamat emailnya. Satu orang hanya boleh memiliki satu akun.`,
+      "Akun anggota tim dan kontak instansi klien dibuat lewat undangan.",
       "Setiap orang memakai akunnya sendiri dan bertanggung jawab menjaga kerahasiaan kata sandinya.",
       "Akses dapat dicabut atau dinonaktifkan sewaktu-waktu, misalnya ketika kerja sama berakhir atau ada penyalahgunaan.",
-      "Akun portal hanya memuat data milik pemakainya: kreator melihat penugasannya sendiri, kontak klien melihat kampanye instansinya sendiri.",
+      "Akun portal hanya memuat data milik pemakainya: klipper melihat kampanye, klip, dan saldonya sendiri; kontak klien melihat kampanye instansinya sendiri.",
     ],
   },
   {
     heading: "Kewajiban instansi klien",
     bullets: [
       "Menyediakan materi, logo, dan informasi kampanye yang sah dipakai, termasuk izin atas merek dan aset yang diserahkan kepada kami.",
-      "Menyampaikan brief, larangan, dan ketentuan label berbayar yang ingin diberlakukan pada konten kreator.",
+      "Menyampaikan brief, larangan, dan ketentuan label berbayar yang ingin diberlakukan pada klip, serta menyetujui anggaran dan tarif per 1.000 views kampanye.",
       "Melaporkan jumlah pendaftar dalam bentuk angka rekap per kode referal, tanpa menyertakan data pribadi pendaftar.",
       "Membayar paket kampanye sesuai kesepakatan pada dokumen kampanye masing-masing.",
     ],
   },
   {
-    heading: "Kewajiban kreator mitra",
+    heading: "Syarat Klipper",
     bullets: [
+      "Memposting klip hanya dari akun media sosial yang terdaftar atas nama Anda di portal, dan menulis kode verifikasi pribadi Anda di caption atau deskripsi setiap klip.",
       "Mengikuti brief kampanye: hal yang wajib dilakukan, larangan, hashtag, dan kewajiban mencantumkan label berbayar bila diminta.",
-      "Mengirim draf konten untuk ditinjau, dan hanya menayangkan konten yang sudah disetujui.",
-      "Mempertahankan konten tayang minimal sejumlah hari yang disepakati di brief.",
-      "Tidak menaikkan angka secara tidak wajar, termasuk membeli views, klik, atau interaksi. Pelanggaran dapat membatalkan hak atas bonus kinerja.",
-      "Mengirim bukti metrik berupa tangkapan layar yang benar dan belum diubah.",
+      "Hanya memakai materi kampanye untuk kampanye tersebut, dan tidak mengklaim video yang sama di lebih dari satu kiriman.",
+      "Mempertahankan klip tetap tayang minimal sejumlah hari yang tertulis di kampanye.",
+      "Tidak menaikkan angka secara tidak wajar, termasuk memakai bot atau membeli views, klik, atau interaksi. Klip yang terbukti curang ditolak, honornya dibatalkan, dan akun dapat diblokir.",
+      "Mengirim tangkapan layar views yang benar dan belum diubah.",
     ],
   },
   {
-    heading: "Persetujuan konten",
+    heading: "Verifikasi klip",
     body: [
-      "Setiap konten melewati review tim. Tim dapat menyetujui, meminta revisi dengan catatan, atau menolak.",
-      "Kampanye dapat diatur agar konten yang sudah disetujui tim menunggu persetujuan instansi klien lebih dulu. Bila diatur demikian, konten baru boleh ditandai tayang setelah kedua tahap lulus.",
+      "Klip diverifikasi tim setelah tayang: kepemilikan akun, kepatuhan brief, waktu tayang, dan keaslian views. Tim dapat menyetujui dengan jumlah views terverifikasi, meminta perbaikan, atau menolak dengan alasan tertulis.",
+      "Kampanye lama yang dikelola dengan paket honor tetap memakai review draf sebelum tayang sebagaimana disepakati saat itu.",
     ],
   },
   {
-    heading: "Honor kreator dan pembayaran",
+    heading: "Honor, saldo, dan penarikan",
     body: [
-      "Honor terdiri dari honor dasar per konten yang memenuhi syarat, ditambah bonus berdasarkan views dan pendaftar. Nominal dan batas bonus ditetapkan per kampanye dan disampaikan kepada kreator sebelum pekerjaan dimulai.",
-      "Angka yang memengaruhi honor hanya sah setelah diverifikasi tim. Kiriman bukti dari kreator dan laporan pendaftar dari instansi berstatus usulan sampai diterima.",
-      "Perhitungan dilakukan sistem, lalu disetujui dan ditandai terbayar oleh owner. Kewajiban perpajakan atas honor mengikuti ketentuan yang berlaku dan disampaikan sebelum pembayaran.",
+      "Honor klip dihitung dari views terverifikasi dikali tarif per 1.000 views kampanye, dengan batas per klip dan per klipper yang tertulis di kampanye, dan tidak melebihi anggaran kampanye.",
+      "Honor masuk ke saldo saat klip atau pembaruan views disetujui. Honor dapat dibatalkan bila klip dihapus sebelum masa tayang minimum atau terbukti curang.",
+      "Penarikan diajukan dari portal ke rekening bank atau e-wallet atas nama Anda sendiri, dengan batas minimum yang tertera di portal, lalu ditransfer manual oleh owner.",
+      "Kewajiban perpajakan atas honor mengikuti ketentuan yang berlaku dan disampaikan sebelum pembayaran.",
     ],
   },
   {
@@ -87,7 +93,8 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Larangan pemakaian",
     bullets: [
-      "Memakai akses aplikasi untuk mengambil data yang bukan hak Anda, termasuk data kreator lain, instansi lain, atau angka keuangan internal.",
+      "Memakai akses aplikasi untuk mengambil data yang bukan hak Anda, termasuk data klipper lain, instansi lain, atau angka keuangan internal.",
+      "Membuat lebih dari satu akun klipper, atau memakai akun media sosial milik orang lain.",
       "Membagikan akun, kata sandi, atau tautan laporan rahasia kepada pihak yang tidak berhak.",
       "Mencoba menembus pembatasan peran, memanipulasi angka metrik, atau mengganggu jalannya layanan.",
     ],
@@ -126,9 +133,9 @@ export default function TermsPage() {
   return (
     <LegalArticle
       title="Syarat Layanan"
-      updatedAt="22 Sep 2026"
+      updatedAt="23 Sep 2026"
       intro={[
-        `Ketentuan umum pemakaian layanan dan aplikasi ${publicEnv.NEXT_PUBLIC_APP_NAME}. Ketentuan yang lebih rinci untuk satu kampanye berada di dokumen kampanye masing-masing.`,
+        `Ketentuan umum pemakaian layanan dan aplikasi ${publicEnv.NEXT_PUBLIC_APP_NAME}, termasuk Syarat Klipper versi ${CREATOR_TERMS_VERSION} yang disetujui saat mendaftar. Ketentuan yang lebih rinci untuk satu kampanye tertulis di kampanye masing-masing.`,
       ]}
       sections={SECTIONS}
       footnote="Dokumen ini menjelaskan praktik produk. Identitas badan hukum pengelola beserta alamat resminya dicantumkan setelah ditetapkan."

@@ -3,10 +3,12 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   isMarketingPath,
+  INDEXED_PATHS,
   isPrivatePath,
   MARKETING_FILES,
   MARKETING_PATHS,
   PRIVATE_PREFIXES,
+  SIGNUP_PATH,
 } from "@/lib/marketing/routes";
 
 const MARKETING_DIR = join(process.cwd(), "app", "(marketing)");
@@ -40,6 +42,13 @@ describe("marketing paths", () => {
     for (const path of MARKETING_PATHS) {
       expect(isPrivatePath(path)).toBe(false);
     }
+  });
+
+  it("indexes the klipper registration without treating it as static (v4.0)", () => {
+    expect(INDEXED_PATHS).toContain(SIGNUP_PATH);
+    expect(isPrivatePath(SIGNUP_PATH)).toBe(false);
+    // The proxy must still read the session on /daftar to send members home.
+    expect(isMarketingPath(SIGNUP_PATH)).toBe(false);
   });
 
   it("treats a private prefix and everything under it as private", () => {

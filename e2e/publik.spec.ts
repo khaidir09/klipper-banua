@@ -75,6 +75,8 @@ test("robots.txt hanya mengizinkan rute publik", async ({ request }) => {
   const body = await (await request.get("/robots.txt")).text();
 
   expect(body).toContain("Allow: /kreator");
+  // v4.0 (M16): the klipper registration is public and indexed too.
+  expect(body).toContain("Allow: /daftar");
   for (const blocked of ["/dashboard", "/portal", "/klien", "/laporan", "/api/"]) {
     expect(body).toContain(`Disallow: ${blocked}`);
   }

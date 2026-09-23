@@ -2,8 +2,10 @@ import { z } from "zod";
 import {
   CREATOR_STATUSES,
   CREATOR_TIERS,
+  LOCAL_BADGE_MIN_PCT,
   MINIMUM_CREATOR_AGE,
   NICHES,
+  SIGNUP_SOURCES,
   SOCIAL_PLATFORMS,
 } from "@/lib/constants/creators";
 import { PROVINCES } from "@/lib/constants/regions";
@@ -130,21 +132,31 @@ export const creatorListQuerySchema = listQuerySchema.extend({
   status: z.enum(CREATOR_STATUSES).optional().catch(undefined),
   platform: z.enum(SOCIAL_PLATFORMS).optional().catch(undefined),
   min_pct: z.coerce.number().min(0).max(100).optional().catch(undefined),
+  // v4.0 (M16): who registered the klipper, and whether they hold the local badge.
+  source: z.enum(SIGNUP_SOURCES).optional().catch(undefined),
+  badge: z.enum(["ya", "tidak"]).optional().catch(undefined),
 });
 
 export type CreatorListQuery = z.infer<typeof creatorListQuerySchema>;
 
 /**
- * Gate for FR-M3-05: verification needs at least one social account with an
- * audience proof and a recorded terms agreement.
+ * Gate for FR-M3-05: the local badge needs at least one social account whose
+ * audience proof shows `LOCAL_BADGE_MIN_PCT` or more in Kalimantan (v4.0),
+ * and a recorded terms agreement.
  */
 export function verificationBlockers(input: {
   hasProofAccount: boolean;
+  /** Defaults to `hasProofAccount` for callers that predate the threshold. */
+  hasLocalAudience?: boolean;
   termsAgreedAt: string | null;
 }): string[] {
   const blockers: string[] = [];
   if (!input.hasProofAccount) {
     blockers.push("Belum ada akun media sosial dengan bukti audiens.");
+  } else if (input.hasLocalAudience === false) {
+    blockers.push(
+      `Belum ada akun berbukti dengan audiens Kalimantan minimal ${LOCAL_BADGE_MIN_PCT}%.`,
+    );
   }
   if (!input.termsAgreedAt) {
     blockers.push("Persetujuan syarat kerja sama belum dicatat.");

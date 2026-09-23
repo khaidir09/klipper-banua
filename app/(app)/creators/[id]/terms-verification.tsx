@@ -14,7 +14,7 @@ import type { CreatorStatus } from "@/lib/constants/creators";
 import { formatDate, formatDateInput, formatDateTime } from "@/lib/format/date";
 import { applyFieldErrors } from "@/lib/forms";
 import { termsSchema, type TermsFormInput, type TermsInput } from "@/lib/validation/creators";
-import { recordTermsAction, verifyCreatorAction } from "../actions";
+import { recordTermsAction, revokeLocalBadgeAction, verifyCreatorAction } from "../actions";
 
 type TermsVerificationProps = {
   creatorId: string;
@@ -64,7 +64,21 @@ export function TermsVerification({
     });
   }
 
-  const canVerify = blockers.length === 0 && status !== "terverifikasi" && status !== "diblokir";
+  function revoke() {
+    if (
+      !window.confirm(
+        "Cabut lencana Klipper Lokal? Klipper tidak lagi dapat ikut kampanye khusus lokal.",
+      )
+    )
+      return;
+    startTransition(async () => {
+      const result = await revokeLocalBadgeAction({ id: creatorId });
+      if (result.status === "success") toast.success(result.message);
+      else toast.error(result.message);
+    });
+  }
+
+  const canVerify = blockers.length === 0 && !verifiedAt && status !== "diblokir";
   const { errors } = form.formState;
 
   return (
@@ -123,22 +137,23 @@ export function TermsVerification({
 
       <Card>
         <CardHeader>
-          <CardTitle>Verifikasi</CardTitle>
+          <CardTitle>Lencana Klipper Lokal</CardTitle>
           <CardDescription>
-            Kreator hanya dapat diverifikasi jika punya minimal satu akun sosial berbukti audiens
-            dan persetujuan syarat sudah tercatat (FR-M3-05).
+            Diberikan bila ada akun sosial berbukti analitik dengan audiens Kalimantan di atas
+            ambang, dan persetujuan syarat sudah tercatat (FR-M3-05). Klipper dapat mengajukannya
+            sendiri dari portal.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {verifiedAt ? (
             <Alert>
               <BadgeCheck />
-              <AlertTitle>Terverifikasi</AlertTitle>
-              <AlertDescription>Pada {formatDateTime(verifiedAt, timezone)}.</AlertDescription>
+              <AlertTitle>Memegang lencana Klipper Lokal</AlertTitle>
+              <AlertDescription>Sejak {formatDateTime(verifiedAt, timezone)}.</AlertDescription>
             </Alert>
           ) : null}
 
-          {blockers.length ? (
+          {blockers.length && !verifiedAt ? (
             <Alert variant="destructive">
               <CircleAlert />
               <AlertTitle>Belum memenuhi syarat</AlertTitle>
@@ -154,14 +169,20 @@ export function TermsVerification({
 
           {status === "diblokir" ? (
             <p className="text-sm text-muted-foreground">
-              Kreator yang diblokir tidak dapat diverifikasi.
+              Klipper yang diblokir tidak dapat diberi lencana.
             </p>
           ) : null}
 
-          <Button onClick={verify} disabled={!canVerify || isPending}>
-            <BadgeCheck aria-hidden />
-            {status === "terverifikasi" ? "Sudah terverifikasi" : "Verifikasi kreator"}
-          </Button>
+          {verifiedAt ? (
+            <Button variant="outline" onClick={revoke} disabled={isPending}>
+              Cabut lencana
+            </Button>
+          ) : (
+            <Button onClick={verify} disabled={!canVerify || isPending}>
+              <BadgeCheck aria-hidden />
+              Beri lencana
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>

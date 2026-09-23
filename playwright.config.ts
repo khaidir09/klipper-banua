@@ -39,6 +39,13 @@ export default defineConfig({
       use: { storageState: "e2e/.auth/owner.json" },
     },
     {
+      // Klipper self-registration (PRD M16, Fase 15). Needs Mailpit from the
+      // local stack and the owner session to grant the local badge.
+      name: "klipper",
+      testMatch: /daftar\.spec\.ts/,
+      dependencies: ["setup"],
+    },
+    {
       name: "manager",
       testMatch: /manager\.spec\.ts/,
       // Runs after the owner flow so it sees a closed campaign with payouts.

@@ -2,7 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { appUrl } from "@/lib/app-url";
 import { publicEnv } from "@/lib/env";
-import { isMarketingPath, MARKETING_FILES, MARKETING_PATHS } from "@/lib/marketing/routes";
+import {
+  isMarketingPath,
+  MARKETING_FILES,
+  MARKETING_PATHS,
+  SIGNUP_PATH,
+} from "@/lib/marketing/routes";
 import { homePathForRole } from "@/lib/validation/auth";
 import type { Database } from "@/types/database";
 
@@ -12,7 +17,7 @@ const PUBLIC_PATHS = [
   ...MARKETING_FILES,
   "/login",
   // Klipper self-registration (PRD M16, v4.0).
-  "/daftar",
+  SIGNUP_PATH,
   "/lupa-sandi",
   "/atur-sandi",
   "/auth/callback",
@@ -80,7 +85,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && (pathname === "/login" || pathname === "/daftar" || pathname === "/lupa-sandi")) {
+  if (user && (pathname === "/login" || pathname === SIGNUP_PATH || pathname === "/lupa-sandi")) {
     // Send them where they belong (FR-M15-01): a creator or client bounced
     // through `/dashboard` would only be redirected again by the guard.
     const { data: profile } = await supabase

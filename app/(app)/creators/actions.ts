@@ -20,9 +20,12 @@ import { publicEnv } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { uuidField } from "@/lib/validation/common";
+import { LOCAL_BADGE_MIN_PCT } from "@/lib/constants/creators";
 import {
   anonymizeCreatorSchema,
+  badgeDecisionSchema,
   bankAccountSchema,
+  blockCreatorSchema,
   creatorSchema,
   invitePortalSchema,
   portalAccessSchema,
@@ -384,7 +387,9 @@ export async function verifyCreatorAction(values: unknown): Promise<ActionResult
   const supabase = await createSupabaseServerClient();
   const { data: creator } = await supabase
     .from("creators")
-    .select("status, terms_agreed_at, social_accounts:creator_social_accounts(audience_proof_path)")
+    .select(
+      "status, terms_agreed_at, social_accounts:creator_social_accounts(audience_proof_path, kalimantan_audience_pct)",
+    )
     .eq("id", parsed.data.id)
     .maybeSingle();
   if (!creator) return fail("Kreator tidak ditemukan.");
@@ -395,16 +400,22 @@ export async function verifyCreatorAction(values: unknown): Promise<ActionResult
 
   const blockers = verificationBlockers({
     hasProofAccount: creator.social_accounts.some((a) => Boolean(a.audience_proof_path)),
+    hasLocalAudience: creator.social_accounts.some(
+      (a) =>
+        Boolean(a.audience_proof_path) && (a.kalimantan_audience_pct ?? 0) >= LOCAL_BADGE_MIN_PCT,
+    ),
     termsAgreedAt: creator.terms_agreed_at,
   });
   if (blockers.length) {
     return fail(`Belum bisa diverifikasi: ${blockers.join(" ")}`);
   }
 
+  // v4.0: the stamp is the local badge. A prospect the team registered also
+  // becomes assignable, as before; an active klipper keeps their status.
   const { error } = await supabase
     .from("creators")
     .update({
-      status: "terverifikasi",
+      ...(creator.status === "prospek" ? { status: "terverifikasi" as const } : {}),
       verified_at: new Date().toISOString(),
       verified_by: session.user.id,
     })
@@ -421,7 +432,162 @@ export async function verifyCreatorAction(values: unknown): Promise<ActionResult
 
   revalidatePath("/creators");
   revalidatePath(`/creators/${parsed.data.id}`);
-  return ok("Kreator terverifikasi.");
+  return ok("Lencana Klipper Lokal diberikan.");
+}
+
+/* ------------------------------------------------------------------ */
+/* Local badge (FR-M3-05, FR-M16-08) and blocking (FR-M3-09), v4.0     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The team's answer to a badge request from the portal. Granting stamps the
+ * account and gives the creator the badge (`verified_at`) if they had none;
+ * the threshold and the screenshot are checked here, never trusted from the UI.
+ */
+export async function decideBadgeRequestAction(values: unknown): Promise<ActionResult> {
+  const session = await requireInternal();
+  const parsed = badgeDecisionSchema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error);
+  const { account_id: accountId, decision, notes } = parsed.data;
+
+  const supabase = await createSupabaseServerClient();
+  const { data: account } = await supabase
+    .from("creator_social_accounts")
+    .select(
+      "id, creator_id, platform, handle, kalimantan_audience_pct, audience_proof_path, badge_requested_at, creator:creators(status, verified_at)",
+    )
+    .eq("id", accountId)
+    .maybeSingle();
+  if (!account) return fail("Akun tidak ditemukan.");
+  if (!account.badge_requested_at) return fail("Pengajuan ini sudah diputuskan.");
+
+  const now = new Date().toISOString();
+
+  if (decision === "tolak") {
+    const { error } = await supabase
+      .from("creator_social_accounts")
+      .update({ badge_requested_at: null, badge_review_notes: notes })
+      .eq("id", accountId);
+    if (error) return fail(dbRuleMessage(error, "Keputusan gagal disimpan."));
+  } else {
+    if (!account.audience_proof_path) return fail("Pengajuan ini belum memuat bukti analitik.");
+    if ((account.kalimantan_audience_pct ?? 0) < LOCAL_BADGE_MIN_PCT) {
+      return fail(
+        `Audiens Kalimantan di bawah ${LOCAL_BADGE_MIN_PCT}%. Tolak pengajuan dengan alasan.`,
+      );
+    }
+    if (account.creator?.status === "diblokir") {
+      return fail("Klipper yang diblokir tidak dapat diberi lencana.");
+    }
+
+    const { error } = await supabase
+      .from("creator_social_accounts")
+      .update({ last_verified_at: now, badge_requested_at: null, badge_review_notes: null })
+      .eq("id", accountId);
+    if (error) return fail(dbRuleMessage(error, "Keputusan gagal disimpan."));
+
+    if (!account.creator?.verified_at) {
+      const { error: creatorError } = await supabase
+        .from("creators")
+        .update({ verified_at: now, verified_by: session.user.id })
+        .eq("id", account.creator_id);
+      if (creatorError) return fail(dbRuleMessage(creatorError, "Lencana gagal diberikan."));
+    }
+  }
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "creator",
+    entityId: account.creator_id,
+    action: decision === "beri" ? "badge_grant" : "badge_reject",
+    details: {
+      account_id: accountId,
+      platform: account.platform,
+      handle: account.handle,
+      kalimantan_audience_pct: account.kalimantan_audience_pct,
+      notes: decision === "tolak" ? notes : undefined,
+    },
+  });
+
+  revalidatePath("/creators/lencana");
+  revalidatePath(`/creators/${account.creator_id}`);
+  revalidatePath("/dashboard");
+  return ok(decision === "beri" ? "Lencana Klipper Lokal diberikan." : "Pengajuan ditolak.");
+}
+
+export async function revokeLocalBadgeAction(values: unknown): Promise<ActionResult> {
+  const session = await requireInternal();
+  const parsed = idSchema.safeParse(values);
+  if (!parsed.success) return fail("ID kreator tidak valid.");
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("creators")
+    .update({ verified_at: null, verified_by: null })
+    .eq("id", parsed.data.id);
+  if (error) return fail(dbRuleMessage(error, "Lencana gagal dicabut."));
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "creator",
+    entityId: parsed.data.id,
+    action: "badge_revoke",
+  });
+
+  revalidatePath(`/creators/${parsed.data.id}`);
+  return ok("Lencana Klipper Lokal dicabut.");
+}
+
+/** FR-M3-09. The trigger stamps `blocked_at`; the reason is required. */
+export async function blockCreatorAction(values: unknown): Promise<ActionResult> {
+  const session = await requireInternal();
+  const parsed = blockCreatorSchema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error);
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("creators")
+    .update({ status: "diblokir", blocked_reason: parsed.data.reason })
+    .eq("id", parsed.data.creator_id);
+  if (error) return fail(dbRuleMessage(error, "Klipper gagal diblokir."));
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "creator",
+    entityId: parsed.data.creator_id,
+    action: "block",
+    details: { reason: parsed.data.reason },
+  });
+
+  revalidatePath("/creators");
+  revalidatePath(`/creators/${parsed.data.creator_id}`);
+  return ok("Klipper diblokir.");
+}
+
+/** Owner only, here and in `guard_creator_block`. */
+export async function unblockCreatorAction(values: unknown): Promise<ActionResult> {
+  const session = await requireRole("owner");
+  const parsed = idSchema.safeParse(values);
+  if (!parsed.success) return fail("ID kreator tidak valid.");
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("creators")
+    .update({ status: "aktif" })
+    .eq("id", parsed.data.id)
+    .eq("status", "diblokir");
+  if (error) return fail(dbRuleMessage(error, "Blokir gagal dibuka."));
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "creator",
+    entityId: parsed.data.id,
+    action: "unblock",
+  });
+
+  revalidatePath("/creators");
+  revalidatePath(`/creators/${parsed.data.id}`);
+  return ok("Blokir dibuka. Status klipper kembali aktif.");
 }
 
 /* ------------------------------------------------------------------ */

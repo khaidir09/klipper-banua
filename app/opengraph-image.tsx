@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { publicEnv } from "@/lib/env";
 
-export const alt = `${publicEnv.NEXT_PUBLIC_APP_NAME} — kampanye kreator lokal Kalimantan`;
+export const alt = `${publicEnv.NEXT_PUBLIC_APP_NAME} — klipper lokal Kalimantan`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -32,10 +32,10 @@ export default function OpengraphImage() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         <div style={{ fontSize: 64, fontWeight: 600, lineHeight: 1.1, letterSpacing: -1.5 }}>
-          Kampanye kreator lokal Kalimantan, dari brief sampai laporan.
+          Klip lokal Kalimantan, dibayar dari views asli.
         </div>
         <div style={{ fontSize: 30, color: "#C3D3E8" }}>
-          Kreator terverifikasi · Konten disetujui sebelum tayang · Laporan siap diserahkan
+          Klipper lokal · Setiap klip diverifikasi · Honor dari views asli
         </div>
       </div>
     </div>,

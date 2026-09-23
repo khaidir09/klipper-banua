@@ -110,8 +110,11 @@ test("owner runs the demo campaign from assignment to final report", async ({ pa
 
   await test.step("a tracking link redirects only to the campaign landing URL", async () => {
     await page.goto(campaign("creators"));
-    const text = await page.locator("main").innerText();
-    const slug = text.match(/\/r\/(rina-kuliner-[a-z0-9]+)/)?.[1];
+    // Wait for the table: reading innerText straight after goto can race the
+    // streamed tab and come back without the links.
+    const link = page.getByText(/^\/r\/rina-kuliner-[a-z0-9]+$/).first();
+    await expect(link).toBeVisible();
+    const slug = (await link.innerText()).match(/\/r\/(rina-kuliner-[a-z0-9]+)/)?.[1];
     expect(slug).toBeTruthy();
     const response = await page.request.get(`/r/${slug}?next=https://evil.example`, {
       maxRedirects: 0,

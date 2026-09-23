@@ -52,8 +52,11 @@ test("internal and creator routes stay closed to a client", async ({ page, reque
     await expect(page).toHaveURL(/\/klien/);
   }
 
+  // FR-M15-01: the landing page is public and static, so a signed-in visitor
+  // stays on it; "Masuk" is what leads into their own area.
   await page.goto("/");
-  await expect(page).toHaveURL(/\/klien/);
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
   // FR-M9-04 exports are for the team (checked without following redirects).
   const csv = await request.get(`/campaigns/${DEMO_CAMPAIGN_ID}/report/csv/kreator`);

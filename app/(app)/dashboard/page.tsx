@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   AlertTriangle,
+  BadgeCheck,
   Check,
   ChevronRight,
   ClipboardCheck,
@@ -15,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { requireInternal } from "@/lib/auth/guards";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/constants/creators";
 import { CHECKPOINT_LABELS } from "@/lib/constants/metrics";
+import { countKlipperQueues } from "@/lib/data/creators";
 import { getDashboard } from "@/lib/data/dashboard";
 import { formatRupiah } from "@/lib/format/currency";
 import { formatDate, formatDateTime } from "@/lib/format/date";
@@ -210,7 +212,10 @@ export default async function DashboardPage() {
   const { profile } = await requireInternal();
   const tz = profile.timezone;
   const supabase = await createSupabaseServerClient();
-  const data = await getDashboard(supabase, new Date(), tz);
+  const [data, klipper] = await Promise.all([
+    getDashboard(supabase, new Date(), tz),
+    countKlipperQueues(supabase),
+  ]);
   const platform = (value: string) => SOCIAL_PLATFORM_LABELS[value as SocialPlatform] ?? value;
 
   return (
@@ -224,7 +229,7 @@ export default async function DashboardPage() {
           them, so they outrank the standing figures below. */}
       <section aria-labelledby="butuh-tindakan" className="space-y-3">
         <SectionHeading id="butuh-tindakan">Butuh tindakan</SectionHeading>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <ActionCard
             label="Konten menunggu review"
             count={data.pending.length}
@@ -246,12 +251,20 @@ export default async function DashboardPage() {
             icon={Inbox}
             waiting="Menunggu verifikasi tim"
           />
+          {/* v4.0 (FR-M10-01): local badge requests sent from the portal. */}
+          <ActionCard
+            label="Pengajuan lencana"
+            count={klipper.badgeRequests}
+            href="/creators/lencana"
+            icon={BadgeCheck}
+            waiting="Bukti audiens menunggu diperiksa"
+          />
         </div>
       </section>
 
       <section aria-labelledby="ringkasan" className="space-y-3">
         <SectionHeading id="ringkasan">Ringkasan</SectionHeading>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             label="Kampanye aktif"
             value={formatNumber(data.activeCampaigns)}
@@ -266,6 +279,12 @@ export default async function DashboardPage() {
             label="Invoice klien belum lunas"
             value={formatRupiah(data.openInvoices.outstanding)}
             detail={`${formatNumber(data.openInvoices.count)} invoice`}
+          />
+          <SummaryCard
+            label="Klipper baru (7 hari)"
+            value={formatNumber(klipper.newSignups)}
+            href="/creators?source=mandiri"
+            detail="Mendaftar sendiri lewat /daftar"
           />
         </div>
       </section>

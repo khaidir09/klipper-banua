@@ -47,6 +47,9 @@ export async function listCreators(
   if (query.niche) request = request.contains("niches", [query.niche]);
   if (query.tier) request = request.eq("tier", query.tier);
   if (query.status) request = request.eq("status", query.status);
+  if (query.source) request = request.eq("signup_source", query.source);
+  if (query.badge === "ya") request = request.not("verified_at", "is", null);
+  if (query.badge === "tidak") request = request.is("verified_at", null);
   if (query.platform) request = request.eq("social_accounts.platform", query.platform);
   if (query.min_pct !== undefined) {
     request = request.gte("social_accounts.kalimantan_audience_pct", query.min_pct);
@@ -120,4 +123,61 @@ export async function signProofUrl(
     .from(AUDIENCE_PROOF_BUCKET)
     .createSignedUrl(path, SIGNED_URL_SECONDS);
   return data?.signedUrl ?? null;
+}
+
+export type BadgeRequest = Pick<
+  SocialAccountRow,
+  | "id"
+  | "platform"
+  | "handle"
+  | "profile_url"
+  | "followers_count"
+  | "kalimantan_audience_pct"
+  | "top_cities"
+  | "audience_proof_path"
+  | "badge_requested_at"
+> & {
+  creator: Pick<CreatorRow, "id" | "full_name" | "stage_name" | "city" | "province" | "status">;
+  proof_url: string | null;
+};
+
+/** FR-M3-05, FR-M16-08: open local badge requests, oldest first. */
+export async function listBadgeRequests(
+  supabase: SupabaseClient<Database>,
+): Promise<BadgeRequest[]> {
+  const { data, error } = await supabase
+    .from("creator_social_accounts")
+    .select(
+      "id, platform, handle, profile_url, followers_count, kalimantan_audience_pct, top_cities, audience_proof_path, badge_requested_at, creator:creators!inner(id, full_name, stage_name, city, province, status)",
+    )
+    .not("badge_requested_at", "is", null)
+    .order("badge_requested_at", { ascending: true })
+    .limit(100);
+  if (error) throw new Error(error.message);
+
+  return Promise.all(
+    (data ?? []).map(async (row) => ({
+      ...row,
+      proof_url: await signProofUrl(supabase, row.audience_proof_path),
+    })),
+  );
+}
+
+/** Dashboard counters for the open marketplace (FR-M10-01, v4.0). */
+export async function countKlipperQueues(supabase: SupabaseClient<Database>) {
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const [signups, badges] = await Promise.all([
+    supabase
+      .from("creators")
+      .select("id", { count: "exact", head: true })
+      .eq("signup_source", "mandiri")
+      .gte("created_at", since),
+    supabase
+      .from("creator_social_accounts")
+      .select("id", { count: "exact", head: true })
+      .not("badge_requested_at", "is", null),
+  ]);
+  if (signups.error) throw new Error(signups.error.message);
+  if (badges.error) throw new Error(badges.error.message);
+  return { newSignups: signups.count ?? 0, badgeRequests: badges.count ?? 0 };
 }

@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { BadgeCheck, Banknote, TrendingUp, UserCheck } from "lucide-react";
+import { BadgeCheck, Hash, ShieldAlert, UserCheck, Wallet } from "lucide-react";
 import { ContactCta } from "@/components/marketing/contact-cta";
 import { MarketingIllustration } from "@/components/marketing/illustration";
 import { FaqList, type FaqItem } from "@/components/marketing/faq-list";
 import { Container, Section } from "@/components/marketing/section";
+import { SignupCta } from "@/components/marketing/signup-cta";
 
 const DESCRIPTION =
-  "Syarat bergabung sebagai kreator mitra di Kalimantan: usia minimal 18 tahun, mayoritas audiens di Kalimantan, dan akun media sosial yang aktif. Honor terdiri dari honor dasar per konten ditambah bonus kinerja.";
+  "Jadi klipper kampanye instansi di Kalimantan: daftar gratis, pilih kampanye, posting klip di akunmu sendiri, dan dapat honor dari views yang terverifikasi.";
 
 export const metadata: Metadata = {
-  title: "Untuk Kreator",
+  title: "Untuk Klipper",
   description: DESCRIPTION,
   alternates: { canonical: "/kreator" },
   openGraph: {
-    title: "Untuk Kreator",
+    title: "Untuk Klipper",
     description: DESCRIPTION,
     url: "/kreator",
     type: "website",
@@ -21,77 +22,77 @@ export const metadata: Metadata = {
   },
 };
 
+/** PRD 5.1 and 5.2 (v4.0), from the klipper's side. */
+const STEPS = [
+  {
+    title: "Daftar gratis",
+    body: "Isi data diri, konfirmasi email, lalu tambahkan akun TikTok, Instagram, YouTube, atau Facebook yang kamu pakai.",
+  },
+  {
+    title: "Pilih kampanye",
+    body: "Baca brief, hal yang wajib dan yang dilarang, lalu tekan Gabung. Materi video siap kamu unduh dan potong.",
+  },
+  {
+    title: "Posting, lalu kirim klip",
+    body: "Posting klip di akunmu dengan kode verifikasi di caption. Kirim tautannya beserta tangkapan layar views.",
+  },
+  {
+    title: "Honor masuk saldo",
+    body: "Setelah tim memverifikasi, honor dari views masuk ke saldo. Tarik ke rekening bank atau e-wallet atas namamu.",
+  },
+];
+
 const REQUIREMENTS = [
   {
     icon: UserCheck,
     title: "Usia minimal 18 tahun",
-    body: "Kerja sama ini melibatkan honor dan kesepakatan tertulis, jadi kami hanya bekerja dengan kreator dewasa.",
+    body: "Pekerjaan ini melibatkan honor dan persetujuan syarat, jadi hanya untuk klipper dewasa.",
   },
   {
-    icon: BadgeCheck,
-    title: "Mayoritas audiens di Kalimantan",
-    body: "Kami meminta tangkapan layar analitik audiens Anda untuk melihat sebaran kotanya. Angka pengikut besar dari luar Kalimantan tidak menjadi nilai tambah di sini.",
+    icon: Hash,
+    title: "Akun media sosial milik sendiri",
+    body: "Klip dihitung hanya bila diposting dari akun yang kamu daftarkan, dengan kode verifikasi pribadimu di caption.",
   },
   {
-    icon: TrendingUp,
-    title: "Akun media sosial yang aktif",
-    body: "TikTok, Instagram, YouTube, atau Facebook. Yang kami lihat adalah konsistensi unggahan dan kecocokan gaya konten dengan instansi, bukan sekadar jumlah pengikut.",
+    icon: ShieldAlert,
+    title: "Views asli, tanpa bot",
+    body: "Views dari bot, jual-beli engagement, atau akun palsu membuat klip ditolak, honornya dibatalkan, dan akun diblokir.",
   },
 ];
 
-/** PRD 8.3, dijelaskan tanpa angka: nominal ditetapkan per kampanye. */
-const FEE_PARTS = [
-  {
-    title: "Honor dasar per konten",
-    body: "Dibayarkan untuk setiap konten yang memenuhi syarat: sudah disetujui, tayang, dan bertahan minimal sejumlah hari yang disepakati di brief.",
-  },
-  {
-    title: "Bonus views",
-    body: "Dihitung per 1.000 views dari angka checkpoint yang sudah diverifikasi tim. Setiap kampanye dapat menetapkan batas maksimal bonus views.",
-  },
-  {
-    title: "Bonus pendaftar",
-    body: "Dihitung dari jumlah pendaftar yang masuk memakai kode referal Anda, berdasarkan laporan instansi yang sudah diverifikasi tim.",
-  },
-];
-
-/** PRD 5.1. */
-const STAGES = [
-  "Tim mencatat data Anda beserta akun media sosial yang akan dipakai.",
-  "Anda mengirim tangkapan layar analitik audiens; tim mengisi persentase audiens Kalimantan.",
-  "Tim menyampaikan syarat kerja sama, lalu mencatat tanggal persetujuan Anda.",
-  "Tim memverifikasi data Anda; status Anda berubah menjadi kreator terverifikasi.",
-  "Owner mencatat data rekening untuk pembayaran honor, dan Anda siap ditugaskan pada kampanye.",
-];
-
-const GOOD_TO_KNOW = [
-  "Kreator tidak melamar kampanye. Tim yang menugaskan, sesuai kecocokan audiens dan kebutuhan instansi.",
-  "Tidak ada pendaftaran akun mandiri. Akun portal diberikan lewat undangan setelah Anda menjadi mitra terverifikasi.",
-  "Angka views dan pendaftar yang memengaruhi honor selalu diverifikasi tim lebih dulu. Kiriman bukti Anda berstatus usulan sampai diterima.",
-  "Honor dihitung sistem, lalu disetujui dan ditandai terbayar oleh owner. Anda dapat melihat statusnya sendiri di portal.",
-  "Konten wajib mengikuti brief: hal yang wajib dilakukan, larangan, hashtag, dan kewajiban label berbayar bila diminta instansi.",
+/** PRD 8.6, with illustrative figures only: every campaign sets its own rate. */
+const FEE_RULES = [
+  "Setiap kampanye menetapkan tarif per 1.000 views. Honor klip = views terverifikasi × tarif ÷ 1.000.",
+  "Views bisa kamu perbarui selama masa klaim kampanye; yang dibayar adalah selisihnya.",
+  "Ada batas honor per klip dan per klipper, dan honor berhenti saat anggaran kampanye habis.",
+  "Klip yang dihapus sebelum masa tayang minimum selesai, honornya dibatalkan.",
 ];
 
 const FAQ: FaqItem[] = [
   {
-    question: "Berapa nominal honornya?",
+    question: "Apakah harus punya banyak pengikut?",
     answer:
-      "Nominalnya ditetapkan per kampanye dan per kreator, lalu disampaikan sebelum Anda mulai mengerjakan, bukan setelah konten tayang. Karena itu tidak ada daftar harga di halaman ini.",
+      "Tidak. Yang dibayar adalah views klipmu, bukan jumlah pengikut. Akun kecil dengan klip yang bagus tetap bisa mendapat honor.",
   },
   {
-    question: "Apakah saya harus punya pengikut dalam jumlah besar?",
+    question: "Apa itu kode verifikasi?",
     answer:
-      "Tidak. Yang kami cari adalah audiens yang benar-benar berada di Kalimantan dan gaya konten yang cocok dengan instansi klien. Kreator dengan pengikut menengah sering justru lebih pas.",
+      "Kode pribadi seperti KB-7XK2QM yang muncul di profil portalmu. Tulis di caption atau deskripsi setiap klip, supaya tim tahu klip itu benar-benar diposting dari akunmu.",
   },
   {
-    question: "Apa yang terjadi kalau konten saya diminta revisi?",
+    question: "Apa itu lencana Klipper Lokal?",
     answer:
-      "Anda menerima catatan revisi yang jelas, lalu mengirim draf perbaikan. Konten hanya boleh tayang setelah disetujui, jadi revisi sebelum tayang adalah hal yang normal dan tidak mengurangi honor dasar Anda.",
+      "Lencana untuk akun yang mayoritas audiensnya di Kalimantan, dibuktikan dengan tangkapan layar analitik. Sebagian kampanye instansi hanya terbuka untuk pemegang lencana ini.",
   },
   {
-    question: "Kapan honor dibayarkan?",
+    question: "Kapan honor bisa ditarik?",
     answer:
-      "Setelah kampanye selesai dan angkanya diverifikasi, sistem menghitung honor Anda. Owner menyetujui, lalu menandai pembayaran beserta tanggalnya. Status itu terlihat di portal Anda.",
+      "Begitu klip disetujui, honornya langsung masuk saldo. Kamu bisa mengajukan penarikan kapan saja setelah saldo mencapai batas minimum, lalu owner mentransfer ke rekeningmu.",
+  },
+  {
+    question: "Kenapa klip saya ditolak?",
+    answer:
+      "Alasannya selalu tertulis di portal: misalnya kode verifikasi tidak ada di caption, klip tidak sesuai brief, diposting di luar periode kampanye, atau views tidak wajar. Bila hanya caption yang kurang, kamu bisa memperbaikinya lalu mengirim ulang.",
   },
 ];
 
@@ -102,21 +103,17 @@ export default function CreatorPage() {
         <Container className="py-16 lg:py-20">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-center lg:gap-16">
             <div>
-              <p className="text-sm font-medium text-brand-panel-muted">Untuk kreator</p>
+              <p className="text-sm font-medium text-brand-panel-muted">Untuk klipper</p>
               <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl">
-                Kerja sama kreator lokal: syaratnya jelas, honornya disampaikan sebelum Anda mulai.
+                Potong video kampanye, posting di akunmu, dibayar dari views asli.
               </h1>
               <p className="mt-5 max-w-[60ch] text-base text-pretty text-brand-panel-muted">
-                Kami mengelola kampanye untuk instansi di Kalimantan dan menugaskan kreator yang
-                audiensnya memang di sini. Halaman ini menjelaskan siapa yang kami cari, bagaimana
-                honor dihitung, dan apa saja tahapannya.
+                Instansi di Kalimantan menyediakan materi video dan tarif per 1.000 views. Kamu
+                memilih kampanye sendiri, membuat klip, dan menarik honornya ke rekeningmu.
               </p>
-              <ContactCta
-                intent="creator"
-                tone="brand"
-                className="mt-8"
-                whatsappLabel="Daftar jadi kreator lewat WhatsApp"
-              />
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <SignupCta tone="brand" />
+              </div>
             </div>
 
             <MarketingIllustration name="kreator" tone="brand" />
@@ -125,10 +122,34 @@ export default function CreatorPage() {
       </section>
 
       <Section
+        id="cara-kerja"
+        eyebrow="Cara kerja"
+        title="Empat langkah dari daftar sampai tarik saldo"
+      >
+        <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {STEPS.map((step, index) => (
+            <li key={step.title} className="rounded-xl border bg-card p-5">
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden
+                  className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-info-soft text-sm font-semibold text-info-soft-foreground"
+                >
+                  {index + 1}
+                </span>
+                <p className="font-medium">{step.title}</p>
+              </div>
+              <p className="mt-3 text-sm text-pretty text-muted-foreground">{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      <Section
         id="syarat"
+        tone="muted"
         eyebrow="Syarat"
-        title="Tiga hal yang kami periksa lebih dulu"
-        description="Semuanya diverifikasi tim sebelum Anda bisa ditugaskan pada kampanye."
+        title="Tiga hal yang wajib dipenuhi"
+        description="Tidak ada wawancara atau seleksi di awal. Kepatuhan diperiksa di setiap klip yang kamu kirim."
       >
         <ul className="grid gap-6 lg:grid-cols-3">
           {REQUIREMENTS.map((item) => (
@@ -148,68 +169,59 @@ export default function CreatorPage() {
 
       <Section
         id="honor"
-        tone="muted"
         eyebrow="Honor"
-        title="Honor dasar, ditambah bonus kinerja"
-        description="Tiga komponen ini yang dipakai di setiap penugasan. Nominalnya ditetapkan per kampanye dan disampaikan sebelum Anda mengerjakan."
+        title="Dibayar per 1.000 views yang terverifikasi"
+        description="Tarif, batas, dan masa klaim tertulis di setiap kampanye sebelum kamu bergabung."
+        layout="split"
+        action={
+          <div className="rounded-xl border bg-card p-5 text-sm">
+            <p className="flex items-center gap-2 font-medium">
+              <Wallet className="size-4 text-success" aria-hidden />
+              Contoh hitungan (ilustrasi)
+            </p>
+            <p className="mt-3 text-muted-foreground">
+              Tarif Rp10.000 per 1.000 views, klip terverifikasi 23.450 views:
+            </p>
+            <p className="mt-1 font-medium tabular-nums">23.450 × Rp10.000 ÷ 1.000 = Rp234.500</p>
+            <p className="mt-3 text-muted-foreground">
+              Seminggu kemudian views naik ke 41.000 dan diverifikasi lagi: saldo bertambah
+              Rp175.500.
+            </p>
+          </div>
+        }
       >
-        <ul className="grid gap-4 sm:grid-cols-3">
-          {FEE_PARTS.map((part) => (
-            <li key={part.title} className="rounded-xl border bg-card p-5">
-              <span
-                aria-hidden
-                className="flex size-9 items-center justify-center rounded-lg bg-success-soft text-success-soft-foreground"
-              >
-                <Banknote className="size-4.5" />
-              </span>
-              <p className="mt-4 font-medium">{part.title}</p>
-              <p className="mt-2 text-sm text-pretty text-muted-foreground">{part.body}</p>
+        <ul className="space-y-3">
+          {FEE_RULES.map((rule) => (
+            <li key={rule} className="flex gap-3 rounded-xl border bg-card p-4">
+              <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-border" />
+              <p className="text-sm text-pretty text-muted-foreground">{rule}</p>
             </li>
           ))}
         </ul>
-      </Section>
-
-      <Section id="tahapan" eyebrow="Tahapan" title="Lima langkah sampai Anda siap ditugaskan">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.75fr)] lg:items-start lg:gap-16">
-          <ol className="space-y-4">
-            {STAGES.map((stage, index) => (
-              <li key={stage} className="flex gap-4">
-                <span
-                  aria-hidden
-                  className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-info-soft text-sm font-semibold text-info-soft-foreground"
-                >
-                  {index + 1}
-                </span>
-                <p className="pt-1.5 text-sm text-pretty text-muted-foreground">{stage}</p>
-              </li>
-            ))}
-          </ol>
-
-          <MarketingIllustration name="verifikasi" />
-        </div>
       </Section>
 
       <Section
-        id="perlu-diketahui"
+        id="lencana"
         tone="muted"
-        eyebrow="Perlu diketahui"
-        title="Hal yang sering ditanyakan sebelum menandatangani apa pun"
+        eyebrow="Lencana Klipper Lokal"
+        title="Audiensmu di Kalimantan? Buka kampanye khusus lokal"
+        description="Ajukan dari portal dengan tangkapan layar analitik audiens. Setelah tim memeriksa, lencana muncul di profilmu."
+        layout="split"
+        action={
+          <p className="flex items-center gap-2 text-sm font-medium">
+            <BadgeCheck className="size-4 text-success" aria-hidden />
+            Tidak wajib untuk kampanye umum
+          </p>
+        }
       >
-        <ul className="max-w-full space-y-3">
-          {GOOD_TO_KNOW.map((item) => (
-            <li key={item} className="flex gap-3 rounded-xl border bg-card p-4">
-              <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-border" />
-              <p className="text-sm text-pretty text-muted-foreground">{item}</p>
-            </li>
-          ))}
-        </ul>
+        <MarketingIllustration name="verifikasi" />
       </Section>
 
       <Section
         id="faq-kreator"
         eyebrow="Tanya jawab"
-        title="Pertanyaan dari kreator"
-        description="Pertanyaan lain bisa langsung ditanyakan ke tim."
+        title="Pertanyaan dari klipper"
+        description="Masih bingung? Tim bisa dihubungi lewat WhatsApp."
         layout="split"
         action={<ContactCta intent="creator" whatsappLabel="Tanya lewat WhatsApp" />}
       >
@@ -220,18 +232,14 @@ export default function CreatorPage() {
         <Container className="py-16 lg:py-20">
           <div className="mx-auto max-w-[55ch] text-center">
             <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-              Audiens Anda di Kalimantan?
+              Siap bikin klip pertamamu?
             </h2>
             <p className="mt-3 text-base text-pretty text-brand-panel-muted">
-              Kirim tautan akun media sosial dan tangkapan layar analitik audiens Anda. Tim akan
-              mengabari bila ada kampanye yang cocok.
+              Pendaftaran gratis dan selesai dalam beberapa menit.
             </p>
-            <ContactCta
-              intent="creator"
-              tone="brand"
-              className="mt-7 sm:justify-center"
-              whatsappLabel="Kirim profil lewat WhatsApp"
-            />
+            <div className="mt-7 flex justify-center">
+              <SignupCta tone="brand" />
+            </div>
           </div>
         </Container>
       </section>

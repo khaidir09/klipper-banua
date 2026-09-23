@@ -5,13 +5,14 @@ import { ContactCta } from "@/components/marketing/contact-cta";
 import { MarketingIllustration } from "@/components/marketing/illustration";
 import { FaqList, type FaqItem } from "@/components/marketing/faq-list";
 import { Container, Section } from "@/components/marketing/section";
+import { SignupCta } from "@/components/marketing/signup-cta";
 import { Button } from "@/components/ui/button";
 import { publicEnv } from "@/lib/env";
 
 const DESCRIPTION =
-  "Kami mengelola kampanye promosi instansi di Kalimantan bersama kreator lokal terverifikasi: brief, persetujuan konten sebelum tayang, pelacakan hasil per kreator, dan laporan yang bisa dipertanggungjawabkan.";
+  "Instansi di Kalimantan memasang kampanye, klipper lokal memotong dan memposting videonya, dan setiap views diverifikasi sebelum dibayar. Hasilnya dilacak per klipper sampai ke laporan yang bisa dipertanggungjawabkan.";
 
-const TITLE = `${publicEnv.NEXT_PUBLIC_APP_NAME} — Kampanye kreator lokal Kalimantan`;
+const TITLE = `${publicEnv.NEXT_PUBLIC_APP_NAME} — Klipper lokal Kalimantan`;
 
 export const metadata: Metadata = {
   // Absolute, so the landing page is not titled "Beranda · Nama Aplikasi".
@@ -27,19 +28,19 @@ export const metadata: Metadata = {
   },
 };
 
-/** PRD 1.2: the three things the platform promises. */
+/** PRD 1.2 (v4.0): the three things the platform promises. */
 const PILLARS = [
   {
     icon: MapPinned,
-    title: "Kreator lokal terverifikasi",
+    title: "Klipper lokal berlencana",
     summary: "Audiens Kalimantan dibuktikan, bukan diklaim.",
-    body: "Setiap kreator diperiksa lebih dulu: akun media sosialnya, tangkapan layar analitik audiensnya, dan persentase audiens Kalimantan. Terverifikasi di sini berarti dibuktikan.",
+    body: "Klipper dengan lencana Klipper Lokal sudah menunjukkan analitik audiensnya kepada tim. Kampanye Anda bisa dibatasi hanya untuk mereka.",
   },
   {
     icon: ShieldCheck,
-    title: "Konten disetujui sebelum tayang",
-    summary: "Setiap draf melewati review tim lebih dulu.",
-    body: "Tidak ada konten yang naik tanpa lolos review tim. Bila kampanye Anda mewajibkannya, Anda juga menyetujui setiap konten lebih dulu, lengkap dengan catatan revisi.",
+    title: "Setiap klip diverifikasi",
+    summary: "Kepemilikan, brief, dan views diperiksa tim.",
+    body: "Klip hanya dibayar bila diposting dari akun klipper sendiri, sesuai brief, dan views-nya wajar. Klip yang melanggar ditolak dan honornya tidak dibayarkan.",
   },
   {
     icon: FileBarChart2,
@@ -69,23 +70,23 @@ const PROBLEMS = [
   },
 ];
 
-/** PRD 5.2, diringkas untuk pembaca publik. */
+/** PRD 5.2 (v4.0), diringkas untuk pembaca publik. */
 const STEPS = [
   {
-    title: "Kami susun kampanye bersama Anda",
-    body: "Tujuan, periode, target konten, dan halaman tujuan disepakati lebih dulu, termasuk hal yang wajib dan yang dilarang dalam konten.",
+    title: "Kampanye disusun bersama tim",
+    body: "Materi video, brief, hal yang wajib dan dilarang, anggaran, serta tarif per 1.000 views disepakati lebih dulu.",
   },
   {
-    title: "Kreator lokal ditugaskan",
-    body: "Tim memilih kreator yang audiensnya cocok. Setiap kreator mendapat kode referal dan tautan pelacakan sendiri, jadi hasilnya bisa dipisahkan per orang.",
+    title: "Klipper bergabung sendiri",
+    body: "Kampanye tampil di katalog klipper. Setiap klipper yang bergabung mendapat kode referal dan tautan pelacakan sendiri.",
   },
   {
-    title: "Konten direview sebelum tayang",
-    body: "Draf masuk ke antrean review: disetujui, diminta revisi dengan catatan, atau ditolak. Baru setelah lolos, konten boleh tayang.",
+    title: "Klip diverifikasi sebelum dibayar",
+    body: "Klipper memposting lalu mengirim tautan dan bukti views. Tim memeriksa kepemilikan akun, kepatuhan brief, dan keaslian views.",
   },
   {
     title: "Hasil dilacak, lalu dilaporkan",
-    body: "Views dicatat pada beberapa checkpoint beserta bukti tangkapan layar, klik tautan tercatat otomatis, dan jumlah pendaftar per kode dirangkum di laporan akhir.",
+    body: "Views terverifikasi, klik tautan, dan pendaftar per kode dirangkum di laporan akhir. Anggaran tidak pernah terpakai melebihi kesepakatan.",
   },
 ];
 
@@ -104,9 +105,9 @@ const AUDIENCES = [
 
 const FAQ: FaqItem[] = [
   {
-    question: "Apa bedanya dengan platform clipper yang menjual views murah?",
+    question: "Apa bedanya dengan platform clipper nasional?",
     answer:
-      "Platform clipper mengejar views dari mana saja. Kami mengejar audiens Kalimantan: kreatornya diverifikasi lewat bukti analitik audiens, kontennya melewati persetujuan, dan hasilnya dilaporkan sampai ke jumlah pendaftar per kode kreator.",
+      "Cara kerjanya mirip: klipper memilih kampanye dan dibayar dari views terverifikasi. Bedanya, kami fokus pada audiens Kalimantan. Kampanye bisa dibatasi untuk klipper berlencana lokal, dan hasilnya dilaporkan sampai ke jumlah pendaftar per kode klipper.",
   },
   {
     question: "Bagaimana hasil kampanye diukur?",
@@ -114,9 +115,9 @@ const FAQ: FaqItem[] = [
       "Tiga angka: views per checkpoint (H+1, H+3, H+7, dan akhir kampanye) yang selalu disertai tangkapan layar bukti, klik pada tautan pelacakan unik tiap kreator, dan jumlah pendaftar per kode referal yang Anda laporkan. Setiap angka yang memengaruhi honor kreator diverifikasi tim lebih dulu.",
   },
   {
-    question: "Bisakah kami menolak sebuah konten sebelum tayang?",
+    question: "Bagaimana kalau ada klip yang tidak sesuai?",
     answer:
-      "Bisa. Semua draf melewati review tim, dan kampanye Anda dapat diatur agar setiap konten juga menunggu persetujuan Anda. Permintaan revisi wajib disertai catatan, dan konten tidak boleh ditandai tayang sebelum kedua tahap lulus.",
+      "Klip diverifikasi tim setelah tayang dan sebelum dibayar. Klip yang melanggar brief atau larangan ditolak, honornya tidak dibayarkan, dan klipper yang berulang kali melanggar diblokir. Brief yang jelas sejak awal adalah pengaman terbaik.",
   },
   {
     question: "Apakah data pribadi calon pendaftar disimpan di sistem ini?",
@@ -129,9 +130,9 @@ const FAQ: FaqItem[] = [
       "Tim memberi akun portal klien kepada kontak instansi Anda. Dari sana Anda melihat capaian terhadap target, konten yang sudah tayang, rekap per kreator, serta mengunduh laporan dan CSV-nya.",
   },
   {
-    question: "Bagaimana kreator dibayar?",
+    question: "Bagaimana klipper dibayar?",
     answer:
-      "Honor dasar per konten yang memenuhi syarat, ditambah bonus kinerja berdasarkan views dan pendaftar. Perhitungannya dilakukan sistem dari angka yang sudah diverifikasi, lalu disetujui dan ditandai terbayar oleh owner.",
+      "Dari views terverifikasi dikali tarif per 1.000 views, dengan batas per klip dan per klipper. Honor diambil dari anggaran kampanye, dan sistem menjaga agar anggaran tidak pernah terlampaui.",
   },
 ];
 
@@ -145,17 +146,19 @@ export default function LandingPage() {
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-center lg:gap-16">
             <div>
               <p className="text-sm font-medium text-brand-panel-muted">
-                Kampanye kreator lokal, dikelola tim
+                Marketplace klipper lokal Kalimantan
               </p>
               <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
-                Promosi yang menjangkau audiens Kalimantan, dengan bukti yang bisa Anda serahkan.
+                Klip lokal Kalimantan, dibayar dari views asli.
               </h1>
               <p className="mt-5 max-w-[60ch] text-base text-pretty text-brand-panel-muted sm:text-lg">
                 {DESCRIPTION}
               </p>
 
+              {/* FR-M15-02: two equal ways in, one per side of the marketplace. */}
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <ContactCta intent="client" tone="brand" />
+                <SignupCta tone="brand" />
+                <ContactCta intent="client" tone="brand" whatsappLabel="Pasang kampanye" />
                 <Button
                   asChild
                   variant="ghost"
@@ -209,8 +212,8 @@ export default function LandingPage() {
       <Section
         id="cara-kerja"
         eyebrow="Cara kerja"
-        title="Empat langkah, satu jalur yang sama untuk setiap kampanye"
-        description="Semua kampanye berjalan lewat urutan ini, jadi Anda selalu tahu posisi pekerjaan hari ini."
+        title="Empat langkah dari brief sampai laporan"
+        description="Instansi memasang kampanye, klipper lokal mengerjakannya, dan tim memverifikasi setiap klip sebelum honor dibayar."
       >
         <ol className="grid gap-4 sm:grid-cols-2">
           {STEPS.map((step, index) => (
@@ -241,6 +244,7 @@ export default function LandingPage() {
         tone="muted"
         eyebrow="Kenapa kreator lokal"
         title="Tiga hal yang kami jaga di setiap kampanye"
+        description="Model terbuka seperti platform clipper nasional, dengan pengaman yang dibutuhkan instansi."
       >
         <ul className="grid gap-6 lg:grid-cols-3">
           {PILLARS.map((pillar) => (
@@ -287,17 +291,20 @@ export default function LandingPage() {
       <Section
         id="kreator"
         tone="muted"
-        eyebrow="Untuk kreator"
-        title="Kreator di Kalimantan, kerja samanya jelas sejak awal"
-        description="Kreator tidak melamar kampanye sendiri: tim yang menugaskan, dan syarat honornya disampaikan sebelum Anda mulai."
+        eyebrow="Untuk klipper"
+        title="Bisa memotong video? Jadikan honor"
+        description="Daftar gratis, pilih kampanye dari katalog, posting klip di akunmu sendiri, lalu tarik honornya ke rekening. Tidak perlu pengikut banyak: yang dibayar adalah views."
         layout="split"
         action={
-          <Button asChild size="lg" className="h-11 px-5 text-sm">
-            <Link href="/kreator" data-cta>
-              Baca syarat untuk kreator
-              <ArrowRight aria-hidden />
-            </Link>
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <SignupCta />
+            <Button asChild variant="outline" size="lg" className="h-11 px-5 text-sm">
+              <Link href="/kreator" data-cta>
+                Cara kerja klipper
+                <ArrowRight aria-hidden />
+              </Link>
+            </Button>
+          </div>
         }
       >
         <MarketingIllustration name="konten" />
@@ -321,8 +328,8 @@ export default function LandingPage() {
               Punya target yang harus dilaporkan periode ini?
             </h2>
             <p className="mt-3 text-base text-pretty text-brand-panel-muted">
-              Ceritakan targetnya lewat WhatsApp. Kami jawab dengan perkiraan jumlah kreator,
-              periode, dan bentuk laporan yang akan Anda terima.
+              Ceritakan targetnya lewat WhatsApp. Kami jawab dengan perkiraan anggaran, tarif per
+              1.000 views, periode, dan bentuk laporan yang akan Anda terima.
             </p>
             <ContactCta intent="client" tone="brand" className="mt-7 sm:justify-center" />
           </div>

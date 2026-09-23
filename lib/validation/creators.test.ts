@@ -113,6 +113,16 @@ describe("verificationBlockers", () => {
     expect(verificationBlockers({ hasProofAccount: false, termsAgreedAt: null })).toHaveLength(2);
   });
 
+  it("asks for the Kalimantan audience threshold once a proof exists (v4.0)", () => {
+    expect(
+      verificationBlockers({
+        hasProofAccount: true,
+        hasLocalAudience: false,
+        termsAgreedAt: "2026-09-01T00:00:00Z",
+      }),
+    ).toEqual([expect.stringMatching(/audiens Kalimantan minimal 50%/)]);
+  });
+
   it("is empty when both prerequisites are met", () => {
     expect(
       verificationBlockers({ hasProofAccount: true, termsAgreedAt: "2026-09-01T00:00:00Z" }),

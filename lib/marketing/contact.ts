@@ -11,7 +11,7 @@ export type ContactIntent = "client" | "creator";
 /** Prefilled openers, so the team knows which side wrote first. */
 export const CONTACT_MESSAGES: Record<ContactIntent, string> = {
   client: "Halo, saya dari instansi dan ingin bertanya soal kampanye kreator lokal Kalimantan.",
-  creator: "Halo, saya kreator di Kalimantan dan ingin bergabung sebagai mitra.",
+  creator: "Halo, saya klipper dan butuh bantuan soal pendaftaran atau kampanye.",
 };
 
 /**

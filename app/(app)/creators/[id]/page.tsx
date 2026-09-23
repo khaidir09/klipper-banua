@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, UserX } from "lucide-react";
+import { BadgeCheck, Pencil, Trash2, UserX } from "lucide-react";
 import { DetailList } from "@/components/layout/detail-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { CreatorStatusBadge } from "@/components/status/status-badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreatorCampaignHistory } from "@/components/campaigns/campaign-history";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { requireInternal } from "@/lib/auth/guards";
-import { CREATOR_TIER_LABELS, nicheLabel } from "@/lib/constants/creators";
+import {
+  CREATOR_TIER_LABELS,
+  LOCAL_BADGE_MIN_PCT,
+  SIGNUP_SOURCE_LABELS,
+  nicheLabel,
+} from "@/lib/constants/creators";
 import { listCreatorAssignments } from "@/lib/data/campaigns";
 import {
   getCreator,
@@ -26,6 +31,7 @@ import { verificationBlockers } from "@/lib/validation/creators";
 import { formatWhatsapp, whatsappLink } from "@/lib/validation/phone";
 import { AnonymizeCreatorButton } from "./anonymize-creator-button";
 import { BankAccountPanel } from "./bank-account-panel";
+import { BlockPanel } from "./block-panel";
 import { DeleteCreatorButton } from "./delete-creator-button";
 import { PortalAccess } from "./portal-access";
 import { SocialAccounts } from "./social-accounts";
@@ -53,6 +59,10 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
 
   const blockers = verificationBlockers({
     hasProofAccount: creator.social_accounts.some((a) => Boolean(a.audience_proof_path)),
+    hasLocalAudience: creator.social_accounts.some(
+      (a) =>
+        Boolean(a.audience_proof_path) && (a.kalimantan_audience_pct ?? 0) >= LOCAL_BADGE_MIN_PCT,
+    ),
     termsAgreedAt: creator.terms_agreed_at,
   });
 
@@ -97,8 +107,26 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
         </Alert>
       ) : null}
 
+      {creator.deletion_requested_at && !anonymized ? (
+        <Alert>
+          <Trash2 />
+          <AlertTitle>Klipper meminta penghapusan akun</AlertTitle>
+          <AlertDescription>
+            Diminta {formatDateTime(creator.deletion_requested_at, tz)}. Owner menyelesaikan saldo
+            lalu menganonimkan data (FR-M16-09).
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         <CreatorStatusBadge status={creator.status} />
+        {creator.verified_at ? (
+          <Badge variant="outline" className="gap-1">
+            <BadgeCheck className="size-3.5 text-success" aria-hidden />
+            Klipper Lokal
+          </Badge>
+        ) : null}
+        <Badge variant="outline">{SIGNUP_SOURCE_LABELS[creator.signup_source]}</Badge>
         <Badge variant="outline">Tier {CREATOR_TIER_LABELS[creator.tier]}</Badge>
         {creator.niches.map((niche) => (
           <Badge key={niche} variant="outline">
@@ -115,7 +143,7 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
               <TabsTrigger value="sosial">
                 Akun sosial ({creator.social_accounts.length})
               </TabsTrigger>
-              <TabsTrigger value="verifikasi">Persetujuan & verifikasi</TabsTrigger>
+              <TabsTrigger value="verifikasi">Lencana & status</TabsTrigger>
               <TabsTrigger value="rekening">Rekening</TabsTrigger>
               <TabsTrigger value="portal">Portal</TabsTrigger>
             </>
@@ -154,6 +182,7 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
                       : null,
                   },
                   { label: "Terdaftar", value: formatDateTime(creator.created_at, tz) },
+                  { label: "Kode verifikasi", value: creator.verification_code },
                   { label: "Catatan", value: creator.notes, wide: true },
                 ]}
               />
@@ -172,7 +201,7 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
           />
         </TabsContent>
 
-        <TabsContent value="verifikasi">
+        <TabsContent value="verifikasi" className="space-y-6">
           <TermsVerification
             creatorId={id}
             status={creator.status}
@@ -180,6 +209,14 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
             termsAgreedAt={creator.terms_agreed_at}
             verifiedAt={creator.verified_at}
             blockers={blockers}
+            timezone={tz}
+          />
+          <BlockPanel
+            creatorId={id}
+            blocked={creator.status === "diblokir"}
+            blockedAt={creator.blocked_at}
+            blockedReason={creator.blocked_reason}
+            isOwner={isOwner}
             timezone={tz}
           />
         </TabsContent>

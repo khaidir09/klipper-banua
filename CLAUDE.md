@@ -54,7 +54,7 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 | `npm run db:rls-check`                 | Uji kebijakan RLS di database lokal (`scripts/rls-check.sql`) |
 | `npm run db:guards-check`              | Uji trigger aturan kampanye/penugasan (`scripts/guards-check.sql`) |
 | `npm run seed:demo` / `seed:demo:reset` | Data demo lokal / kembalikan kampanye demo ke draft |
-| `npm run test:e2e`                     | Uji alur kritis Playwright (butuh Supabase lokal + data demo) |
+| `npm run test:e2e`                     | Uji alur kritis Playwright (butuh Supabase lokal + data demo; proyek `klipper` membaca email konfirmasi dari Mailpit lokal) |
 | `npm run test:e2e:publik`              | Uji situs publik M15 saja (tanpa Docker/data demo)            |
 
 Sebelum menyelesaikan fase, jalankan: `npm run lint && npm run typecheck && npm run test && npm run build`.

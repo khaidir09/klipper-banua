@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { BadgeCheck, Plus, Search } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { ProvinceSelect } from "@/components/forms/province-select";
 import { ListPagination } from "@/components/tables/list-pagination";
@@ -21,6 +21,8 @@ import {
   CREATOR_TIER_LABELS,
   NICHES,
   NICHE_LABELS,
+  SIGNUP_SOURCES,
+  SIGNUP_SOURCE_LABELS,
   SOCIAL_PLATFORMS,
   SOCIAL_PLATFORM_LABELS,
 } from "@/lib/constants/creators";
@@ -50,6 +52,8 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
     status: query.status,
     platform: query.platform,
     min_pct: query.min_pct !== undefined ? String(query.min_pct) : undefined,
+    source: query.source,
+    badge: query.badge,
   };
 
   const filtered = Boolean(
@@ -60,21 +64,31 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
     query.tier ||
     query.status ||
     query.platform ||
-    query.min_pct !== undefined,
+    query.min_pct !== undefined ||
+    query.source ||
+    query.badge,
   );
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Kreator"
-        description="Kreator lokal beserta akun media sosial dan bukti audiensnya."
+        description="Klipper yang mendaftar sendiri maupun yang didaftarkan tim, beserta akun media sosialnya."
         actions={
-          <Button asChild>
-            <Link href="/creators/new">
-              <Plus aria-hidden />
-              Tambah kreator
-            </Link>
-          </Button>
+          <>
+            <Button variant="outline" asChild>
+              <Link href="/creators/lencana">
+                <BadgeCheck aria-hidden />
+                Pengajuan lencana
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/creators/new">
+                <Plus aria-hidden />
+                Tambah kreator
+              </Link>
+            </Button>
+          </>
         }
       />
 
@@ -149,6 +163,29 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
             </NativeSelectOption>
           ))}
         </NativeSelect>
+        <NativeSelect
+          className="w-full"
+          name="source"
+          defaultValue={query.source ?? ""}
+          aria-label="Sumber pendaftaran"
+        >
+          <NativeSelectOption value="">Semua sumber</NativeSelectOption>
+          {SIGNUP_SOURCES.map((source) => (
+            <NativeSelectOption key={source} value={source}>
+              {SIGNUP_SOURCE_LABELS[source]}
+            </NativeSelectOption>
+          ))}
+        </NativeSelect>
+        <NativeSelect
+          className="w-full"
+          name="badge"
+          defaultValue={query.badge ?? ""}
+          aria-label="Lencana Klipper Lokal"
+        >
+          <NativeSelectOption value="">Semua lencana</NativeSelectOption>
+          <NativeSelectOption value="ya">Klipper Lokal</NativeSelectOption>
+          <NativeSelectOption value="tidak">Tanpa lencana</NativeSelectOption>
+        </NativeSelect>
         {/* The unit stays visible once a number is typed; a bare "50" in the
             filter bar says nothing on its own. */}
         <InputGroup className="sm:col-span-2 xl:col-span-1">
@@ -165,7 +202,7 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
             <InputGroupText>% Kalimantan</InputGroupText>
           </InputGroupAddon>
         </InputGroup>
-        <div className="flex gap-2 sm:col-span-2 xl:col-span-3 xl:justify-end">
+        <div className="flex gap-2 sm:col-span-2 xl:col-span-1 xl:justify-end">
           <Button type="submit" variant="outline" className="flex-1 xl:flex-none">
             Terapkan filter
           </Button>

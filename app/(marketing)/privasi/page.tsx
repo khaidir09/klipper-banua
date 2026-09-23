@@ -24,7 +24,8 @@ export const metadata: Metadata = {
 
 /**
  * Describes what the product actually does, so every claim here is checkable
- * against PRD Bagian 9 and the database it documents. The legal entity name
+ * against PRD Bagian 9 and the database it documents. v4.0 adds the klipper
+ * registration (M16); DRAFT wording awaits the owner (PRD 13.2 no. 6). The legal entity name
  * and address are deliberately absent until the founder settles them
  * (PRD 13.2 no. 1 dan no. 11).
  */
@@ -32,22 +33,24 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Ringkasnya",
     bullets: [
-      "Kami mengumpulkan data pribadi seminimal mungkin, dan hanya dari orang yang memang bekerja dengan kami: anggota tim, kontak instansi klien, dan kreator mitra.",
+      "Kami mengumpulkan data pribadi seminimal mungkin, dan hanya dari orang yang memang bekerja dengan kami: anggota tim, kontak instansi klien, dan klipper yang mendaftar.",
       "Kami tidak menyimpan data pribadi calon pendaftar atau calon mahasiswa. Yang kami terima dari instansi hanya angka rekap.",
-      "Situs publik ini tidak memuat formulir, tidak membuat akun, dan tidak memasang pelacak pihak ketiga.",
-      "Kreator dapat meminta datanya dihapus.",
+      "Halaman informasi di situs ini tidak memuat formulir dan tidak memasang pelacak pihak ketiga. Satu-satunya formulir adalah pendaftaran klipper.",
+      "Kami tidak meminta foto KTP atau dokumen identitas.",
+      "Klipper dapat meminta akunnya dihapus langsung dari portal.",
     ],
   },
   {
     heading: "Data yang kami kumpulkan",
     body: [
-      "Data di bawah ini dicatat oleh tim di dalam aplikasi pengelolaan kampanye, bukan dikumpulkan dari situs publik ini.",
+      "Data klipper diisi sendiri lewat formulir pendaftaran dan portal. Data lainnya dicatat tim di dalam aplikasi.",
     ],
     bullets: [
       "Anggota tim internal: nama, alamat email, peran, dan zona waktu tampilan.",
       "Kontak instansi klien: nama, jabatan, nomor WhatsApp, dan alamat email, untuk koordinasi kampanye dan akses portal klien.",
-      "Kreator mitra: nama, nama panggung, nomor WhatsApp, email, kota dan provinsi, tanggal lahir (untuk memastikan usia minimal 18 tahun), akun media sosial, serta tangkapan layar analitik audiens sebagai bukti sebaran audiens.",
-      "Data rekening kreator: nama bank, nomor rekening, dan nama pemilik rekening, semata-mata untuk pembayaran honor.",
+      "Klipper: nama, nama panggung, nomor WhatsApp, email, kota dan provinsi, tanggal lahir (untuk memastikan usia minimal 18 tahun), versi syarat yang disetujui beserta waktunya, akun media sosial, serta tangkapan layar analitik audiens bila mengajukan lencana Klipper Lokal.",
+      "Klip yang dikirim klipper: tautan klip, waktu tayang, dan tangkapan layar views, untuk verifikasi dan perhitungan honor.",
+      "Data rekening klipper: nama bank atau e-wallet, nomor rekening, dan nama pemilik rekening, semata-mata untuk pembayaran honor.",
       "Catatan aktivitas: siapa melakukan tindakan penting apa dan kapan, sebagai jejak audit internal.",
     ],
   },
@@ -61,22 +64,23 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Kunjungan lewat tautan pelacakan",
     body: [
-      "Setiap kreator mendapat tautan pelacakan unik yang meneruskan pengunjung ke halaman tujuan instansi. Kami mencatat kunjungan itu untuk menghitung klik per kreator.",
+      "Setiap klipper mendapat tautan pelacakan unik yang meneruskan pengunjung ke halaman tujuan instansi. Kami mencatat kunjungan itu untuk menghitung klik per klipper.",
       "Alamat IP pengunjung tidak disimpan apa adanya. Nilainya diacak dengan kunci rahasia (hash) lalu hanya dipakai untuk menyaring klik berulang dan lalu lintas otomatis. Kami tidak membangun profil pengunjung dan tidak mengaitkannya dengan identitas siapa pun.",
     ],
   },
   {
     heading: "Situs publik ini",
     body: [
-      "Halaman yang sedang Anda baca bersifat statis: tidak ada formulir, tidak ada pembuatan akun, dan tidak ada permintaan data ke basis data kami.",
+      "Halaman informasi yang sedang Anda baca bersifat statis: tidak ada formulir dan tidak ada permintaan data ke basis data kami.",
+      "Formulir pendaftaran klipper terpisah dari halaman ini. Untuk mencegah penyalahgunaan, alamat IP pendaftar dipakai sementara dalam bentuk teracak (hash) untuk membatasi jumlah percobaan, dan tidak disimpan ke basis data.",
       "Tidak ada layanan analitik atau pelacak pihak ketiga yang dipasang. Satu-satunya hal yang mungkin tersimpan di peramban Anda adalah pilihan tema terang atau gelap, yang berada di perangkat Anda sendiri dan tidak pernah dikirim ke kami.",
     ],
   },
   {
     heading: "Untuk apa data dipakai",
     bullets: [
-      "Menjalankan kampanye: menyusun brief, menugaskan kreator, meninjau konten, dan menagih tenggat.",
-      "Menghitung dan membayar honor kreator secara adil berdasarkan angka yang sudah diverifikasi.",
+      "Menjalankan kampanye: menyusun brief, menampilkan kampanye kepada klipper, dan memverifikasi klip.",
+      "Menghitung dan membayar honor klipper secara adil berdasarkan views yang sudah diverifikasi.",
       "Menyusun laporan kampanye untuk instansi klien.",
       "Menjaga keamanan: membatasi akses sesuai peran dan menyimpan jejak audit tindakan penting.",
     ],
@@ -85,21 +89,21 @@ const SECTIONS: LegalSection[] = [
     heading: "Penyimpanan dan akses",
     body: [
       "Data disimpan pada basis data terkelola dan berkas diunggah ke penyimpanan privat yang hanya dapat dibuka lewat tautan bertanda waktu dan berumur pendek.",
-      "Akses dibatasi per peran. Nomor rekening kreator dan bukti keuangan hanya dapat dilihat oleh owner; pengelola kampanye melihatnya dalam bentuk tersamar. Kreator dan kontak klien yang memakai portal hanya dapat melihat datanya sendiri.",
+      "Akses dibatasi per peran. Nomor rekening klipper dan bukti keuangan hanya dapat dilihat lengkap oleh owner; pengelola kampanye melihatnya dalam bentuk tersamar. Klipper dan kontak klien yang memakai portal hanya dapat melihat datanya sendiri.",
     ],
   },
   {
     heading: "Berapa lama disimpan",
     body: [
       "Data kampanye, konten, metrik, dan laporan disimpan selama masih dibutuhkan untuk pertanggungjawaban kepada instansi klien dan kewajiban pembukuan.",
-      "Data kreator disimpan selama kemitraan berjalan, dan dihapus atau dianonimkan setelah permintaan penghapusan diproses, kecuali bagian yang wajib kami simpan sebagai bukti pembayaran.",
+      "Data klipper disimpan selama akun aktif, dan dihapus atau dianonimkan setelah permintaan penghapusan diproses dan saldo diselesaikan, kecuali bagian yang wajib kami simpan sebagai bukti pembayaran.",
     ],
   },
   {
     heading: "Hak Anda",
     body: [
       "Anda dapat meminta penjelasan data apa yang kami simpan tentang Anda, meminta koreksi bila ada yang salah, dan meminta penghapusan data Anda.",
-      "Permintaan disampaikan lewat kontak di bawah. Kami akan memverifikasi bahwa permintaan itu memang datang dari Anda sebelum menjalankannya.",
+      "Klipper dapat meminta penghapusan akun dari halaman Profil di portal. Permintaan lain disampaikan lewat kontak di bawah; kami memverifikasi bahwa permintaan itu memang datang dari Anda sebelum menjalankannya.",
     ],
   },
   {
@@ -123,7 +127,7 @@ export default function PrivacyPage() {
   return (
     <LegalArticle
       title="Kebijakan Privasi"
-      updatedAt="22 Sep 2026"
+      updatedAt="23 Sep 2026"
       intro={[
         `Halaman ini menjelaskan data apa yang dikumpulkan ${publicEnv.NEXT_PUBLIC_APP_NAME}, untuk apa data itu dipakai, dan siapa yang dapat melihatnya.`,
       ]}

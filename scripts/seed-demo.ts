@@ -562,6 +562,11 @@ async function main() {
             creator.status === "diblokir"
               ? "Demo: diblokir karena menghapus konten sebelum masa tayang di kampanye lain."
               : "",
+          // v4.0 (FR-M3-09): a block always carries its reason.
+          blocked_reason:
+            creator.status === "diblokir"
+              ? "Menghapus konten sebelum masa tayang minimum di kampanye lain."
+              : null,
           created_by: owner?.id ?? null,
           anonymized_at: null,
         })
