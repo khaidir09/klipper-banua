@@ -14,7 +14,7 @@ export default async function CampaignCreatorsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { supabase, campaign, canEdit } = await loadCampaign(id);
+  const { session, supabase, campaign, canEdit } = await loadCampaign(id);
 
   const [assignments, assignable] = await Promise.all([
     listAssignments(supabase, id),
@@ -52,6 +52,7 @@ export default async function CampaignCreatorsPage({
     <AssignmentsPanel
       campaignId={id}
       canEdit={canEdit}
+      timezone={session.profile.timezone}
       assignments={rows}
       assignable={assignable.map((creator) => ({
         id: creator.id,

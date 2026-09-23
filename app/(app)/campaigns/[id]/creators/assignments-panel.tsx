@@ -62,7 +62,7 @@ import {
   type AssignmentUpdateFormInput,
   type AssignmentUpdateInput,
 } from "@/lib/validation/campaigns";
-import { formatCalendarDate } from "@/lib/format/date";
+import { formatDate } from "@/lib/format/date";
 import { whatsappLink } from "@/lib/validation/phone";
 import { addAssignmentAction, removeAssignmentAction, updateAssignmentAction } from "../../actions";
 
@@ -93,12 +93,14 @@ export function AssignmentsPanel({
   assignments,
   assignable,
   brief,
+  timezone,
 }: {
   campaignId: string;
   canEdit: boolean;
   assignments: AssignmentView[];
   assignable: AssignableCreator[];
   brief: BriefContext;
+  timezone: string;
 }) {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<AssignmentView | null>(null);
@@ -172,7 +174,7 @@ export function AssignmentsPanel({
                             what settles a later dispute over it (PRD 8.2). */}
                         {assignment.confirmedAt ? (
                           <span className="text-xs text-muted-foreground">
-                            Dikonfirmasi {formatCalendarDate(assignment.confirmedAt)}
+                            Dikonfirmasi {formatDate(assignment.confirmedAt, timezone)}
                           </span>
                         ) : assignment.status === "diundang" ? (
                           <span className="text-xs text-muted-foreground">
