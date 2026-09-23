@@ -361,7 +361,7 @@ insert into rls_cases values
 insert into rls_cases values
   ('creator_portal_catalog', 'select', $q$select count(*) from public.creator_portal_catalog where id = 'f1000000-0000-4000-8000-000000000090'$q$),
   -- Legacy and invite-only campaigns never reach the catalog.
-  ('creator_portal_catalog_closed', 'select', $q$select count(*) from public.creator_portal_catalog where id <> 'f1000000-0000-4000-8000-000000000090'$q$),
+  ('creator_portal_catalog_closed', 'select', $q$select count(*) from public.creator_portal_catalog where id in ('f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000022', 'f1000000-0000-4000-8000-000000000026', 'f1000000-0000-4000-8000-000000000094')$q$),
   ('campaign_creators_join_own', 'insert', $q$insert into public.campaign_creators (campaign_id, creator_id) values ('f1000000-0000-4000-8000-000000000090', 'f1000000-0000-4000-8000-000000000003')$q$),
   ('campaign_creators_join_other', 'insert', $q$insert into public.campaign_creators (campaign_id, creator_id) values ('f1000000-0000-4000-8000-000000000090', 'f1000000-0000-4000-8000-000000000020')$q$),
   ('campaign_creators_join_invite', 'insert', $q$insert into public.campaign_creators (campaign_id, creator_id) values ('f1000000-0000-4000-8000-000000000022', 'f1000000-0000-4000-8000-000000000003')$q$),

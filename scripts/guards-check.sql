@@ -798,6 +798,15 @@ set local role authenticated;
 update public.creators set status = 'aktif' where id = '15151515-0000-0000-0000-0000000000a2';
 select status, blocked_at is null and blocked_reason is null as cleared from public.creators where id = '15151515-0000-0000-0000-0000000000a2';
 reset role;
+\echo 'P15-16. owner erases the klipper who asked for deletion (expect diblokir / t / t / 0)'
+select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p15_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+select public.anonymize_creator(c.id) is not null as erased
+from public.creators c where c.profile_id = '15151515-0000-0000-0000-0000000000f1';
+reset role;
+select c.status, c.anonymized_at is not null as anonymized, c.blocked_reason <> '' as has_reason,
+       (select count(*) from auth.users where id = '15151515-0000-0000-0000-0000000000f1') as auth_users
+from public.creators c where c.full_name like 'Kreator anonim %' and c.signup_source = 'mandiri' and c.deletion_requested_at is not null;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;
 
