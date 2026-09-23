@@ -48,6 +48,7 @@ export const ACTIVITY_ACTION_LABELS = {
   share_link_revoke: "Mencabut tautan laporan klien",
   portal_invite: "Mengundang ke portal kreator",
   portal_access: "Mengubah akses portal kreator",
+  confirm_assignment: "Mengonfirmasi brief penugasan",
   submit_draft: "Mengirim draf dari portal",
   propose_posted: "Melaporkan konten tayang",
   submit_metric: "Mengirim bukti metrik",

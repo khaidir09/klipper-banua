@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CircleAlert } from "lucide-react";
 import { AssignmentStatusBadge, CampaignStatusBadge } from "@/components/status/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCalendarRange } from "@/lib/format/date";
@@ -7,6 +7,9 @@ import type { PortalAssignment } from "@/lib/data/portal";
 
 /** One assignment in the portal's lists (FR-M13-03). */
 export function AssignmentCard({ assignment }: { assignment: PortalAssignment }) {
+  const needsConfirmation =
+    assignment.status === "diundang" && assignment.campaign_status === "aktif";
+
   return (
     <Card className="relative">
       <CardHeader className="gap-2">
@@ -47,12 +50,21 @@ export function AssignmentCard({ assignment }: { assignment: PortalAssignment })
             <dd>{assignment.min_live_days} hari</dd>
           </div>
         </dl>
-        {/* Affordance only. The card itself carries the link, so a screen
-            reader announces one target per card instead of two. */}
-        <p className="inline-flex items-center gap-1 text-sm font-medium text-primary">
-          Lihat brief
-          <ArrowRight className="size-4" aria-hidden />
-        </p>
+        {/* FR-M13-10: an unconfirmed assignment is the one thing the creator
+            has to act on, so the list says so instead of only the badge. */}
+        {needsConfirmation ? (
+          <p className="inline-flex items-center gap-1 text-sm font-medium text-primary">
+            <CircleAlert className="size-4" aria-hidden />
+            Menunggu konfirmasi brief Anda
+          </p>
+        ) : (
+          /* Affordance only. The card itself carries the link, so a screen
+             reader announces one target per card instead of two. */
+          <p className="inline-flex items-center gap-1 text-sm font-medium text-primary">
+            Lihat brief
+            <ArrowRight className="size-4" aria-hidden />
+          </p>
+        )}
       </CardContent>
     </Card>
   );

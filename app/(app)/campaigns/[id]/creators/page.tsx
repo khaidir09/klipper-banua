@@ -26,6 +26,7 @@ export default async function CampaignCreatorsPage({
   const rows: AssignmentView[] = assignments.map((assignment) => ({
     id: assignment.id,
     status: assignment.status,
+    confirmedAt: assignment.creator_confirmed_at,
     contentsCommitted: assignment.contents_committed,
     referralCode: assignment.referral_code,
     trackingSlug: assignment.tracking_slug,

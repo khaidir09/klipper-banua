@@ -53,9 +53,11 @@ insert into public.campaigns (id, client_id, code, name, objective, start_date, 
 values ('f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000001', 'RLS-FIX-01', 'RLS', 'awareness', '2026-10-01', '2026-10-31', 'aktif');
 insert into public.campaign_assets (id, campaign_id, title, type, external_url)
 values ('f1000000-0000-4000-8000-000000000008', 'f1000000-0000-4000-8000-000000000007', 'Logo', 'tautan', 'https://example.com/logo');
-insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values
-  ('f1000000-0000-4000-8000-000000000009', 'f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000003', 'RLSAAA', 'rls-fixture-a'),
-  ('f1000000-0000-4000-8000-000000000010', 'f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000004', 'RLSBBB', 'rls-fixture-b');
+-- Phase 14 (M13): sending anything from the portal needs a confirmed
+-- assignment, so the portal creator's fixture (f1…09) is already `bergabung`.
+insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug, status) values
+  ('f1000000-0000-4000-8000-000000000009', 'f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000003', 'RLSAAA', 'rls-fixture-a', 'bergabung'),
+  ('f1000000-0000-4000-8000-000000000010', 'f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000004', 'RLSBBB', 'rls-fixture-b', 'diundang');
 insert into public.contents (id, campaign_creator_id, platform, draft_url, review_status, posted_url, posted_at, live_status) values
   ('f1000000-0000-4000-8000-000000000011', 'f1000000-0000-4000-8000-000000000009', 'tiktok', 'https://example.com/draft', 'disetujui', 'https://example.com/live', now() - interval '2 days', 'tayang'),
   -- Content of the other creator (f1…04), for the portal isolation cases.
@@ -107,6 +109,16 @@ update public.creators
   where id = 'f1000000-0000-4000-8000-000000000003';
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status)
 values ('f1000000-0000-4000-8000-000000000022', 'f1000000-0000-4000-8000-000000000001', 'RLS-FIX-02', 'RLS Lain', 'awareness', '2026-10-01', '2026-10-31', 'aktif');
+
+-- Phase 14 (M13): a third running campaign carries the assignment the creator
+-- has not confirmed yet. The portal may read it and confirm it, but must not
+-- be able to send a draft or metric evidence for it before that.
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status)
+values ('f1000000-0000-4000-8000-000000000094', 'f1000000-0000-4000-8000-000000000001', 'RLS-FIX-04', 'RLS Belum Konfirmasi', 'awareness', '2026-10-01', '2026-10-31', 'aktif');
+insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug, status)
+values ('f1000000-0000-4000-8000-000000000096', 'f1000000-0000-4000-8000-000000000094', 'f1000000-0000-4000-8000-000000000003', 'RLSCCC', 'rls-fixture-c', 'diundang');
+insert into public.contents (id, campaign_creator_id, platform, draft_url, review_status, posted_url, posted_at, live_status)
+values ('f1000000-0000-4000-8000-000000000095', 'f1000000-0000-4000-8000-000000000096', 'tiktok', 'https://example.com/draft-c', 'disetujui', 'https://example.com/live-c', now() - interval '2 days', 'tayang');
 -- Campaign material is stored as `<campaign_id>/<file>` (lib/storage/upload.ts).
 insert into storage.objects (bucket_id, name) values
   ('campaign-assets', 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'),
@@ -282,6 +294,17 @@ insert into rls_cases values
   ('contents_other_draft', 'insert', $q$insert into public.contents (campaign_creator_id, platform, draft_url) values ('f1000000-0000-4000-8000-000000000010', 'instagram', 'https://example.com/portal-draft-b')$q$),
   ('contents_own_update', 'update', $q$update public.contents set caption_draft = caption_draft where id = 'f1000000-0000-4000-8000-000000000011'$q$),
   ('contents_other_update', 'update', $q$update public.contents set caption_draft = caption_draft where id = 'f1000000-0000-4000-8000-000000000023'$q$),
+
+  -- Phase 14: the assignment the creator has not confirmed yet. They may read
+  -- it and confirm it, and nothing else may be sent for it.
+  ('campaign_creators_unconfirmed', 'select', $q$select count(*) from public.campaign_creators where id = 'f1000000-0000-4000-8000-000000000096'$q$),
+  ('campaign_creators_unconfirmed', 'update', $q$update public.campaign_creators set status = 'bergabung' where id = 'f1000000-0000-4000-8000-000000000096'$q$),
+  -- The other creator's assignment is not theirs to confirm.
+  ('campaign_creators_other', 'select', $q$select count(*) from public.campaign_creators where id = 'f1000000-0000-4000-8000-000000000010'$q$),
+  ('campaign_creators_other', 'update', $q$update public.campaign_creators set status = 'bergabung' where id = 'f1000000-0000-4000-8000-000000000010'$q$),
+  ('contents_unconfirmed_draft', 'insert', $q$insert into public.contents (campaign_creator_id, platform, draft_url) values ('f1000000-0000-4000-8000-000000000096', 'instagram', 'https://example.com/portal-draft-c')$q$),
+  ('contents_unconfirmed_update', 'update', $q$update public.contents set caption_draft = caption_draft where id = 'f1000000-0000-4000-8000-000000000095'$q$),
+  ('metric_submissions_unconfirmed', 'insert', $q$insert into public.metric_submissions (content_id, checkpoint, captured_at, proof_path) values ('f1000000-0000-4000-8000-000000000095', 'akhir', now(), 'x/new-c.png')$q$),
 
   ('creator_portal_contents', 'select', $q$select count(*) from public.creator_portal_contents$q$),
   ('creator_portal_reviews', 'select', $q$select count(*) from public.creator_portal_reviews$q$),
@@ -459,6 +482,11 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator, clie
 update rls_expected set creator = 'a'
   where tbl = 'contents' and op in ('select', 'insert', 'update');
 
+-- Phase 14: f1…09 is the portal creator's own assignment, so they read it and
+-- (RLS-wise) may write it; the trigger is what narrows that to confirming.
+update rls_expected set creator = 'a'
+  where tbl = 'campaign_creators' and op in ('select', 'update');
+
 -- Phase 10 (M13): what the portal may write, and what stays with the team.
 insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) values
   -- The fixture submission is the portal creator's own one.
@@ -475,6 +503,16 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) valu
   ('contents_other_draft', 'insert', 'a', 'a', 'd', 'd', 'd'),
   ('contents_own_update', 'update', 'a', 'a', 'd', 'd', 'a'),
   ('contents_other_update', 'update', 'a', 'a', 'd', 'd', 'd'),
+  -- Phase 14 (FR-M13-10): reading and confirming their own assignment is the
+  -- only write the portal has on campaign_creators; the gate on what follows
+  -- is checked through the unconfirmed fixture.
+  ('campaign_creators_unconfirmed', 'select', 'a', 'a', 'd', 'd', 'a'),
+  ('campaign_creators_unconfirmed', 'update', 'a', 'a', 'd', 'd', 'a'),
+  ('campaign_creators_other', 'select', 'a', 'a', 'd', 'd', 'd'),
+  ('campaign_creators_other', 'update', 'a', 'a', 'd', 'd', 'd'),
+  ('contents_unconfirmed_draft', 'insert', 'a', 'a', 'd', 'd', 'd'),
+  ('contents_unconfirmed_update', 'update', 'a', 'a', 'd', 'd', 'd'),
+  ('metric_submissions_unconfirmed', 'insert', 'd', 'd', 'd', 'd', 'd'),
   ('creator_portal_contents', 'select', 'd', 'd', 'd', 'd', 'a'),
   ('creator_portal_reviews', 'select', 'd', 'd', 'd', 'd', 'a'),
   ('creator_portal_metrics', 'select', 'd', 'd', 'd', 'd', 'a'),

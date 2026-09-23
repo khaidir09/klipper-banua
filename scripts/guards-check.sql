@@ -440,9 +440,11 @@ insert into public.creators (id, full_name, birth_date, province, status, profil
 insert into public.clients (id, name, type, province) values ('77777777-0000-0000-0000-000000000001','Portal Client 10','kampus_swasta','Kalimantan Selatan');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, landing_url) values
  ('77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-000000000001','PORTAL10-2026-01','Portal 10','awareness','2026-10-01','2026-10-31','aktif', null);
-insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values
- ('77777777-0000-0000-0000-0000000000b1','77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-0000000000a1','PRTLTA','portal10-a'),
- ('77777777-0000-0000-0000-0000000000b2','77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-0000000000a2','PRTLTB','portal10-b');
+-- Phase 14 gates the portal on a confirmed assignment, so this creator has
+-- already confirmed; the confirmation itself is exercised in Phase 14.
+insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug, status) values
+ ('77777777-0000-0000-0000-0000000000b1','77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-0000000000a1','PRTLTA','portal10-a','bergabung'),
+ ('77777777-0000-0000-0000-0000000000b2','77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-0000000000a2','PRTLTB','portal10-b','bergabung');
 -- One approved, live content of the portal creator; one still waiting.
 insert into public.contents (id, campaign_creator_id, platform, draft_url, review_status, posted_url, posted_at, live_status) values
  ('77777777-0000-0000-0000-0000000000d1','77777777-0000-0000-0000-0000000000b1','tiktok','https://example.com/d1','disetujui','https://example.com/live', now() - interval '2 days','tayang'),
@@ -586,6 +588,87 @@ reset role;
 select set_config('request.jwt.claims', json_build_object('sub','66666666-0000-0000-0000-0000000000f1','role','authenticated')::text, true) is not null as client_claims;
 set local role authenticated;
 select public.current_client_id() as client_id, (select count(*) from public.client_portal_campaigns) as campaigns;
+reset role;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 14 (v3.2): the creator confirms their own assignment (PRD M13:
+-- FR-M13-10)
+-- ---------------------------------------------------------------------------
+begin;
+create temporary table p14_roles on commit drop as
+select
+  (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id,
+  '55555555-0000-0000-0000-0000000000f1'::uuid as creator_user_id;
+
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values (
+  '55555555-0000-0000-0000-0000000000f1',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated',
+  'authenticated',
+  'guard.portal14@example.test',
+  '{}'::jsonb,
+  jsonb_build_object('full_name', 'Guard Portal Creator 14', 'role', 'creator'),
+  now(),
+  now()
+);
+insert into public.creators (id, full_name, birth_date, province, status, profile_id) values
+ ('55555555-0000-0000-0000-0000000000a1','Portal C14','1995-01-01','Kalimantan Selatan','aktif','55555555-0000-0000-0000-0000000000f1'),
+ ('55555555-0000-0000-0000-0000000000a2','Other C14','1995-01-01','Kalimantan Selatan','aktif',null);
+insert into public.clients (id, name, type, province) values ('55555555-0000-0000-0000-000000000001','Portal Client 14','kampus_swasta','Kalimantan Selatan');
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, landing_url) values
+ ('55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-000000000001','PORTAL14-2026-01','Portal 14','awareness','2026-10-01','2026-10-31','aktif', null);
+-- Both assignments start as the team creates them: invited, unconfirmed.
+insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug, base_fee) values
+ ('55555555-0000-0000-0000-0000000000b1','55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-0000000000a1','PRTLFA','portal14-a', 1500000),
+ ('55555555-0000-0000-0000-0000000000b2','55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-0000000000a2','PRTLFB','portal14-b', 1500000);
+-- Content the team entered for the unconfirmed assignment, so the metric gate
+-- has something live to aim at.
+insert into public.contents (id, campaign_creator_id, platform, draft_url, review_status, posted_url, posted_at, live_status) values
+ ('55555555-0000-0000-0000-0000000000d1','55555555-0000-0000-0000-0000000000b1','tiktok','https://example.com/d1','disetujui','https://example.com/live', now() - interval '2 days','tayang');
+
+select set_config('request.jwt.claims', json_build_object('sub','55555555-0000-0000-0000-0000000000f1','role','authenticated')::text, true) is not null as creator_claims;
+set local role authenticated;
+\echo 'P14-1. the brief is readable before confirming (expect 1 row, status diundang, no confirmation)'
+select status, creator_confirmed_at is null as unconfirmed from public.creator_portal_assignments where id='55555555-0000-0000-0000-0000000000b1';
+\echo 'P14-2. creator sends a draft before confirming (expect RLS violation)'
+savepoint a; insert into public.contents (campaign_creator_id, platform, draft_url) values ('55555555-0000-0000-0000-0000000000b1','tiktok','https://example.com/early'); rollback to savepoint a;
+\echo 'P14-3. creator sends metric evidence before confirming (expect RLS violation)'
+savepoint b; insert into public.metric_submissions (content_id, checkpoint, captured_at, proof_path) values ('55555555-0000-0000-0000-0000000000d1','H+1', now() - interval '1 day', 'x/p.png'); rollback to savepoint b;
+\echo 'P14-4. creator raises their own fee while confirming (expect PORTAL_FIELD_LOCKED)'
+savepoint c; update public.campaign_creators set status='bergabung', base_fee=9000000 where id='55555555-0000-0000-0000-0000000000b1'; rollback to savepoint c;
+\echo 'P14-5. creator marks the assignment finished (expect PORTAL_CONFIRM_ONLY)'
+savepoint d; update public.campaign_creators set status='selesai' where id='55555555-0000-0000-0000-0000000000b1'; rollback to savepoint d;
+\echo 'P14-6. creator confirms someone else''s assignment (expect UPDATE 0)'
+update public.campaign_creators set status='bergabung' where id='55555555-0000-0000-0000-0000000000b2';
+\echo 'P14-7. creator confirms their own (expect UPDATE 1, then bergabung with both stamps set)'
+update public.campaign_creators set status='bergabung' where id='55555555-0000-0000-0000-0000000000b1';
+select status, creator_confirmed_at is not null as confirmed, joined_at is not null as joined
+  from public.campaign_creators where id='55555555-0000-0000-0000-0000000000b1';
+\echo 'P14-8. confirming twice (expect PORTAL_CONFIRM_ONLY)'
+savepoint e; update public.campaign_creators set status='bergabung' where id='55555555-0000-0000-0000-0000000000b1'; rollback to savepoint e;
+\echo 'P14-9. the draft goes through now (expect INSERT 1)'
+insert into public.contents (id, campaign_creator_id, platform, draft_url) values ('55555555-0000-0000-0000-0000000000d2','55555555-0000-0000-0000-0000000000b1','tiktok','https://example.com/after');
+\echo 'P14-10. and so does the metric evidence (expect INSERT 1)'
+insert into public.metric_submissions (content_id, checkpoint, captured_at, proof_path) values ('55555555-0000-0000-0000-0000000000d1','H+1', now() - interval '1 day', 'x/p.png');
+reset role;
+
+\echo 'P14-11. the team still edits the assignment freely (expect UPDATE 1, fee changed)'
+select set_config('request.jwt.claims', json_build_object('sub',(select manager_id from p14_roles),'role','authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+update public.campaign_creators set base_fee = 2000000, contents_committed = 3 where id='55555555-0000-0000-0000-0000000000b1';
+select base_fee, contents_committed from public.campaign_creators where id='55555555-0000-0000-0000-0000000000b1';
+\echo 'P14-12. the team wraps the assignment up (expect UPDATE 1, selesai)'
+update public.campaign_creators set status = 'selesai' where id='55555555-0000-0000-0000-0000000000b1';
+select status from public.campaign_creators where id='55555555-0000-0000-0000-0000000000b1';
+reset role;
+
+\echo 'P14-13. a wrapped-up assignment still takes metric evidence (expect INSERT 1)'
+select set_config('request.jwt.claims', json_build_object('sub','55555555-0000-0000-0000-0000000000f1','role','authenticated')::text, true) is not null as creator_claims;
+set local role authenticated;
+insert into public.metric_submissions (content_id, checkpoint, captured_at, proof_path) values ('55555555-0000-0000-0000-0000000000d1','H+3', now() - interval '1 day', 'x/p3.png');
 reset role;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;

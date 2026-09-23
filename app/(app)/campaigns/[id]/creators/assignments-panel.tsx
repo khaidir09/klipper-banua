@@ -62,12 +62,15 @@ import {
   type AssignmentUpdateFormInput,
   type AssignmentUpdateInput,
 } from "@/lib/validation/campaigns";
+import { formatCalendarDate } from "@/lib/format/date";
 import { whatsappLink } from "@/lib/validation/phone";
 import { addAssignmentAction, removeAssignmentAction, updateAssignmentAction } from "../../actions";
 
 export type AssignmentView = {
   id: string;
   status: AssignmentStatus;
+  /** FR-M13-10: when the creator accepted the brief in the portal, if ever. */
+  confirmedAt: string | null;
   contentsCommitted: number;
   referralCode: string;
   trackingSlug: string;
@@ -163,7 +166,20 @@ export function AssignmentsPanel({
                       )}
                     </TableCell>
                     <TableCell>
-                      <AssignmentStatusBadge status={assignment.status} />
+                      <div className="flex flex-col items-start gap-1">
+                        <AssignmentStatusBadge status={assignment.status} />
+                        {/* FR-M13-10: proof the creator read the brief, which is
+                            what settles a later dispute over it (PRD 8.2). */}
+                        {assignment.confirmedAt ? (
+                          <span className="text-xs text-muted-foreground">
+                            Dikonfirmasi {formatCalendarDate(assignment.confirmedAt)}
+                          </span>
+                        ) : assignment.status === "diundang" ? (
+                          <span className="text-xs text-muted-foreground">
+                            Menunggu konfirmasi kreator
+                          </span>
+                        ) : null}
+                      </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       {assignment.contentsCommitted}

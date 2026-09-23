@@ -66,6 +66,8 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   OPS_LOG_OWNER_FIXED: "Kampanye dan pencatat waktu tidak dapat diubah.",
   PORTAL_LINK_INTERNAL_ONLY: "Akses portal kreator hanya dapat diubah oleh tim internal.",
   PORTAL_FIELD_LOCKED: "Bagian itu hanya dapat diubah tim, bukan dari portal kreator.",
+  PORTAL_CONFIRM_ONLY:
+    "Penugasan ini sudah dikonfirmasi atau tidak lagi menunggu konfirmasi Anda.",
   SUBMISSION_NEEDS_LIVE_CONTENT: "Bukti metrik hanya untuk konten yang sudah tayang.",
   SUBMISSION_BEFORE_POSTING: "Waktu pengambilan tidak boleh sebelum waktu tayang.",
   SUBMISSION_NOT_PENDING: "Kiriman ini sudah diverifikasi tim.",

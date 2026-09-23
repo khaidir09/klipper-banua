@@ -142,6 +142,7 @@ export type Database = {
           contents_committed: number
           created_at: string
           created_by: string | null
+          creator_confirmed_at: string | null
           creator_id: string
           id: string
           joined_at: string | null
@@ -159,6 +160,7 @@ export type Database = {
           contents_committed?: number
           created_at?: string
           created_by?: string | null
+          creator_confirmed_at?: string | null
           creator_id: string
           id?: string
           joined_at?: string | null
@@ -176,6 +178,7 @@ export type Database = {
           contents_committed?: number
           created_at?: string
           created_by?: string | null
+          creator_confirmed_at?: string | null
           creator_id?: string
           id?: string
           joined_at?: string | null
@@ -1702,6 +1705,7 @@ export type Database = {
           campaign_status: Database["public"]["Enums"]["campaign_status"] | null
           client_name: string | null
           contents_committed: number | null
+          creator_confirmed_at: string | null
           end_date: string | null
           hashtags: string[] | null
           id: string | null

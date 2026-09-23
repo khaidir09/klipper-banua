@@ -122,6 +122,8 @@ export type SubmissionsPanelProps = {
   campaignId: string;
   assignmentId: string;
   campaignRunning: boolean;
+  /** FR-M13-10: the brief was accepted, so the portal may send things. */
+  confirmed: boolean;
   contentsCommitted: number;
   timezone: string;
   contents: PortalContentView[];
@@ -554,12 +556,15 @@ export function SubmissionsPanel({
   campaignId,
   assignmentId,
   campaignRunning,
+  confirmed,
   contentsCommitted,
   timezone,
   contents,
 }: SubmissionsPanelProps) {
   const [dialog, setDialog] = useState<DialogState>(null);
   const [isPending, startTransition] = useTransition();
+  // Both gates are enforced again by RLS; here they only decide what to offer.
+  const canSend = campaignRunning && confirmed;
 
   function withdraw(submissionId: string) {
     startTransition(async () => {
@@ -577,12 +582,14 @@ export function SubmissionsPanel({
             <CardTitle>Konten saya</CardTitle>
             <CardDescription>
               {contents.length} dari {contentsCommitted} konten yang disepakati.{" "}
-              {campaignRunning
-                ? "Kirim draf, laporkan saat tayang, lalu kirim bukti metrik."
-                : "Kampanye ini tidak sedang berjalan, jadi draf baru tidak dapat dikirim."}
+              {!campaignRunning
+                ? "Kampanye ini tidak sedang berjalan, jadi draf baru tidak dapat dikirim."
+                : confirmed
+                  ? "Kirim draf, laporkan saat tayang, lalu kirim bukti metrik."
+                  : "Konfirmasi brief di atas dulu sebelum mengirim draf."}
             </CardDescription>
           </div>
-          {campaignRunning ? (
+          {canSend ? (
             <Button onClick={() => setDialog({ kind: "create" })}>
               <Plus aria-hidden />
               Kirim draf
@@ -592,7 +599,9 @@ export function SubmissionsPanel({
         <CardContent className="space-y-4">
           {contents.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Belum ada konten. Mulai dengan mengirim draf pertama Anda.
+              {campaignRunning && !confirmed
+                ? "Belum ada konten. Konfirmasi brief di atas untuk mulai mengirim draf."
+                : "Belum ada konten. Mulai dengan mengirim draf pertama Anda."}
             </p>
           ) : (
             contents.map((content) => {
@@ -690,7 +699,7 @@ export function SubmissionsPanel({
                   ) : null}
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {campaignRunning && canCreatorEditDraft(content.reviewStatus) ? (
+                    {canSend && canCreatorEditDraft(content.reviewStatus) ? (
                       <Button
                         size="sm"
                         variant="outline"
@@ -705,8 +714,7 @@ export function SubmissionsPanel({
                       </Button>
                     ) : null}
 
-                    {campaignRunning &&
-                    canProposePosted(content.reviewStatus, content.liveStatus) ? (
+                    {canSend && canProposePosted(content.reviewStatus, content.liveStatus) ? (
                       <Button
                         size="sm"
                         variant={waitingConfirmation ? "outline" : "default"}
@@ -716,7 +724,7 @@ export function SubmissionsPanel({
                       </Button>
                     ) : null}
 
-                    {campaignRunning &&
+                    {canSend &&
                     canSubmitMetric(content.reviewStatus, content.liveStatus) &&
                     !pendingSubmission ? (
                       <Button

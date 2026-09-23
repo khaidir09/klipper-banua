@@ -43,7 +43,7 @@ function isOwnUploadPath(campaignId: string, path: string | null): boolean {
 async function loadOwnAssignment(supabase: Supabase, assignmentId: string) {
   const { data } = await supabase
     .from("creator_portal_assignments")
-    .select("id, campaign_id, campaign_status")
+    .select("id, campaign_id, campaign_status, status, creator_confirmed_at")
     .eq("id", assignmentId)
     .maybeSingle();
   return data;
@@ -61,6 +61,47 @@ async function loadOwnContent(supabase: Supabase, contentId: string) {
   return data;
 }
 
+/**
+ * FR-M13-10: the creator accepts the brief for one of their own assignments.
+ * This is the gate for everything else the portal can send, so it is the one
+ * write the portal has on `campaign_creators`. The database narrows it further:
+ * the policy limits it to their own assignment on a running campaign, and
+ * `guard_portal_assignment_confirm` limits it to `diundang` -> `bergabung` and
+ * stamps the timestamps itself.
+ */
+export async function confirmAssignmentAction(values: unknown): Promise<ActionResult> {
+  const session = await requireCreator();
+  const parsed = idSchema.safeParse(values);
+  if (!parsed.success) return fail("ID penugasan tidak valid.");
+
+  const supabase = await createSupabaseServerClient();
+  const assignment = await loadOwnAssignment(supabase, parsed.data.id);
+  if (!assignment) return fail("Penugasan tidak ditemukan.");
+  if (assignment.campaign_status !== "aktif") {
+    return fail("Kampanye ini tidak sedang berjalan, jadi brief belum bisa dikonfirmasi.");
+  }
+  if (assignment.status !== "diundang") {
+    return fail("Penugasan ini sudah dikonfirmasi.");
+  }
+
+  const { error } = await supabase
+    .from("campaign_creators")
+    .update({ status: "bergabung" })
+    .eq("id", parsed.data.id);
+  if (error) return fail(dbRuleMessage(error, "Konfirmasi gagal disimpan."));
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "campaign_creator",
+    entityId: parsed.data.id,
+    action: "confirm_assignment",
+    details: { from_portal: true, campaign_id: assignment.campaign_id },
+  });
+
+  revalidateAssignment(parsed.data.id);
+  return ok("Brief dikonfirmasi. Anda sudah bisa mengirim draf.");
+}
+
 /** FR-M13-05: send a draft for an assignment on a running campaign. */
 export async function submitDraftAction(values: unknown): Promise<ActionResult> {
   const session = await requireCreator();
@@ -72,6 +113,9 @@ export async function submitDraftAction(values: unknown): Promise<ActionResult> 
   if (!assignment?.campaign_id) return fail("Penugasan tidak ditemukan.");
   if (assignment.campaign_status !== "aktif") {
     return fail("Kampanye ini tidak sedang berjalan, jadi draf belum bisa dikirim.");
+  }
+  if (assignment.status === "diundang") {
+    return fail("Konfirmasi brief penugasan ini dulu sebelum mengirim draf.");
   }
   if (!isOwnUploadPath(assignment.campaign_id, parsed.data.draft_file_path)) {
     return fail("Lokasi berkas draf tidak valid.");

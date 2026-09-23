@@ -34,7 +34,7 @@ export type PortalProfile = NonNullableExcept<
 >;
 export type PortalAssignment = NonNullableExcept<
   AssignmentView,
-  "landing_url" | "joined_at" | "views_bonus_cap"
+  "landing_url" | "joined_at" | "views_bonus_cap" | "creator_confirmed_at"
 >;
 export type PortalAsset = NonNullableExcept<AssetView, "file_path" | "external_url">;
 export type PortalContent = NonNullableExcept<

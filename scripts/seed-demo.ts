@@ -334,6 +334,8 @@ async function seedPortalCampaign(
           referral_code: "DEMPRA",
           tracking_slug: "demo-portal-rina",
           joined_at: addDays(now, -9).toISOString(),
+          // FR-M13-10: both demo creators accepted their brief in the portal.
+          creator_confirmed_at: addDays(now, -9).toISOString(),
           created_by: ownerId,
         },
         {
@@ -345,6 +347,7 @@ async function seedPortalCampaign(
           referral_code: "DEMPFZ",
           tracking_slug: "demo-portal-fauzi",
           joined_at: addDays(now, -9).toISOString(),
+          creator_confirmed_at: addDays(now, -9).toISOString(),
           created_by: ownerId,
         },
       ])

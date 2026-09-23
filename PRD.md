@@ -2,9 +2,9 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi              | 0.6 (MVP rilis pilot; v1.1: tautan laporan klien dan pengingat Telegram; v2.0: portal kreator; v3.0: portal klien; v3.1: situs publik) |
-| Tanggal            | 22 September 2026                                                                           |
-| Status             | Fase 0–11 dan Fase 13 selesai (v2.0 lengkap; portal klien: akses dan pantau; situs publik v3.1); Fase 12 (persetujuan konten dan laporan pendaftar klien) dirancang, belum dikerjakan |
+| Versi              | 0.7 (MVP rilis pilot; v1.1: tautan laporan klien dan pengingat Telegram; v2.0: portal kreator; v3.0: portal klien; v3.1: situs publik; v3.2: konfirmasi penugasan kreator) |
+| Tanggal            | 23 September 2026                                                                           |
+| Status             | Fase 0–11, Fase 13, dan Fase 14 selesai (v2.0 lengkap; portal klien: akses dan pantau; situs publik v3.1; konfirmasi penugasan kreator v3.2); Fase 12 (persetujuan konten dan laporan pendaftar klien) dirancang, belum dikerjakan |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
 | Pengguna versi ini | Tim internal (`owner`, `manager`); kreator lewat portal sejak v2.0; klien lewat portal sejak v3.0; pengunjung anonim membaca situs publik sejak v3.1 |
 
@@ -294,6 +294,7 @@ Portal memindahkan pekerjaan input yang sekarang dikerjakan tim lewat WhatsApp k
 - **FR-M13-06** Kreator mengunggah bukti metrik (checkpoint, waktu pengambilan, views, likes, komentar, share, simpan, tangkapan layar wajib) sebagai **usulan**. Tim memverifikasi (terima/tolak dengan alasan); hanya usulan yang diterima menjadi `metric_snapshots` resmi. Angka yang memengaruhi honor tidak pernah masuk tanpa verifikasi tim.
 - **FR-M13-07** Kreator melihat rincian honornya sendiri untuk setiap penugasan: honor dasar, bonus views, bonus pendaftar, penyesuaian beserta alasannya, total, dan status (`draf` ditampilkan sebagai "sedang dihitung dan masih bisa berubah", `disetujui`, `dibayar` beserta tanggal bayar). **Bukti transfer dan rincian perhitungan internal tetap hanya untuk `owner`.** Honor kreator lain tidak pernah terlihat.
 - **FR-M13-09** Setelah kontennya disetujui, kreator melaporkan konten sudah tayang dengan mengirim URL tayang dan waktu tayang sebagai **usulan** (`contents.proposed_posted_url`, `proposed_posted_at`). Usulan tidak mengubah status tayang; tim mengonfirmasi dengan satu tindakan, dan saat itulah aturan FR-M6-04 berlaku (URL tayang hanya untuk konten yang sudah disetujui). Tim tetap dapat mengisi sendiri tanpa usulan.
+- **FR-M13-10** Sebelum mengirim apa pun untuk sebuah penugasan, kreator mengonfirmasi brief-nya sendiri dari portal: satu tindakan bertanggal yang menyatakan ia sudah membaca brief, poin wajib, dan larangan, lalu memindahkan penugasan dari `diundang` ke `bergabung` (`campaign_creators.creator_confirmed_at`). Selama belum dikonfirmasi, portal tidak menerima draf, laporan tayang, maupun bukti metrik untuk penugasan itu. Kreator hanya boleh mengubah status penugasannya sendiri dari `diundang` ke `bergabung`; seluruh kolom lain (honor, jumlah konten, kode referal, slug) tetap milik tim. Tim melihat tanggal konfirmasi pada tab Kreator kampanye, dan itulah rujukan bila kemudian terjadi perselisihan soal isi brief (lihat 8.2).
 
 **Aturan keamanan M13 (berlaku untuk kedua fase)**
 
@@ -699,6 +700,22 @@ Kerjakan berurutan. Satu fase = satu atau beberapa sesi Claude Code = satu commi
 - [ ] Checklist design system terpenuhi: kontras ≥ 4.5:1 di mode terang dan gelap, hierarki heading berurutan, 375/768/1024/1440px tanpa scroll horizontal, `prefers-reduced-motion` dihormati.
 - [ ] `npm run lint && npm run typecheck && npm run test && npm run build` lulus.
 
+### Fase 14 — v3.2: Konfirmasi Penugasan oleh Kreator
+
+**Cakupan:** FR-M13-10. Kolom `campaign_creators.creator_confirmed_at`; helper `creator_joined_assignment()` dan `creator_joined_content()` yang menggantikan `creator_owns_assignment()`/`creator_owns_content()` pada kebijakan tulis portal (`contents` insert/update, `metric_submissions` insert); trigger `guard_portal_assignment_confirm()` beserta kebijakan `select`/`update` portal pada `campaign_creators`; kolom baru pada view `creator_portal_assignments`; kartu konfirmasi di halaman brief portal dan penanda status konfirmasi di tab Kreator kampanye.
+**Kriteria penerimaan:**
+
+- [ ] Kreator dengan penugasan berstatus `diundang` melihat brief lengkap, tetapi tidak dapat mengirim draf, laporan tayang, maupun bukti metrik untuk penugasan itu.
+- [ ] Satu tindakan konfirmasi memindahkan penugasan ke `bergabung` dan mengisi `creator_confirmed_at` serta `joined_at` dengan waktu server, bukan waktu kiriman klien.
+- [ ] Dari portal, kreator tidak dapat mengubah honor, jumlah konten, kode referal, atau slug penugasannya (`PORTAL_FIELD_LOCKED`), dan tidak dapat memindahkan status ke selain `bergabung` (`PORTAL_CONFIRM_ONLY`).
+- [ ] Kreator tidak dapat mengonfirmasi penugasan milik kreator lain.
+- [ ] Alur tim tidak berubah: `owner`/`manager` tetap bebas mengubah penugasan, termasuk menandainya `selesai`.
+- [ ] Penugasan `selesai` tetap menerima bukti metrik dari kreator yang bersangkutan.
+- [ ] Penugasan lama yang sudah memiliki konten ikut terbuka lewat backfill migrasi, sehingga kampanye berjalan tidak terhenti saat migrasi diterapkan.
+- [ ] Tim melihat tanggal konfirmasi (atau "menunggu konfirmasi kreator") pada tab Kreator kampanye.
+- [ ] `scripts/rls-check.sql` dan `scripts/guards-check.sql` mencakup penugasan yang belum dikonfirmasi; keduanya lulus.
+- [ ] `npm run lint && npm run typecheck && npm run test && npm run build` lulus.
+
 ---
 
 ## 12. Peta Jalan Setelah Pilot (Indikatif)
@@ -712,6 +729,7 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | 2.0   | Portal kreator: login, lihat brief, kirim draf, unggah bukti metrik, lihat status honor (M13; Fase 9 dan Fase 10) — **sedang dikerjakan** |
 | 3.0   | Portal klien: pantau kampanye berjalan, setujui konten, unduh laporan, kirim laporan pendaftar (M14; Fase 11 dan Fase 12) — **sedang dikerjakan** |
 | 3.1   | Situs publik pengenalan platform: landing, halaman kreator, dan halaman legal (M15; Fase 13) — **selesai** |
+| 3.2   | Konfirmasi penugasan oleh kreator sebelum mengirim apa pun (M13; Fase 14) — **selesai** |
 | 4.0   | Integrasi API resmi platform media sosial untuk metrik otomatis (bergantung persetujuan akses API)                               |
 | 5.0   | Pembayaran honor terintegrasi; perluasan ke segmen bank daerah, BUMD, dan Pemda (invoice, dokumen pengadaan)                     |
 
@@ -756,3 +774,4 @@ Urutan final ditentukan oleh data catatan waktu operasional (M12) dan masukan kl
 | 0.4   | 20 Sep 2026 | Fase 10: FR-M13-09 (laporan tayang dari kreator sebagai usulan), kartu kiriman kreator pada FR-M10-01, kolom `contents.proposed_posted_*`, view `creator_portal_submissions` |
 | 0.5   | 20 Sep 2026 | v3.0: modul M14 (portal klien), peran `client`, persetujuan konten dua tahap opsional (FR-M14-04, penyesuaian FR-M6-04), usulan laporan pendaftar dari klien (FR-M14-06, penyesuaian FR-M7-04), tabel `client_content_reviews` dan `registrant_submissions`, view `client_portal_*`, Fase 11 dan Fase 12. Tautan laporan v1.1 tetap berlaku berdampingan |
 | 0.6   | 22 Sep 2026 | v3.1: modul M15 (situs publik), peran pengunjung `anonim`, alur 5.0, NFR SEO, grup rute `app/(marketing)` beserta `robots.ts`/`sitemap.ts`, variabel `NEXT_PUBLIC_CONTACT_WA` (kontak publik hanya WhatsApp), Fase 13. Situs publik keluar dari daftar "di luar cakupan"; formulir dan penyimpanan data calon tetap di luar cakupan. Tanpa tabel, migrasi, atau perubahan RLS |
+| 0.7   | 23 Sep 2026 | v3.2: FR-M13-10 (kreator mengonfirmasi brief penugasannya sebelum dapat mengirim apa pun), kolom `campaign_creators.creator_confirmed_at`, helper `creator_joined_assignment()`/`creator_joined_content()`, trigger `guard_portal_assignment_confirm()`, kebijakan portal pada `campaign_creators`, Fase 14. Tanpa tabel baru |

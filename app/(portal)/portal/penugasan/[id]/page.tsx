@@ -24,6 +24,7 @@ import { publicEnv } from "@/lib/env";
 import { formatRupiah } from "@/lib/format/currency";
 import { formatCalendarDate, formatCalendarRange } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ConfirmBriefCard } from "./confirm-brief-card";
 import { SubmissionsPanel, type PortalContentView } from "./submissions-panel";
 
 export const metadata: Metadata = { title: "Brief penugasan" };
@@ -126,6 +127,9 @@ export default async function PortalAssignmentPage({
   });
   const baseUrl = publicEnv.NEXT_PUBLIC_APP_URL.replace(/\/+$/, "");
   const trackingUrl = `${baseUrl}/r/${assignment.tracking_slug}`;
+  // FR-M13-10: the brief has to be accepted before anything can be sent.
+  const awaitingConfirmation =
+    assignment.status === "diundang" && assignment.campaign_status === "aktif";
 
   return (
     <div className="space-y-6">
@@ -143,6 +147,15 @@ export default async function PortalAssignmentPage({
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
+        {awaitingConfirmation ? (
+          <ConfirmBriefCard
+            assignmentId={assignment.id}
+            paidLabelRequired={assignment.paid_label_required}
+            contentsCommitted={assignment.contents_committed}
+            minLiveDays={assignment.min_live_days}
+          />
+        ) : null}
+
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>
@@ -314,6 +327,7 @@ export default async function PortalAssignmentPage({
           campaignId={assignment.campaign_id}
           assignmentId={assignment.id}
           campaignRunning={assignment.campaign_status === "aktif"}
+          confirmed={assignment.status !== "diundang"}
           contentsCommitted={assignment.contents_committed}
           timezone={tz}
           contents={contentViews}
