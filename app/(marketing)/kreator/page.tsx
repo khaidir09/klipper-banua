@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { BadgeCheck, Banknote, TrendingUp, UserCheck } from "lucide-react";
 import { ContactCta } from "@/components/marketing/contact-cta";
-import { ImagePlaceholder } from "@/components/marketing/image-placeholder";
+import { MarketingIllustration } from "@/components/marketing/illustration";
 import { FaqList, type FaqItem } from "@/components/marketing/faq-list";
 import { Container, Section } from "@/components/marketing/section";
 
@@ -119,7 +119,7 @@ export default function CreatorPage() {
               />
             </div>
 
-            <ImagePlaceholder tone="brand" label="Foto kreator lokal Kalimantan" />
+            <MarketingIllustration name="kreator" tone="brand" />
           </div>
         </Container>
       </section>
@@ -185,7 +185,7 @@ export default function CreatorPage() {
             ))}
           </ol>
 
-          <ImagePlaceholder label="Foto kreator saat verifikasi audiens" />
+          <MarketingIllustration name="verifikasi" />
         </div>
       </Section>
 

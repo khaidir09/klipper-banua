@@ -16,7 +16,6 @@ import {
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -52,7 +51,6 @@ type AppShellProps = {
   email: string;
   role: UserRole;
   area: ShellArea;
-  timezoneLabel: string;
   /** Persisted sidebar state, read from the `sidebar_state` cookie server-side. */
   defaultOpen?: boolean;
   children: React.ReactNode;
@@ -105,7 +103,6 @@ export function AppShell({
   email,
   role,
   area,
-  timezoneLabel,
   defaultOpen = true,
   children,
 }: AppShellProps) {
@@ -129,9 +126,9 @@ export function AppShell({
               </span>
               <div className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate text-sm font-semibold tracking-tight">{appName}</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {chrome.label ?? `Zona waktu ${timezoneLabel}`}
-                </span>
+                {chrome.label ? (
+                  <span className="truncate text-xs text-muted-foreground">{chrome.label}</span>
+                ) : null}
               </div>
             </div>
           </SidebarHeader>
@@ -143,14 +140,6 @@ export function AppShell({
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
-
-          {chrome.label ? (
-            <SidebarFooter>
-              <p className="px-2 pb-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-                Zona waktu {timezoneLabel}
-              </p>
-            </SidebarFooter>
-          ) : null}
 
           <SidebarRail />
         </Sidebar>

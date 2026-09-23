@@ -2,7 +2,6 @@ import { AppShell } from "@/components/layout/app-shell";
 import { sidebarDefaultOpen } from "@/components/layout/sidebar-state";
 import { requireClient } from "@/lib/auth/guards";
 import { publicEnv } from "@/lib/env";
-import { timezoneLabel } from "@/lib/format/timezone";
 
 /**
  * Client portal (PRD M14). `requireClient` sends every other role to where it
@@ -18,7 +17,6 @@ export default async function ClientLayout({ children }: { children: React.React
       email={user.email ?? ""}
       role={profile.role}
       area="client"
-      timezoneLabel={timezoneLabel(profile.timezone)}
       defaultOpen={await sidebarDefaultOpen()}
     >
       {/* Clients check progress from a phone too: see `.touch-targets` in globals.css. */}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authMessage } from "@/lib/auth/messages";
 import { LoginForm } from "./login-form";
 
@@ -22,7 +22,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
         <CardTitle>
           <h1>Masuk</h1>
         </CardTitle>
-        <CardDescription>Gunakan akun yang diberikan owner.</CardDescription>
       </CardHeader>
       <CardContent>
         <LoginForm next={next} notice={authMessage(reason)} />

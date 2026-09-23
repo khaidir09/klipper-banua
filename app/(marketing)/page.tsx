@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, FileBarChart2, MapPinned, ShieldCheck } from "lucide-react";
 import { ContactCta } from "@/components/marketing/contact-cta";
-import { ImagePlaceholder } from "@/components/marketing/image-placeholder";
+import { MarketingIllustration } from "@/components/marketing/illustration";
 import { FaqList, type FaqItem } from "@/components/marketing/faq-list";
 import { Container, Section } from "@/components/marketing/section";
 import { Button } from "@/components/ui/button";
@@ -170,7 +170,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <ImagePlaceholder tone="brand" label="Foto kampanye kreator lokal bersama instansi" />
+            <MarketingIllustration name="kampanye" tone="brand" />
           </div>
 
           <ul className="mt-14 grid gap-6 sm:grid-cols-3 sm:gap-8">
@@ -300,7 +300,7 @@ export default function LandingPage() {
           </Button>
         }
       >
-        <ImagePlaceholder label="Foto kreator lokal sedang membuat konten" />
+        <MarketingIllustration name="konten" />
       </Section>
 
       <Section

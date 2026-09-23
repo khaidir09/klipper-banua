@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FileBarChart2, Megaphone, MapPinned, ShieldCheck } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { publicEnv } from "@/lib/env";
@@ -24,10 +25,13 @@ const POINTS = [
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-svh lg:grid-cols-[1.1fr_1fr]">
-      {/* Brand panel. Decorative context only, so it stays out of the tab order
-          and off small screens, where the form should own the viewport. */}
-      <aside className="hidden flex-col justify-between bg-brand-panel p-10 text-brand-panel-foreground lg:flex xl:p-14">
-        <div className="flex items-center gap-2.5">
+      {/* Brand panel. Decorative context only, apart from the brand link back to
+          the public site, and off small screens, where the form owns the viewport. */}
+      <aside className="hidden flex-col bg-brand-panel p-10 text-brand-panel-foreground lg:flex xl:p-14">
+        <Link
+          href="/"
+          className="flex w-fit items-center gap-2.5 rounded-md outline-none transition-opacity hover:opacity-90 focus-visible:ring-3 focus-visible:ring-brand-panel-foreground/40"
+        >
           <span
             aria-hidden
             className="flex size-9 items-center justify-center rounded-lg bg-brand-panel-foreground/10 ring-1 ring-brand-panel-foreground/15"
@@ -37,9 +41,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <span className="text-base font-semibold tracking-tight">
             {publicEnv.NEXT_PUBLIC_APP_NAME}
           </span>
-        </div>
+        </Link>
 
-        <div className="max-w-md">
+        {/* Both auto margins centre the pitch in the space the brand leaves. */}
+        <div className="my-auto max-w-md">
           <p className="text-3xl leading-tight font-semibold tracking-tight text-balance">
             Kampanye kreator lokal, dari brief sampai laporan.
           </p>
@@ -55,10 +60,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             ))}
           </ul>
         </div>
-
-        <p className="text-xs text-brand-panel-muted">
-          Aplikasi internal. Pendaftaran publik dinonaktifkan.
-        </p>
       </aside>
 
       <main className="flex flex-col px-4 py-6 sm:px-6">
@@ -69,7 +70,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="flex flex-1 items-center justify-center py-6">
           <div className="w-full max-w-sm">
             {/* Repeats the brand on small screens, where the panel is hidden. */}
-            <div className="mb-7 flex items-center justify-center gap-2.5 lg:hidden">
+            <Link
+              href="/"
+              className="mb-7 flex items-center justify-center gap-2.5 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 lg:hidden"
+            >
               <span
                 aria-hidden
                 className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
@@ -77,14 +81,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <Megaphone className="size-4" />
               </span>
               <span className="font-semibold tracking-tight">{publicEnv.NEXT_PUBLIC_APP_NAME}</span>
-            </div>
+            </Link>
             {children}
           </div>
         </div>
-
-        <p className="text-center text-xs text-muted-foreground lg:hidden">
-          Aplikasi internal. Pendaftaran publik dinonaktifkan.
-        </p>
       </main>
     </div>
   );
