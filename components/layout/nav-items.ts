@@ -1,6 +1,7 @@
 import {
   Building2,
   ClipboardList,
+  Compass,
   Home,
   LayoutDashboard,
   Megaphone,
@@ -33,7 +34,8 @@ export const NAV_ITEMS: NavItem[] = [
 /** Creator portal (M13). Creators never see an internal menu entry. */
 export const PORTAL_NAV_ITEMS: NavItem[] = [
   { label: "Beranda", href: "/portal", icon: Home, exact: true },
-  { label: "Penugasan", href: "/portal/penugasan", icon: ClipboardList },
+  { label: "Kampanye", href: "/portal/kampanye", icon: Compass },
+  { label: "Kampanye Saya", href: "/portal/penugasan", icon: ClipboardList },
   { label: "Profil", href: "/portal/profil", icon: User },
 ];
 

@@ -5,8 +5,13 @@ import { CampaignStatusBadge } from "@/components/status/status-badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { campaignToday } from "@/lib/campaigns/open";
 import { activationBlockers, isCampaignLocked } from "@/lib/campaigns/status";
-import { CAMPAIGN_OBJECTIVE_LABELS } from "@/lib/constants/campaigns";
+import {
+  CAMPAIGN_ACCESS_LABELS,
+  CAMPAIGN_OBJECTIVE_LABELS,
+  PAYOUT_MODEL_LABELS,
+} from "@/lib/constants/campaigns";
 import { formatRupiah } from "@/lib/format/currency";
 import { formatCalendarRange } from "@/lib/format/date";
 import { CampaignTabs } from "./campaign-tabs";
@@ -25,10 +30,13 @@ export default async function CampaignLayout({
   const { supabase, campaign, isOwner, canEdit } = await loadCampaign(id);
   const pulse = await loadCampaignPulse(id);
 
-  const { data: assignments } = await supabase
-    .from("campaign_creators")
-    .select("status")
-    .eq("campaign_id", id);
+  const [{ data: assignments }, { count: assetCount }] = await Promise.all([
+    supabase.from("campaign_creators").select("status").eq("campaign_id", id),
+    supabase
+      .from("campaign_assets")
+      .select("id", { count: "exact", head: true })
+      .eq("campaign_id", id),
+  ]);
 
   const joined = (assignments ?? []).filter((a) => a.status === "bergabung").length;
 
@@ -36,6 +44,19 @@ export default async function CampaignLayout({
     objective: campaign.objective,
     landingUrl: campaign.landing_url,
     assignmentStatuses: (assignments ?? []).map((a) => a.status),
+    access: campaign.access,
+    perViews:
+      campaign.payout_model === "per_views"
+        ? {
+            brief: campaign.brief,
+            assetCount: assetCount ?? 0,
+            ratePer1000Views: campaign.rate_per_1000_views,
+            creatorBudget: campaign.creator_budget,
+            endDate: campaign.end_date,
+            allowedPlatforms: campaign.allowed_platforms,
+            today: campaignToday(),
+          }
+        : null,
   });
 
   return (
@@ -63,6 +84,8 @@ export default async function CampaignLayout({
       <div className="flex flex-wrap items-center gap-2">
         <CampaignStatusBadge status={campaign.status} />
         <Badge variant="outline">Tujuan: {CAMPAIGN_OBJECTIVE_LABELS[campaign.objective]}</Badge>
+        <Badge variant="outline">Akses: {CAMPAIGN_ACCESS_LABELS[campaign.access]}</Badge>
+        <Badge variant="outline">Honor: {PAYOUT_MODEL_LABELS[campaign.payout_model]}</Badge>
         <div className="ml-auto">
           <StatusActions
             campaignId={id}

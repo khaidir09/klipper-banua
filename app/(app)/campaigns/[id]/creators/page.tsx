@@ -27,6 +27,7 @@ export default async function CampaignCreatorsPage({
     id: assignment.id,
     status: assignment.status,
     confirmedAt: assignment.creator_confirmed_at,
+    joinSource: assignment.join_source,
     contentsCommitted: assignment.contents_committed,
     referralCode: assignment.referral_code,
     trackingSlug: assignment.tracking_slug,
@@ -53,6 +54,7 @@ export default async function CampaignCreatorsPage({
       campaignId={id}
       canEdit={canEdit}
       timezone={session.profile.timezone}
+      perViews={campaign.payout_model === "per_views"}
       assignments={rows}
       assignable={assignable.map((creator) => ({
         id: creator.id,

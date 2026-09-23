@@ -66,3 +66,38 @@ export const CAMPAIGN_ASSET_MIME_TYPES = [
   "application/vnd.ms-powerpoint",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 ] as const;
+
+/* ------------------------------------------------------------------ */
+/* Open campaigns (v4.0, PRD M17)                                        */
+/* ------------------------------------------------------------------ */
+
+export type CampaignAccess = Database["public"]["Enums"]["campaign_access"];
+export type PayoutModel = Database["public"]["Enums"]["payout_model"];
+export type AssignmentJoinSource = Database["public"]["Enums"]["assignment_join_source"];
+
+export const CAMPAIGN_ACCESS_LABELS: Record<CampaignAccess, string> = {
+  terbuka: "Terbuka (katalog)",
+  undangan: "Undangan",
+};
+
+export const CAMPAIGN_ACCESSES = Object.keys(CAMPAIGN_ACCESS_LABELS) as CampaignAccess[];
+
+export const PAYOUT_MODEL_LABELS: Record<PayoutModel, string> = {
+  per_views: "Per 1.000 views",
+  paket: "Paket (lama)",
+};
+
+export const JOIN_SOURCE_LABELS: Record<AssignmentJoinSource, string> = {
+  mandiri: "Gabung sendiri",
+  tim: "Ditambahkan tim",
+};
+
+/** Column defaults of FR-M17-01, used by the campaign form. */
+export const PER_VIEWS_DEFAULTS = {
+  max_clips_per_creator: 3,
+  claim_grace_days: 3,
+  min_views_to_earn: 0,
+} as const;
+
+export const MAX_CLIPS_PER_CREATOR_LIMIT = 50;
+export const CLAIM_GRACE_DAYS_LIMIT = 60;

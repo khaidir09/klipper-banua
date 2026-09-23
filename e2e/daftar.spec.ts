@@ -81,7 +81,7 @@ test.describe.serial("pendaftaran klipper mandiri", () => {
     await page.locator("#ps-followers").fill("2500");
     await page.getByRole("button", { name: "Simpan" }).click();
     await expectToast(page, "Akun ditambahkan.");
-    await expect(page.getByRole("link", { name: "Lanjut ke beranda" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Pilih kampanye" })).toBeVisible();
 
     // A signed-in klipper who opens /daftar goes home instead.
     await page.goto("/daftar");

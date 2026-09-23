@@ -1,5 +1,5 @@
 -- Removes everything the end-to-end test (or a training session) did to the
--- two demo campaigns, so `npm run seed:demo` can recreate them.
+-- three demo campaigns, so `npm run seed:demo` can recreate them.
 -- LOCAL database only: npm run seed:demo:reset
 --
 -- Triggers are switched off because closed campaigns, reviews and paid
@@ -13,7 +13,8 @@ set local session_replication_role = replica;
 create temporary table demo_campaigns on commit drop as
   select unnest(array[
     'de300000-0000-4000-8000-0000000000c1',  -- PMB campaign, run by the E2E owner flow
-    'de300000-0000-4000-8000-0000000000c2'   -- portal campaign, always running (M13)
+    'de300000-0000-4000-8000-0000000000c2',  -- portal campaign, always running (M13)
+    'de300000-0000-4000-8000-0000000000c3'   -- open per_views campaign in the catalog (M17)
   ]::uuid[]) as id;
 
 create temporary table demo_assignments on commit drop as

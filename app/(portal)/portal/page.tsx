@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowRight, Compass } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCreator } from "@/lib/auth/guards";
-import { getPortalProfile, listPortalAssignments } from "@/lib/data/portal";
+import { getPortalProfile, listPortalAssignments, listPortalCatalog } from "@/lib/data/portal";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AssignmentCard } from "./assignment-card";
 
@@ -13,29 +15,33 @@ export const metadata: Metadata = { title: "Beranda" };
 export default async function PortalHomePage() {
   const { profile } = await requireCreator();
   const supabase = await createSupabaseServerClient();
-  const [creator, assignments] = await Promise.all([
+  const [creator, assignments, catalog] = await Promise.all([
     getPortalProfile(supabase),
     listPortalAssignments(supabase),
+    listPortalCatalog(supabase),
   ]);
   // FR-M16-05: a new klipper finishes their account before anything else.
   if (creator?.status === "prospek") redirect("/portal/mulai");
 
-  const running = assignments.filter((row) => row.campaign_status === "aktif");
-  const committed = running.reduce((total, row) => total + row.contents_committed, 0);
+  // Withdrawn assignments stay in "Kampanye Saya" but are no longer followed.
+  const running = assignments.filter(
+    (row) => row.campaign_status === "aktif" && row.status !== "mundur",
+  );
+  const openToJoin = catalog.filter((row) => !row.assignment_id && !row.budget_exhausted).length;
   const greeting = profile.full_name ? `Halo, ${profile.full_name}` : "Halo";
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={greeting}
-        description="Di sini Anda melihat brief, materi, dan kode referal untuk setiap kampanye yang Anda kerjakan."
+        description="Kampanye yang Anda ikuti, brief, materi, dan kode referalnya ada di sini."
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Kampanye berjalan
+              Kampanye diikuti
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -45,14 +51,37 @@ export default async function PortalHomePage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Konten yang disepakati
+              Kampanye terbuka untuk Anda
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">{committed}</p>
+            <p className="text-2xl font-semibold">{openToJoin}</p>
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <h2 className="flex items-center gap-2">
+              <Compass className="size-5" aria-hidden />
+              Cari kampanye baru
+            </h2>
+          </CardTitle>
+          <CardDescription>
+            Baca brief di katalog, gabung, lalu posting klip di akun Anda. Honor dihitung per 1.000
+            views yang diverifikasi tim.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild className="h-11">
+            <Link href="/portal/kampanye">
+              Buka katalog
+              <ArrowRight aria-hidden />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold tracking-tight">Kampanye berjalan</h2>
@@ -69,12 +98,12 @@ export default async function PortalHomePage() {
               <>
                 Penugasan sebelumnya ada di{" "}
                 <Link href="/portal/penugasan" className="font-medium underline">
-                  Penugasan saya
+                  Kampanye Saya
                 </Link>
                 .
               </>
             ) : (
-              "Tim akan menghubungi Anda saat ada penugasan baru."
+              "Pilih kampanye dari katalog untuk mulai."
             )}
           </p>
         )}

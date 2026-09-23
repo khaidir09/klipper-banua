@@ -29,6 +29,7 @@ type PayoutView = Database["public"]["Views"]["creator_portal_payouts"]["Row"];
 type AssignmentView = Database["public"]["Views"]["creator_portal_assignments"]["Row"];
 type AssetView = Database["public"]["Views"]["creator_portal_assets"]["Row"];
 type SocialAccountView = Database["public"]["Views"]["creator_portal_social_accounts"]["Row"];
+type CatalogView = Database["public"]["Views"]["creator_portal_catalog"]["Row"];
 
 export type PortalProfile = NonNullableExcept<
   ProfileView,
@@ -40,7 +41,21 @@ export type PortalProfile = NonNullableExcept<
 >;
 export type PortalAssignment = NonNullableExcept<
   AssignmentView,
-  "landing_url" | "joined_at" | "views_bonus_cap" | "creator_confirmed_at"
+  | "landing_url"
+  | "joined_at"
+  | "views_bonus_cap"
+  | "creator_confirmed_at"
+  | "max_payout_per_clip"
+  | "max_payout_per_creator"
+  | "withdrawn_at"
+>;
+export type PortalCatalogCampaign = NonNullableExcept<
+  CatalogView,
+  | "max_payout_per_clip"
+  | "max_payout_per_creator"
+  | "published_at"
+  | "assignment_id"
+  | "assignment_status"
 >;
 export type PortalAsset = NonNullableExcept<AssetView, "file_path" | "external_url">;
 export type PortalContent = NonNullableExcept<
@@ -108,7 +123,35 @@ export async function getPortalAssignment(
   return data ? (data as PortalAssignment) : null;
 }
 
-/** FR-M13-04. Signed URLs are short-lived and only work for assigned campaigns. */
+/**
+ * FR-M17-03: open campaigns the klipper may browse. The view already hides
+ * everything a klipper must not see and returns nothing to other roles.
+ */
+export async function listPortalCatalog(
+  supabase: SupabaseClient<Database>,
+): Promise<PortalCatalogCampaign[]> {
+  const { data, error } = await supabase.from("creator_portal_catalog").select("*");
+  if (error) throw new Error(error.message);
+  return data as PortalCatalogCampaign[];
+}
+
+export async function getPortalCatalogCampaign(
+  supabase: SupabaseClient<Database>,
+  campaignId: string,
+): Promise<PortalCatalogCampaign | null> {
+  const { data, error } = await supabase
+    .from("creator_portal_catalog")
+    .select("*")
+    .eq("id", campaignId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? (data as PortalCatalogCampaign) : null;
+}
+
+/**
+ * FR-M13-04, PRD 7.4. Signed URLs are short-lived and only work for campaigns
+ * the klipper is on, or open catalog campaigns once their account is active.
+ */
 export async function listPortalAssets(
   supabase: SupabaseClient<Database>,
   campaignId: string,

@@ -45,12 +45,23 @@ describe("form schemas are idempotent", () => {
       default_bonus_per_1000_views: "",
       default_bonus_per_registrant: "",
       default_views_bonus_cap: "",
+      access: "terbuka",
+      rate_per_1000_views: "10.000",
+      creator_budget: "",
+      max_payout_per_clip: "",
+      max_payout_per_creator: "",
+      min_views_to_earn: "0",
+      max_clips_per_creator: "3",
+      allowed_platforms: ["instagram", "tiktok"],
+      local_only: true,
+      claim_grace_days: "3",
     };
     expectIdempotent(campaignSchema, base);
     expectIdempotent(campaignSchema, {
       ...base,
       landing_url: "https://pmb.x.ac.id",
       default_views_bonus_cap: "1.000.000",
+      max_payout_per_clip: "250.000",
     });
   });
 

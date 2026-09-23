@@ -75,7 +75,7 @@ export default async function PortalStartPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         {ready ? (
           <Button asChild className="h-11">
-            <Link href="/portal">Lanjut ke beranda</Link>
+            <Link href="/portal/kampanye">Pilih kampanye</Link>
           </Button>
         ) : (
           <p className="text-sm text-muted-foreground">

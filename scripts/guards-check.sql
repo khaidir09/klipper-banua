@@ -6,12 +6,13 @@
 \set QUIET on
 -- Fixtures as superuser.
 insert into public.clients (id, name, type, province) values ('22222222-0000-0000-0000-000000000001','Guard Client','kampus_swasta','Kalimantan Selatan');
-insert into public.creators (id, full_name, birth_date, province, status) values
- ('22222222-0000-0000-0000-0000000000a1','Verified C','1995-01-01','Kalimantan Selatan','terverifikasi'),
- ('22222222-0000-0000-0000-0000000000a2','Prospect C','1995-01-01','Kalimantan Selatan','prospek'),
- ('22222222-0000-0000-0000-0000000000a3','Blocked C','1995-01-01','Kalimantan Selatan','diblokir');
-insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date) values
- ('22222222-0000-0000-0000-0000000000c1','22222222-0000-0000-0000-000000000001','GUARD-2026-01','Guard','pendaftar','2026-10-01','2026-10-31');
+insert into public.creators (id, full_name, birth_date, province, status, blocked_reason) values
+ ('22222222-0000-0000-0000-0000000000a1','Verified C','1995-01-01','Kalimantan Selatan','terverifikasi',null),
+ ('22222222-0000-0000-0000-0000000000a2','Prospect C','1995-01-01','Kalimantan Selatan','prospek',null),
+ ('22222222-0000-0000-0000-0000000000a3','Blocked C','1995-01-01','Kalimantan Selatan','diblokir','Guard fixture');
+-- A legacy campaign (Phase 16: paket + undangan keep the v3.2 rules).
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, payout_model, access) values
+ ('22222222-0000-0000-0000-0000000000c1','22222222-0000-0000-0000-000000000001','GUARD-2026-01','Guard','pendaftar','2026-10-01','2026-10-31','paket','undangan');
 \set QUIET off
 
 begin;
@@ -797,5 +798,192 @@ set local role authenticated;
 update public.creators set status = 'aktif' where id = '15151515-0000-0000-0000-0000000000a2';
 select status, blocked_at is null and blocked_reason is null as cleared from public.creators where id = '15151515-0000-0000-0000-0000000000a2';
 reset role;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 16 (v4.0): open campaigns and the catalog (PRD M17, FR-M4-02, FR-M5-01)
+-- ---------------------------------------------------------------------------
+begin;
+create temporary table p16_roles on commit drop as
+select
+  (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id;
+
+-- Portal accounts, created the way an invitation creates them.
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+select id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', email,
+       jsonb_build_object('role', 'creator'), '{}'::jsonb, now(), now()
+from (values
+  ('16161616-0000-0000-0000-0000000000f1'::uuid, 'guard.p16.active@example.test'),
+  ('16161616-0000-0000-0000-0000000000f2'::uuid, 'guard.p16.prospect@example.test'),
+  ('16161616-0000-0000-0000-0000000000f3'::uuid, 'guard.p16.oldterms@example.test'),
+  ('16161616-0000-0000-0000-0000000000f4'::uuid, 'guard.p16.local@example.test'),
+  ('16161616-0000-0000-0000-0000000000f6'::uuid, 'guard.p16.blocked@example.test')
+) as u(id, email);
+
+insert into public.creators (id, full_name, stage_name, birth_date, province, status, terms_version, terms_agreed_at, verified_at, profile_id) values
+ ('16161616-0000-0000-0000-0000000000a1','Active K','Aktif Klipper','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),null,'16161616-0000-0000-0000-0000000000f1'),
+ ('16161616-0000-0000-0000-0000000000a2','Prospect K','prospek','1995-01-01','Kalimantan Selatan','prospek','2026-10',now(),null,'16161616-0000-0000-0000-0000000000f2'),
+ ('16161616-0000-0000-0000-0000000000a3','Old Terms K','lama','1995-01-01','Kalimantan Selatan','aktif','v1',now(),null,'16161616-0000-0000-0000-0000000000f3'),
+ ('16161616-0000-0000-0000-0000000000a4','Local K','lokal','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),now(),'16161616-0000-0000-0000-0000000000f4'),
+ ('16161616-0000-0000-0000-0000000000a5','No Account K','tanpa akun','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),null,null),
+ ('16161616-0000-0000-0000-0000000000a6','Blocked K','blokir','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),null,'16161616-0000-0000-0000-0000000000f6');
+insert into public.clients (id, name, type, province) values ('16161616-0000-0000-0000-000000000001','Open Client 16','kampus_swasta','Kalimantan Selatan');
+
+-- c1 a draft to activate step by step; c2 open; c3 local only; c4 past its
+-- end; c5 invite-only; c6 a legacy package campaign.
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, access, payout_model,
+                              brief, rate_per_1000_views, creator_budget, allowed_platforms, local_only) values
+ ('16161616-0000-0000-0000-0000000000c1','16161616-0000-0000-0000-000000000001','OPEN16-01','Draft 16','awareness', public.campaign_today(), public.campaign_today() + 30,'draft','terbuka','per_views','',0,0,'{}',false),
+ ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-000000000001','OPEN16-02','Open 16','awareness', public.campaign_today(), public.campaign_today() + 30,'aktif','terbuka','per_views','Brief',10000,5000000,'{tiktok}',false),
+ ('16161616-0000-0000-0000-0000000000c3','16161616-0000-0000-0000-000000000001','OPEN16-03','Local 16','awareness', public.campaign_today(), public.campaign_today() + 30,'aktif','terbuka','per_views','Brief',10000,5000000,'{tiktok}',true),
+ ('16161616-0000-0000-0000-0000000000c4','16161616-0000-0000-0000-000000000001','OPEN16-04','Ended 16','awareness', public.campaign_today() - 30, public.campaign_today() - 1,'aktif','terbuka','per_views','Brief',10000,5000000,'{tiktok}',false),
+ ('16161616-0000-0000-0000-0000000000c5','16161616-0000-0000-0000-000000000001','OPEN16-05','Invite 16','awareness', public.campaign_today(), public.campaign_today() + 30,'aktif','undangan','per_views','Brief',10000,5000000,'{tiktok}',false),
+ ('16161616-0000-0000-0000-0000000000c6','16161616-0000-0000-0000-000000000001','OPEN16-06','Paket 16','awareness', public.campaign_today(), public.campaign_today() + 30,'aktif','undangan','paket','Brief',0,0,'{}',false);
+insert into public.campaign_assets (campaign_id, title, type, external_url) values
+ ('16161616-0000-0000-0000-0000000000c5','Undangan saja','tautan','https://drive.example.test/u');
+
+select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from p16_roles), 'role', 'authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+\echo 'P16-1. the team creates a paket campaign (expect PAKET_RETIRED)'
+savepoint a; insert into public.campaigns (client_id, code, name, objective, start_date, end_date, payout_model, access) values ('16161616-0000-0000-0000-000000000001','OPEN16-99','x','awareness','2026-10-01','2026-10-31','paket','undangan'); rollback to savepoint a;
+\echo 'P16-2. activate with an empty brief (expect ACTIVATION_NEEDS_BRIEF)'
+savepoint b; update public.campaigns set status='aktif' where id='16161616-0000-0000-0000-0000000000c1'; rollback to savepoint b;
+update public.campaigns set brief='Potong video wisuda' where id='16161616-0000-0000-0000-0000000000c1';
+\echo 'P16-3. activate without material (expect ACTIVATION_NEEDS_ASSET)'
+savepoint c; update public.campaigns set status='aktif' where id='16161616-0000-0000-0000-0000000000c1'; rollback to savepoint c;
+insert into public.campaign_assets (campaign_id, title, type, external_url) values ('16161616-0000-0000-0000-0000000000c1','Video mentah','tautan','https://drive.example.test/v');
+\echo 'P16-4. activate without a rate (expect ACTIVATION_NEEDS_RATE)'
+savepoint d; update public.campaigns set status='aktif' where id='16161616-0000-0000-0000-0000000000c1'; rollback to savepoint d;
+update public.campaigns set rate_per_1000_views=10000 where id='16161616-0000-0000-0000-0000000000c1';
+\echo 'P16-5. activate without a budget (expect ACTIVATION_NEEDS_BUDGET)'
+savepoint e; update public.campaigns set status='aktif' where id='16161616-0000-0000-0000-0000000000c1'; rollback to savepoint e;
+update public.campaigns set creator_budget=5000000 where id='16161616-0000-0000-0000-0000000000c1';
+\echo 'P16-6. activate without a platform (expect ACTIVATION_NEEDS_PLATFORM)'
+savepoint f; update public.campaigns set status='aktif' where id='16161616-0000-0000-0000-0000000000c1'; rollback to savepoint f;
+update public.campaigns set allowed_platforms='{tiktok,instagram}' where id='16161616-0000-0000-0000-0000000000c1';
+\echo 'P16-7. activate after the end date (expect ACTIVATION_PAST_END_DATE)'
+savepoint g; update public.campaigns set start_date=public.campaign_today() - 10, end_date=public.campaign_today() - 1, status='aktif' where id='16161616-0000-0000-0000-0000000000c1'; rollback to savepoint g;
+\echo 'P16-8. an invite-only per_views campaign still needs a klipper (expect ACTIVATION_NEEDS_CREATOR)'
+savepoint h; update public.campaigns set access='undangan', status='aktif' where id='16161616-0000-0000-0000-0000000000c1'; rollback to savepoint h;
+\echo 'P16-9. an open campaign starts without klippers (expect aktif / t)'
+update public.campaigns set status='aktif' where id='16161616-0000-0000-0000-0000000000c1';
+select status, published_at is not null as published from public.campaigns where id='16161616-0000-0000-0000-0000000000c1';
+\echo 'P16-10. switching an active campaign to paket (expect PAKET_RETIRED)'
+savepoint i; update public.campaigns set payout_model='paket', access='undangan' where id='16161616-0000-0000-0000-0000000000c1'; rollback to savepoint i;
+\echo 'P16-11. switching an active paket campaign to per_views (expect PAYOUT_MODEL_LOCKED)'
+savepoint j; update public.campaigns set payout_model='per_views' where id='16161616-0000-0000-0000-0000000000c6'; rollback to savepoint j;
+\echo 'P16-12. the team raises the budget of a running campaign (expect UPDATE 1)'
+update public.campaigns set creator_budget=6000000 where id='16161616-0000-0000-0000-0000000000c2';
+reset role;
+
+-- The active klipper (a1).
+select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_claims;
+set local role authenticated;
+\echo 'P16-13. the catalog lists only running open per_views campaigns (expect Draft 16, Local 16, Open 16; 100% each)'
+select name, budget_remaining_pct, budget_exhausted from public.creator_portal_catalog where client_name = 'Open Client 16' order by name;
+\echo 'P16-14. joining for another klipper (expect PORTAL_FIELD_LOCKED)'
+savepoint k; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a5'); rollback to savepoint k;
+\echo 'P16-15. joining with a fee of their own (expect PORTAL_FIELD_LOCKED)'
+savepoint l; insert into public.campaign_creators (campaign_id, creator_id, base_fee) values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a1', 1000000); rollback to savepoint l;
+\echo 'P16-16. joining an invite-only campaign (expect JOIN_CAMPAIGN_CLOSED)'
+savepoint m; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c5','16161616-0000-0000-0000-0000000000a1'); rollback to savepoint m;
+\echo 'P16-17. joining a paket campaign (expect JOIN_CAMPAIGN_CLOSED)'
+savepoint m2; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c6','16161616-0000-0000-0000-0000000000a1'); rollback to savepoint m2;
+\echo 'P16-18. joining after the end date (expect JOIN_PAST_DEADLINE)'
+savepoint n; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c4','16161616-0000-0000-0000-0000000000a1'); rollback to savepoint n;
+\echo 'P16-19. joining a local-only campaign without the badge (expect JOIN_LOCAL_ONLY)'
+savepoint o; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c3','16161616-0000-0000-0000-0000000000a1'); rollback to savepoint o;
+\echo 'P16-20. joining with a chosen code, slug and status (expect INSERT 0 1)'
+insert into public.campaign_creators (campaign_id, creator_id, status, referral_code, tracking_slug, contents_committed)
+values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a1','diundang','AAAAAA','my-own-slug', 99);
+\echo 'P16-21. the server decided the row (expect bergabung / mandiri / t / t / t / t / 3 / t)'
+select status, join_source, creator_confirmed_at is not null as confirmed, joined_at is not null as joined,
+       referral_code <> 'AAAAAA' as code_generated, tracking_slug like 'aktif-klipper-%' as slug_generated,
+       contents_committed, withdrawn_at is null as not_withdrawn
+from public.creator_portal_assignments where campaign_id = '16161616-0000-0000-0000-0000000000c2';
+\echo 'P16-22. joining twice (expect campaign_creators_campaign_creator_key)'
+savepoint p; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a1'); rollback to savepoint p;
+\echo 'P16-23. material of an open campaign is visible, of an invite-only one not (expect 1 / 0)'
+select (select count(*) from public.creator_portal_assets where campaign_id = '16161616-0000-0000-0000-0000000000c1') as open_assets,
+       (select count(*) from public.creator_portal_assets where campaign_id = '16161616-0000-0000-0000-0000000000c5') as invite_assets;
+\echo 'P16-24. withdrawing (expect UPDATE 1, then mundur / t)'
+update public.campaign_creators set status = 'mundur' where campaign_id = '16161616-0000-0000-0000-0000000000c2' and creator_id = '16161616-0000-0000-0000-0000000000a1';
+select status, withdrawn_at is not null as withdrawn from public.creator_portal_assignments where campaign_id = '16161616-0000-0000-0000-0000000000c2';
+\echo 'P16-25. rejoining after withdrawing (expect PORTAL_CONFIRM_ONLY)'
+savepoint q; update public.campaign_creators set status = 'bergabung' where campaign_id = '16161616-0000-0000-0000-0000000000c2' and creator_id = '16161616-0000-0000-0000-0000000000a1'; rollback to savepoint q;
+reset role;
+
+\echo 'P16-26. withdrawing from a paket campaign (expect WITHDRAW_NOT_ALLOWED)'
+-- Fixtures go in without a JWT, the way the service role writes them.
+select set_config('request.jwt.claims', '', true) is not null as no_claims;
+insert into public.campaign_creators (id, campaign_id, creator_id, status, referral_code, tracking_slug) values
+ ('16161616-0000-0000-0000-0000000000b6','16161616-0000-0000-0000-0000000000c6','16161616-0000-0000-0000-0000000000a1','bergabung','PKTSXA','paket-sixteen');
+select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_claims;
+set local role authenticated;
+savepoint r; update public.campaign_creators set status = 'mundur' where id = '16161616-0000-0000-0000-0000000000b6'; rollback to savepoint r;
+reset role;
+
+-- The prospect (a2).
+select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as prospect_claims;
+set local role authenticated;
+\echo 'P16-27. a prospect reads the catalog but not the material (expect 3 / 0)'
+select (select count(*) from public.creator_portal_catalog where client_name = 'Open Client 16') as catalog_rows,
+       (select count(*) from public.creator_portal_assets where campaign_id = '16161616-0000-0000-0000-0000000000c1') as assets;
+\echo 'P16-28. a prospect joins (expect JOIN_CREATOR_NOT_ACTIVE)'
+savepoint s1; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a2'); rollback to savepoint s1;
+reset role;
+
+-- The klipper on an old version of the terms (a3).
+select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f3', 'role', 'authenticated')::text, true) is not null as old_terms_claims;
+set local role authenticated;
+\echo 'P16-29. joining on old terms (expect JOIN_TERMS_OUTDATED)'
+savepoint t1; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a3'); rollback to savepoint t1;
+\echo 'P16-30. accepting the current terms, then joining (expect 2026-10, then INSERT 0 1)'
+select public.accept_creator_terms();
+insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a3');
+reset role;
+
+\echo 'P16-31. an approved clip blocks withdrawing (expect WITHDRAW_HAS_APPROVED_CLIP)'
+select set_config('request.jwt.claims', '', true) is not null as no_claims;
+insert into public.contents (campaign_creator_id, platform, draft_url, review_status)
+select id, 'tiktok', 'https://example.com/p16', 'disetujui' from public.campaign_creators
+where campaign_id = '16161616-0000-0000-0000-0000000000c2' and creator_id = '16161616-0000-0000-0000-0000000000a3';
+select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f3', 'role', 'authenticated')::text, true) is not null as old_terms_claims;
+set local role authenticated;
+savepoint t2; update public.campaign_creators set status = 'mundur' where campaign_id = '16161616-0000-0000-0000-0000000000c2' and creator_id = '16161616-0000-0000-0000-0000000000a3'; rollback to savepoint t2;
+reset role;
+
+select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from p16_roles), 'role', 'authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+\echo 'P16-32. changing the rate after an approved clip (expect RATE_LOCKED)'
+savepoint u; update public.campaigns set rate_per_1000_views = 12000 where id = '16161616-0000-0000-0000-0000000000c2'; rollback to savepoint u;
+\echo 'P16-33. the team cuts the budget below the cost of 1,000 views (expect UPDATE 1, then t)'
+update public.campaigns set creator_budget = 5000 where id = '16161616-0000-0000-0000-0000000000c2';
+select public.campaign_budget_exhausted('16161616-0000-0000-0000-0000000000c2') as exhausted;
+\echo 'P16-34. the team blocks a klipper (expect UPDATE 1)'
+update public.creators set status = 'diblokir', blocked_reason = 'Uji blokir' where id = '16161616-0000-0000-0000-0000000000a6';
+reset role;
+
+-- The badge holder (a4).
+select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f4', 'role', 'authenticated')::text, true) is not null as local_claims;
+set local role authenticated;
+\echo 'P16-35. joining a campaign whose budget is used up (expect JOIN_BUDGET_EXHAUSTED)'
+savepoint v; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a4'); rollback to savepoint v;
+\echo 'P16-36. a badge holder joins a local-only campaign (expect INSERT 0 1)'
+insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c3','16161616-0000-0000-0000-0000000000a4');
+reset role;
+
+-- The blocked klipper (a6).
+select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f6', 'role', 'authenticated')::text, true) is not null as blocked_claims;
+set local role authenticated;
+\echo 'P16-37. a blocked klipper reads the catalog, then joins (expect 0, then CREATOR_BLOCKED)'
+select count(*) as catalog_rows from public.creator_portal_catalog;
+savepoint w; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c1','16161616-0000-0000-0000-0000000000a6'); rollback to savepoint w;
+reset role;
+
+\echo 'P16-38. legacy assignments keep their model and team source (expect paket / tim)'
+select c.payout_model, cc.join_source from public.campaign_creators cc join public.campaigns c on c.id = cc.campaign_id
+where cc.id = '16161616-0000-0000-0000-0000000000b6';
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;

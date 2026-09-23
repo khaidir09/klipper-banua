@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CircleAlert } from "lucide-react";
 import { AssignmentStatusBadge, CampaignStatusBadge } from "@/components/status/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRupiah } from "@/lib/format/currency";
 import { formatCalendarRange } from "@/lib/format/date";
 import type { PortalAssignment } from "@/lib/data/portal";
 
@@ -37,10 +38,17 @@ export function AssignmentCard({ assignment }: { assignment: PortalAssignment })
             <dt className="text-muted-foreground">Periode</dt>
             <dd>{formatCalendarRange(assignment.start_date, assignment.end_date)}</dd>
           </div>
-          <div>
-            <dt className="text-muted-foreground">Konten disepakati</dt>
-            <dd>{assignment.contents_committed} konten</dd>
-          </div>
+          {assignment.payout_model === "per_views" ? (
+            <div>
+              <dt className="text-muted-foreground">Tarif / 1.000 views</dt>
+              <dd className="tabular-nums">{formatRupiah(assignment.rate_per_1000_views)}</dd>
+            </div>
+          ) : (
+            <div>
+              <dt className="text-muted-foreground">Konten disepakati</dt>
+              <dd>{assignment.contents_committed} konten</dd>
+            </div>
+          )}
           <div>
             <dt className="text-muted-foreground">Kode referal</dt>
             <dd className="font-mono">{assignment.referral_code}</dd>
@@ -61,7 +69,7 @@ export function AssignmentCard({ assignment }: { assignment: PortalAssignment })
           /* Affordance only. The card itself carries the link, so a screen
              reader announces one target per card instead of two. */
           <p className="inline-flex items-center gap-1 text-sm font-medium text-primary">
-            Lihat brief
+            {assignment.status === "mundur" ? "Lihat riwayat" : "Lihat brief"}
             <ArrowRight className="size-4" aria-hidden />
           </p>
         )}

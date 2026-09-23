@@ -4,7 +4,7 @@
 | ------------------ | ------------------------------------------------------------------------------------------- |
 | Versi dokumen      | 1.0 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
 | Tanggal            | 23 September 2026                                                                           |
-| Status             | Fase 0–11, 13, 14, dan **15** selesai (fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri). **Tahap A lanjutan (Fase 16–18) dirancang, belum dikerjakan.** Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
+| Status             | Fase 0–11, 13, 14, 15, dan **16** selesai (fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri, kampanye terbuka dan katalog). **Tahap A lanjutan (Fase 17–18) dirancang, belum dikerjakan.** Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
 | Acuan model        | ayoklip.com (klipper daftar sendiri → pilih kampanye → posting → kirim tautan + bukti views → diverifikasi → saldo → tarik) dengan pembeda lokal Kalimantan |
 | Pengguna versi ini | Tim internal (`owner`, `manager`); **klipper mendaftar sendiri** (peran `creator`); klien lewat undangan (Tahap A) dan mendaftar sendiri (Tahap B); pengunjung anonim membaca situs publik |
@@ -603,12 +603,14 @@ _Catatan implementasi:_ klipper berstatus `diblokir` masih dikeluarkan dari port
 **Cakupan:** M17 (FR-M17-01 s.d. FR-M17-07), FR-M4-02, FR-M5-01, FR-M13-03, FR-M13-10. Enum `campaign_access`, `payout_model`; kolom kampanye baru dengan backfill `paket`/`undangan` untuk kampanye lama; formulir kampanye tim; trigger aktivasi; view `creator_portal_catalog`; kebijakan gabung pada `campaign_creators` (insert oleh klipper hanya untuk dirinya, trigger mengisi status, konfirmasi, kode, slug, dan mengunci kolom honor); aturan storage materi untuk kampanye terbuka; halaman katalog, detail, Gabung, Mundur, dan Kampanye Saya di portal.
 **Kriteria penerimaan:**
 
-- [ ] Kampanye lama tetap berjalan sebagai `paket` + `undangan` tanpa perubahan perilaku.
-- [ ] Kampanye `per_views` tidak dapat diaktifkan tanpa syarat FR-M17-02 (action dan trigger).
-- [ ] Katalog hanya menampilkan kampanye `aktif` + `terbuka`, tanpa `package_price`, target internal, atau nominal anggaran (diuji di `rls-check.sql`).
-- [ ] Gabung ditolak untuk klipper `prospek`/`diblokir`, syarat versi lama, kampanye lewat tenggat, anggaran habis, atau `local_only` tanpa lencana — di action dan di database.
-- [ ] Klipper tidak dapat menyisipkan penugasan untuk klipper lain atau mengisi kolom honor/kode/slug sendiri.
-- [ ] Klipper dapat mengunduh materi kampanye terbuka yang aktif, tetapi tidak materi kampanye `undangan` yang tidak diikutinya.
+- [x] Kampanye lama tetap berjalan sebagai `paket` + `undangan` tanpa perubahan perilaku.
+- [x] Kampanye `per_views` tidak dapat diaktifkan tanpa syarat FR-M17-02 (action dan trigger).
+- [x] Katalog hanya menampilkan kampanye `aktif` + `terbuka`, tanpa `package_price`, target internal, atau nominal anggaran (diuji di `rls-check.sql`).
+- [x] Gabung ditolak untuk klipper `prospek`/`diblokir`, syarat versi lama, kampanye lewat tenggat, anggaran habis, atau `local_only` tanpa lencana — di action dan di database.
+- [x] Klipper tidak dapat menyisipkan penugasan untuk klipper lain atau mengisi kolom honor/kode/slug sendiri.
+- [x] Klipper dapat mengunduh materi kampanye terbuka yang aktif, tetapi tidak materi kampanye `undangan` yang tidak diikutinya.
+
+_Catatan implementasi:_ honor terpakai dibaca dari fungsi `campaign_creator_cost()` yang mengembalikan 0 sampai buku besar dibuat di Fase 17 (fungsi itu yang diganti; aturan "anggaran habis", batas penurunan anggaran, dan persentase sisa di katalog sudah memakainya). Pembatalan otomatis klip yang menunggu verifikasi saat klipper mundur (FR-M17-05) dikerjakan di Fase 17 bersama siklus klip; di Fase 16 mundur hanya ditolak bila ada konten `disetujui`. Klipper yang sudah mundur tidak dapat bergabung lagi ke kampanye yang sama. Versi syarat terbaru di database ada di `current_creator_terms_version()` dan diuji sama dengan `CREATOR_TERMS_VERSION`; persetujuan ulang lewat `accept_creator_terms()`. Formulir kirim klip untuk penugasan `per_views` menyusul di Fase 17.
 
 ### Fase 17 — v4.0: Kiriman Klip dan Verifikasi Views
 
@@ -644,7 +646,7 @@ _Catatan implementasi:_ klipper berstatus `diblokir` masih dikeluarkan dari port
 | Versi | Fitur |
 | ----- | ----- |
 | 1.1–3.2 | Tautan laporan, pengingat Telegram, portal kreator, portal klien, situs publik, konfirmasi penugasan — **selesai** (kecuali Fase 12) |
-| **4.0** | **Tahap A — klipper mandiri** (Fase 15–18) — Fase 15 **selesai** |
+| **4.0** | **Tahap A — klipper mandiri** (Fase 15–18) — Fase 15–16 **selesai** |
 | 4.0.x | Fase 12 yang direvisi: laporan dan usulan pendaftar dari portal klien |
 | **4.1** | **Tahap B — klien mandiri** (garis besar, PRD dirinci sebelum dikerjakan): pendaftaran klien/instansi dengan verifikasi tim; dompet klien dengan **deposit manual** (transfer + bukti, dikonfirmasi `owner`); klien membuat kampanye `per_views` sendiri (anggaran, tarif, brief, materi) yang ditinjau tim sebelum tayang di katalog; biaya platform (acuan 5%) dan add-on (khusus Klipper Lokal); anggaran terkunci saat kampanye aktif dan sisa dikembalikan ke dompet saat selesai; klien menandai klip bermasalah; invoice/kuitansi otomatis |
 | 4.2 | Penarikan terjadwal (batch) dan pengingat penarikan; papan peringkat di portal (nama panggung) |

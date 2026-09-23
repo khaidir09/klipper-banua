@@ -21,6 +21,7 @@ export default async function EditCampaignPage({ params }: { params: Promise<{ i
       campaignId={id}
       clients={clients}
       defaultValues={campaignToFormValues(campaign)}
+      payoutModel={campaign.payout_model}
     />
   );
 }

@@ -20,7 +20,15 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormAsideCard, FormHints, FormLayout } from "@/components/layout/form-layout";
-import { CAMPAIGN_OBJECTIVES, CAMPAIGN_OBJECTIVE_LABELS } from "@/lib/constants/campaigns";
+import {
+  CAMPAIGN_ACCESSES,
+  CAMPAIGN_ACCESS_LABELS,
+  CAMPAIGN_OBJECTIVES,
+  CAMPAIGN_OBJECTIVE_LABELS,
+  PER_VIEWS_DEFAULTS,
+  type PayoutModel,
+} from "@/lib/constants/campaigns";
+import { SOCIAL_PLATFORMS, SOCIAL_PLATFORM_LABELS } from "@/lib/constants/creators";
 import { formatCalendarRange } from "@/lib/format/date";
 import { formatRupiah } from "@/lib/format/currency";
 import { applyFieldErrors } from "@/lib/forms";
@@ -53,6 +61,11 @@ type CampaignFormProps = {
   campaignId?: string;
   clients: ClientOption[];
   defaultValues?: Partial<CampaignFormInput>;
+  /**
+   * New campaigns are always `per_views` (PRD 5.3); legacy `paket` campaigns
+   * keep their fee scheme and stay invite-only.
+   */
+  payoutModel?: PayoutModel;
 };
 
 const EMPTY: CampaignFormInput = {
@@ -77,9 +90,25 @@ const EMPTY: CampaignFormInput = {
   default_bonus_per_1000_views: "",
   default_bonus_per_registrant: "",
   default_views_bonus_cap: "",
+  access: "terbuka",
+  rate_per_1000_views: "",
+  creator_budget: "",
+  max_payout_per_clip: "",
+  max_payout_per_creator: "",
+  min_views_to_earn: String(PER_VIEWS_DEFAULTS.min_views_to_earn),
+  max_clips_per_creator: String(PER_VIEWS_DEFAULTS.max_clips_per_creator),
+  allowed_platforms: [...SOCIAL_PLATFORMS],
+  local_only: false,
+  claim_grace_days: String(PER_VIEWS_DEFAULTS.claim_grace_days),
 };
 
-export function CampaignForm({ campaignId, clients, defaultValues }: CampaignFormProps) {
+export function CampaignForm({
+  campaignId,
+  clients,
+  defaultValues,
+  payoutModel = "per_views",
+}: CampaignFormProps) {
+  const perViews = payoutModel === "per_views";
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -108,8 +137,8 @@ export function CampaignForm({ campaignId, clients, defaultValues }: CampaignFor
 
   const { errors } = form.formState;
   const text = (name: keyof CampaignFormInput) => {
-    // `paid_label_required` is a boolean driven by Controller, so it never
-    // reaches this helper; every other field renders as text.
+    // Booleans and the platform list are driven by Controller, so they never
+    // reach this helper; every other field renders as text.
     const value = initial[name];
     return {
       id: name,
@@ -128,18 +157,21 @@ export function CampaignForm({ campaignId, clients, defaultValues }: CampaignFor
   // used to sit empty and stays in view while the operator scrolls. `useWatch`
   // rather than `form.watch()`: it re-renders only on these fields and does not
   // opt the component out of the React Compiler.
-  const [clientId, code, objective, startDate, endDate, packagePrice, baseFee] = useWatch({
-    control: form.control,
-    name: [
-      "client_id",
-      "code",
-      "objective",
-      "start_date",
-      "end_date",
-      "package_price",
-      "default_base_fee",
-    ],
-  });
+  const [clientId, code, objective, startDate, endDate, packagePrice, baseFee, rate, budget] =
+    useWatch({
+      control: form.control,
+      name: [
+        "client_id",
+        "code",
+        "objective",
+        "start_date",
+        "end_date",
+        "package_price",
+        "default_base_fee",
+        "rate_per_1000_views",
+        "creator_budget",
+      ],
+    });
   const selectedClient = clients.find((client) => client.id === clientId);
   const summary: { label: string; value: string; mono?: boolean }[] = [
     { label: "Klien", value: selectedClient?.name ?? "Belum dipilih" },
@@ -147,7 +179,12 @@ export function CampaignForm({ campaignId, clients, defaultValues }: CampaignFor
     { label: "Tujuan", value: CAMPAIGN_OBJECTIVE_LABELS[objective] },
     { label: "Periode", value: summaryPeriod(startDate, endDate) },
     { label: "Harga paket", value: summaryRupiah(packagePrice) },
-    { label: "Honor dasar / konten", value: summaryRupiah(baseFee) },
+    ...(perViews
+      ? [
+          { label: "Tarif / 1.000 views", value: summaryRupiah(rate) },
+          { label: "Anggaran klipper", value: summaryRupiah(budget) },
+        ]
+      : [{ label: "Honor dasar / konten", value: summaryRupiah(baseFee) }]),
   ];
 
   const aside = (
@@ -176,9 +213,17 @@ export function CampaignForm({ campaignId, clients, defaultValues }: CampaignFor
           items={[
             campaignId
               ? "Perubahan pada kampanye yang sudah berjalan tercatat di log aktivitas."
-              : "Kampanye baru selalu tersimpan sebagai Draft; aktifkan dari halaman kampanye setelah kreator bergabung.",
+              : "Kampanye baru selalu tersimpan sebagai Draft; aktifkan dari halaman kampanye.",
             "Kampanye bertujuan Pendaftar butuh URL tujuan terisi sebelum dapat diaktifkan.",
-            "Skema honor di sini hanya nilai bawaan; tiap penugasan masih bisa memakai angka sendiri.",
+            ...(perViews
+              ? [
+                  "Sebelum aktif: brief, minimal satu materi, tarif, anggaran, dan platform wajib terisi.",
+                  "Anggaran dapat dinaikkan saat kampanye berjalan; tarif terkunci setelah ada klip disetujui.",
+                  "Klipper hanya melihat persentase sisa anggaran, bukan nominalnya.",
+                ]
+              : [
+                  "Skema honor di sini hanya nilai bawaan; tiap penugasan masih bisa memakai angka sendiri.",
+                ]),
             "Tulis nominal dalam Rupiah utuh tanpa titik, koma, atau singkatan.",
           ]}
         />
@@ -353,41 +398,168 @@ export function CampaignForm({ campaignId, clients, defaultValues }: CampaignFor
             </div>
           </FieldSet>
 
-          <FieldSet>
-            <FieldLegend>Skema honor default</FieldLegend>
-            <FieldDescription>
-              Berlaku untuk semua kreator kecuali diubah per penugasan. Nominal dalam Rupiah utuh.
-            </FieldDescription>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field>
-                <FieldLabel htmlFor="default_base_fee">Honor dasar per konten</FieldLabel>
-                <Input {...money("default_base_fee")} />
-                <FieldError errors={[errors.default_base_fee]} />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="default_bonus_per_1000_views">
-                  Bonus per 1.000 views
-                </FieldLabel>
-                <Input {...money("default_bonus_per_1000_views")} />
-                <FieldError errors={[errors.default_bonus_per_1000_views]} />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="default_bonus_per_registrant">Bonus per pendaftar</FieldLabel>
-                <Input {...money("default_bonus_per_registrant")} />
-                <FieldError errors={[errors.default_bonus_per_registrant]} />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="default_views_bonus_cap">
-                  Batas bonus views per kreator
-                </FieldLabel>
-                <Input
-                  {...money("default_views_bonus_cap")}
-                  placeholder="Kosongkan jika tanpa batas"
-                />
-                <FieldError errors={[errors.default_views_bonus_cap]} />
-              </Field>
-            </div>
-          </FieldSet>
+          {perViews ? (
+            <FieldSet>
+              <FieldLegend>Akses & honor per views</FieldLegend>
+              <FieldDescription>
+                Honor klipper dihitung dari views terverifikasi. Nominal dalam Rupiah utuh.
+              </FieldDescription>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="access">Akses</FieldLabel>
+                  <NativeSelect {...text("access")}>
+                    {CAMPAIGN_ACCESSES.map((access) => (
+                      <NativeSelectOption key={access} value={access}>
+                        {CAMPAIGN_ACCESS_LABELS[access]}
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                  <FieldDescription>
+                    Terbuka: tampil di katalog portal dan klipper bergabung sendiri. Undangan: hanya
+                    klipper yang ditambahkan tim.
+                  </FieldDescription>
+                  <FieldError errors={[errors.access]} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="rate_per_1000_views">Tarif per 1.000 views (Rp)</FieldLabel>
+                  <Input {...money("rate_per_1000_views")} />
+                  <FieldError errors={[errors.rate_per_1000_views]} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="creator_budget">Anggaran klipper (Rp)</FieldLabel>
+                  <Input {...money("creator_budget")} />
+                  <FieldDescription>Total honor yang boleh dibayarkan ke klipper.</FieldDescription>
+                  <FieldError errors={[errors.creator_budget]} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="min_views_to_earn">Minimum views berhonor</FieldLabel>
+                  <Input {...money("min_views_to_earn")} />
+                  <FieldError errors={[errors.min_views_to_earn]} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="max_payout_per_clip">Batas honor per klip (Rp)</FieldLabel>
+                  <Input
+                    {...money("max_payout_per_clip")}
+                    placeholder="Kosongkan jika tanpa batas"
+                  />
+                  <FieldError errors={[errors.max_payout_per_clip]} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="max_payout_per_creator">
+                    Batas honor per klipper (Rp)
+                  </FieldLabel>
+                  <Input
+                    {...money("max_payout_per_creator")}
+                    placeholder="Kosongkan jika tanpa batas"
+                  />
+                  <FieldError errors={[errors.max_payout_per_creator]} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="max_clips_per_creator">Maksimal klip per klipper</FieldLabel>
+                  <Input {...text("max_clips_per_creator")} inputMode="numeric" />
+                  <FieldError errors={[errors.max_clips_per_creator]} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="claim_grace_days">
+                    Masa klaim setelah selesai (hari)
+                  </FieldLabel>
+                  <Input {...text("claim_grace_days")} inputMode="numeric" />
+                  <FieldDescription>
+                    Pembaruan views masih diterima sekian hari setelah tanggal selesai.
+                  </FieldDescription>
+                  <FieldError errors={[errors.claim_grace_days]} />
+                </Field>
+              </div>
+              <Controller
+                control={form.control}
+                name="allowed_platforms"
+                render={({ field }) => (
+                  <FieldSet className="gap-2">
+                    <FieldLegend variant="label">Platform yang diizinkan</FieldLegend>
+                    <div className="flex flex-wrap gap-x-6 gap-y-2">
+                      {SOCIAL_PLATFORMS.map((platform) => {
+                        const id = `allowed_platforms_${platform}`;
+                        const selected = field.value ?? [];
+                        return (
+                          <Field key={platform} orientation="horizontal" className="w-auto">
+                            <Checkbox
+                              id={id}
+                              checked={selected.includes(platform)}
+                              onCheckedChange={(next) =>
+                                field.onChange(
+                                  next === true
+                                    ? [...selected, platform]
+                                    : selected.filter((item) => item !== platform),
+                                )
+                              }
+                            />
+                            <FieldLabel htmlFor={id} className="font-normal">
+                              {SOCIAL_PLATFORM_LABELS[platform]}
+                            </FieldLabel>
+                          </Field>
+                        );
+                      })}
+                    </div>
+                    <FieldError errors={[errors.allowed_platforms]} />
+                  </FieldSet>
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="local_only"
+                render={({ field }) => (
+                  <Field orientation="horizontal">
+                    <Checkbox
+                      id="local_only"
+                      checked={field.value === true}
+                      onCheckedChange={(checked) => field.onChange(checked === true)}
+                    />
+                    <FieldLabel htmlFor="local_only" className="font-normal">
+                      Khusus pemegang lencana Klipper Lokal
+                    </FieldLabel>
+                  </Field>
+                )}
+              />
+            </FieldSet>
+          ) : (
+            <FieldSet>
+              <FieldLegend>Skema honor default</FieldLegend>
+              <FieldDescription>
+                Berlaku untuk semua kreator kecuali diubah per penugasan. Nominal dalam Rupiah utuh.
+              </FieldDescription>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="default_base_fee">Honor dasar per konten</FieldLabel>
+                  <Input {...money("default_base_fee")} />
+                  <FieldError errors={[errors.default_base_fee]} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="default_bonus_per_1000_views">
+                    Bonus per 1.000 views
+                  </FieldLabel>
+                  <Input {...money("default_bonus_per_1000_views")} />
+                  <FieldError errors={[errors.default_bonus_per_1000_views]} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="default_bonus_per_registrant">
+                    Bonus per pendaftar
+                  </FieldLabel>
+                  <Input {...money("default_bonus_per_registrant")} />
+                  <FieldError errors={[errors.default_bonus_per_registrant]} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="default_views_bonus_cap">
+                    Batas bonus views per kreator
+                  </FieldLabel>
+                  <Input
+                    {...money("default_views_bonus_cap")}
+                    placeholder="Kosongkan jika tanpa batas"
+                  />
+                  <FieldError errors={[errors.default_views_bonus_cap]} />
+                </Field>
+              </div>
+            </FieldSet>
+          )}
 
           <div className="flex gap-2">
             <Button type="submit" disabled={isPending}>

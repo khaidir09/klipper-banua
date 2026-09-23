@@ -50,6 +50,8 @@ import { buildWhatsappBrief, type WhatsappBriefInput } from "@/lib/campaigns/wha
 import {
   ASSIGNMENT_STATUSES,
   ASSIGNMENT_STATUS_LABELS,
+  JOIN_SOURCE_LABELS,
+  type AssignmentJoinSource,
   type AssignmentStatus,
 } from "@/lib/constants/campaigns";
 import { formatAmountDigits, formatRupiah } from "@/lib/format/currency";
@@ -71,6 +73,8 @@ export type AssignmentView = {
   status: AssignmentStatus;
   /** FR-M13-10: when the creator accepted the brief in the portal, if ever. */
   confirmedAt: string | null;
+  /** FR-M17-04: joined from the catalog or added by the team. */
+  joinSource: AssignmentJoinSource;
   contentsCommitted: number;
   referralCode: string;
   trackingSlug: string;
@@ -94,9 +98,12 @@ export function AssignmentsPanel({
   assignable,
   brief,
   timezone,
+  perViews,
 }: {
   campaignId: string;
   canEdit: boolean;
+  /** per_views assignments carry no fee scheme of their own (FR-M5-02). */
+  perViews: boolean;
   assignments: AssignmentView[];
   assignable: AssignableCreator[];
   brief: BriefContext;
@@ -148,7 +155,9 @@ export function AssignmentsPanel({
                   <TableHead>Status</TableHead>
                   <TableHead className="hidden md:table-cell">Konten</TableHead>
                   <TableHead>Kode & tautan</TableHead>
-                  <TableHead className="hidden lg:table-cell">Skema honor</TableHead>
+                  {perViews ? null : (
+                    <TableHead className="hidden lg:table-cell">Skema honor</TableHead>
+                  )}
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
@@ -179,6 +188,11 @@ export function AssignmentsPanel({
                         ) : assignment.status === "diundang" ? (
                           <span className="text-xs text-muted-foreground">
                             Menunggu konfirmasi kreator
+                          </span>
+                        ) : null}
+                        {assignment.joinSource === "mandiri" ? (
+                          <span className="text-xs text-muted-foreground">
+                            {JOIN_SOURCE_LABELS.mandiri}
                           </span>
                         ) : null}
                       </div>
@@ -214,9 +228,11 @@ export function AssignmentsPanel({
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden text-xs lg:table-cell">
-                      <FeeSummary fees={assignment.fees} />
-                    </TableCell>
+                    {perViews ? null : (
+                      <TableCell className="hidden text-xs lg:table-cell">
+                        <FeeSummary fees={assignment.fees} />
+                      </TableCell>
+                    )}
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button
@@ -263,6 +279,7 @@ export function AssignmentsPanel({
         <AddAssignmentDialog
           campaignId={campaignId}
           assignable={assignable}
+          perViews={perViews}
           onClose={() => setAdding(false)}
         />
       ) : null}
@@ -270,6 +287,7 @@ export function AssignmentsPanel({
         <EditAssignmentDialog
           campaignId={campaignId}
           assignment={editing}
+          perViews={perViews}
           onClose={() => setEditing(null)}
         />
       ) : null}
@@ -356,10 +374,12 @@ function OverrideFields({
 function AddAssignmentDialog({
   campaignId,
   assignable,
+  perViews,
   onClose,
 }: {
   campaignId: string;
   assignable: AssignableCreator[];
+  perViews: boolean;
   onClose: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -447,7 +467,7 @@ function AddAssignmentDialog({
               </Field>
             </div>
 
-            <OverrideFields register={form.register} errors={errors} />
+            {perViews ? null : <OverrideFields register={form.register} errors={errors} />}
 
             <FieldSet>
               <FieldLegend variant="label">Kode & tautan (opsional)</FieldLegend>
@@ -495,10 +515,12 @@ function AddAssignmentDialog({
 function EditAssignmentDialog({
   campaignId,
   assignment,
+  perViews,
   onClose,
 }: {
   campaignId: string;
   assignment: AssignmentView;
+  perViews: boolean;
   onClose: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -568,7 +590,7 @@ function EditAssignmentDialog({
               </Field>
             </div>
 
-            <OverrideFields register={form.register} errors={errors} />
+            {perViews ? null : <OverrideFields register={form.register} errors={errors} />}
 
             <div className="grid gap-3 sm:grid-cols-2">
               <Field>

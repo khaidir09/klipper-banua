@@ -27,5 +27,15 @@ export function campaignToFormValues(campaign: CampaignRow): CampaignFormInput {
     default_bonus_per_1000_views: amount(campaign.default_bonus_per_1000_views),
     default_bonus_per_registrant: amount(campaign.default_bonus_per_registrant),
     default_views_bonus_cap: amount(campaign.default_views_bonus_cap),
+    access: campaign.access,
+    rate_per_1000_views: amount(campaign.rate_per_1000_views),
+    creator_budget: amount(campaign.creator_budget),
+    max_payout_per_clip: amount(campaign.max_payout_per_clip),
+    max_payout_per_creator: amount(campaign.max_payout_per_creator),
+    min_views_to_earn: amount(campaign.min_views_to_earn),
+    max_clips_per_creator: String(campaign.max_clips_per_creator),
+    allowed_platforms: campaign.allowed_platforms,
+    local_only: campaign.local_only,
+    claim_grace_days: String(campaign.claim_grace_days),
   };
 }

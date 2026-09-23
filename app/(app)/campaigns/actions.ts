@@ -14,6 +14,7 @@ import {
 } from "@/lib/actions";
 import { logActivity } from "@/lib/activity/log";
 import { requireInternal, requireRole } from "@/lib/auth/guards";
+import { campaignToday } from "@/lib/campaigns/open";
 import { activationBlockers, canTransition } from "@/lib/campaigns/status";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/constants/campaigns";
 import { CAMPAIGN_ASSET_BUCKET } from "@/lib/data/campaigns";
@@ -25,6 +26,7 @@ import {
   assignmentUpdateSchema,
   campaignSchema,
   campaignStatusChangeSchema,
+  type CampaignInput,
 } from "@/lib/validation/campaigns";
 import { uuidField } from "@/lib/validation/common";
 
@@ -55,7 +57,13 @@ export async function createCampaignAction(values: unknown): Promise<ActionResul
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("campaigns")
-    .insert({ ...parsed.data, status: "draft", created_by: session.user.id })
+    // New campaigns are always per_views (PRD 5.3); the trigger refuses paket.
+    .insert({
+      ...parsed.data,
+      payout_model: "per_views",
+      status: "draft",
+      created_by: session.user.id,
+    })
     .select("id")
     .single();
   if (error) {
@@ -68,11 +76,79 @@ export async function createCampaignAction(values: unknown): Promise<ActionResul
     entityType: "campaign",
     entityId: data.id,
     action: "create",
-    details: { code: parsed.data.code, name: parsed.data.name },
+    details: { code: parsed.data.code, name: parsed.data.name, access: parsed.data.access },
   });
 
   revalidatePath("/campaigns");
   redirect(`/campaigns/${data.id}/overview`);
+}
+
+type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+
+/** Honor already spent (PRD 8.4); 0 until the ledger arrives in Phase 17. */
+async function campaignCreatorCost(supabase: Supabase, campaignId: string): Promise<number> {
+  const { data, error } = await supabase.rpc("campaign_creator_cost", {
+    target_campaign_id: campaignId,
+  });
+  if (error) throw new Error(error.message);
+  return data ?? 0;
+}
+
+async function hasApprovedClip(supabase: Supabase, campaignId: string): Promise<boolean> {
+  const { count, error } = await supabase
+    .from("contents")
+    .select("id, assignment:campaign_creators!inner(campaign_id)", { count: "exact", head: true })
+    .eq("assignment.campaign_id", campaignId)
+    .eq("review_status", "disetujui");
+  if (error) throw new Error(error.message);
+  return (count ?? 0) > 0;
+}
+
+/**
+ * Only the fields of the campaign's own payout model are written: a legacy
+ * `paket` campaign keeps its fee scheme and stays invite-only, a `per_views`
+ * one never touches the old default fee columns.
+ */
+function campaignUpdatePayload(input: CampaignInput, payoutModel: "per_views" | "paket") {
+  const {
+    default_base_fee,
+    default_bonus_per_1000_views,
+    default_bonus_per_registrant,
+    default_views_bonus_cap,
+    access,
+    rate_per_1000_views,
+    creator_budget,
+    max_payout_per_clip,
+    max_payout_per_creator,
+    min_views_to_earn,
+    max_clips_per_creator,
+    allowed_platforms,
+    local_only,
+    claim_grace_days,
+    ...common
+  } = input;
+  if (payoutModel === "paket") {
+    return {
+      ...common,
+      default_base_fee,
+      default_bonus_per_1000_views,
+      default_bonus_per_registrant,
+      default_views_bonus_cap,
+    };
+  }
+  return {
+    ...common,
+    access,
+    rate_per_1000_views,
+    creator_budget,
+    max_payout_per_clip,
+    max_payout_per_creator,
+    min_views_to_earn,
+    max_clips_per_creator,
+    allowed_platforms,
+    local_only,
+    claim_grace_days,
+  };
 }
 
 export async function updateCampaignAction(id: string, values: unknown): Promise<ActionResult> {
@@ -82,7 +158,42 @@ export async function updateCampaignAction(id: string, values: unknown): Promise
   if (!parsed.success) return invalid(parsed.error);
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("campaigns").update(parsed.data).eq("id", id);
+  const { data: current } = await supabase
+    .from("campaigns")
+    .select("payout_model, creator_budget, rate_per_1000_views")
+    .eq("id", id)
+    .maybeSingle();
+  if (!current) return fail("Kampanye tidak ditemukan.");
+
+  const payload = campaignUpdatePayload(parsed.data, current.payout_model);
+  const budgetChanged =
+    current.payout_model === "per_views" && parsed.data.creator_budget !== current.creator_budget;
+
+  // FR-M17-07, enforced again by guard_campaign_update.
+  if (current.payout_model === "per_views") {
+    if (
+      parsed.data.rate_per_1000_views !== current.rate_per_1000_views &&
+      (await hasApprovedClip(supabase, id))
+    ) {
+      return {
+        status: "error",
+        message: "Tarif tidak dapat diubah karena sudah ada klip disetujui.",
+        fieldErrors: { rate_per_1000_views: "Terkunci setelah ada klip disetujui." },
+      };
+    }
+    if (parsed.data.creator_budget < current.creator_budget) {
+      const used = await campaignCreatorCost(supabase, id);
+      if (parsed.data.creator_budget < used) {
+        return {
+          status: "error",
+          message: "Anggaran tidak boleh lebih kecil dari honor yang sudah terpakai.",
+          fieldErrors: { creator_budget: "Di bawah honor terpakai." },
+        };
+      }
+    }
+  }
+
+  const { error } = await supabase.from("campaigns").update(payload).eq("id", id);
   if (error) {
     if (error.code === PG_UNIQUE_VIOLATION) return duplicateCode();
     return fail(dbRuleMessage(error, "Kampanye gagal diperbarui."));
@@ -95,6 +206,16 @@ export async function updateCampaignAction(id: string, values: unknown): Promise
     action: "update",
     details: { code: parsed.data.code },
   });
+
+  if (budgetChanged) {
+    await logActivity(supabase, {
+      actorId: session.user.id,
+      entityType: "campaign",
+      entityId: id,
+      action: "budget_change",
+      details: { from: current.creator_budget, to: parsed.data.creator_budget },
+    });
+  }
 
   revalidateCampaign(id);
   redirect(`/campaigns/${id}/overview`);
@@ -110,7 +231,11 @@ export async function changeCampaignStatusAction(values: unknown): Promise<Actio
   const supabase = await createSupabaseServerClient();
   const { data: campaign } = await supabase
     .from("campaigns")
-    .select("status, objective, landing_url, assignments:campaign_creators(status)")
+    .select(
+      `status, objective, landing_url, access, payout_model, brief, rate_per_1000_views,
+       creator_budget, end_date, allowed_platforms,
+       assignments:campaign_creators(status), assets:campaign_assets(count)`,
+    )
     .eq("id", id)
     .maybeSingle();
   if (!campaign) return fail("Kampanye tidak ditemukan.");
@@ -126,6 +251,19 @@ export async function changeCampaignStatusAction(values: unknown): Promise<Actio
       objective: campaign.objective,
       landingUrl: campaign.landing_url,
       assignmentStatuses: campaign.assignments.map((a) => a.status),
+      access: campaign.access,
+      perViews:
+        campaign.payout_model === "per_views"
+          ? {
+              brief: campaign.brief,
+              assetCount: campaign.assets[0]?.count ?? 0,
+              ratePer1000Views: campaign.rate_per_1000_views,
+              creatorBudget: campaign.creator_budget,
+              endDate: campaign.end_date,
+              allowedPlatforms: campaign.allowed_platforms,
+              today: campaignToday(),
+            }
+          : null,
     });
     if (blockers.length) return fail(`Belum bisa diaktifkan: ${blockers.join(" ")}`);
   }

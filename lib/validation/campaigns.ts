@@ -2,9 +2,14 @@ import { z } from "zod";
 import {
   ASSET_TYPES,
   ASSIGNMENT_STATUSES,
+  CAMPAIGN_ACCESSES,
   CAMPAIGN_OBJECTIVES,
   CAMPAIGN_STATUSES,
+  CLAIM_GRACE_DAYS_LIMIT,
+  MAX_CLIPS_PER_CREATOR_LIMIT,
 } from "@/lib/constants/campaigns";
+import { CATALOG_SORTS } from "@/lib/campaigns/open";
+import { SOCIAL_PLATFORMS } from "@/lib/constants/creators";
 import {
   isValidReferralCode,
   isValidTrackingSlug,
@@ -53,6 +58,16 @@ export const hashtagsField = z
 
 const landingUrlField = optionalHttpUrl;
 
+/** Platforms a `per_views` campaign accepts; duplicates collapse (FR-M17-01). */
+export const allowedPlatformsField = z
+  .array(z.enum(SOCIAL_PLATFORMS, { message: "Platform tidak dikenal." }))
+  .transform((items) => SOCIAL_PLATFORMS.filter((platform) => items.includes(platform)));
+
+/** An optional cap: empty means "no cap", zero is refused (the database needs > 0). */
+const optionalCapField = optionalMoneyField.refine((value) => value === null || value > 0, {
+  message: "Kosongkan jika tanpa batas; jangan isi 0.",
+});
+
 export const campaignSchema = z
   .object({
     client_id: uuidField.refine(Boolean, { message: "Pilih klien." }),
@@ -88,6 +103,23 @@ export const campaignSchema = z
     default_bonus_per_1000_views: moneyField,
     default_bonus_per_registrant: moneyField,
     default_views_bonus_cap: optionalMoneyField,
+    // Open campaigns, per_views honor (FR-M17-01). Required values are only
+    // enforced at activation (FR-M17-02), so drafts can be saved early.
+    access: z.enum(CAMPAIGN_ACCESSES, { message: "Pilih akses kampanye." }),
+    rate_per_1000_views: moneyField,
+    creator_budget: moneyField,
+    max_payout_per_clip: optionalCapField,
+    max_payout_per_creator: optionalCapField,
+    min_views_to_earn: countField,
+    max_clips_per_creator: countField.refine(
+      (value) => value >= 1 && value <= MAX_CLIPS_PER_CREATOR_LIMIT,
+      { message: `Isi antara 1 dan ${MAX_CLIPS_PER_CREATOR_LIMIT} klip.` },
+    ),
+    allowed_platforms: allowedPlatformsField,
+    local_only: z.boolean(),
+    claim_grace_days: countField.refine((value) => value <= CLAIM_GRACE_DAYS_LIMIT, {
+      message: `Maksimal ${CLAIM_GRACE_DAYS_LIMIT} hari.`,
+    }),
   })
   // The landing URL is only enforced at activation (FR-M4-02, see
   // lib/campaigns/status.ts), so drafts can be saved before the client shares
@@ -175,3 +207,17 @@ export type AssignmentCreateFormInput = z.input<typeof assignmentCreateSchema>;
 export type AssignmentCreateInput = z.output<typeof assignmentCreateSchema>;
 export type AssignmentUpdateFormInput = z.input<typeof assignmentUpdateSchema>;
 export type AssignmentUpdateInput = z.output<typeof assignmentUpdateSchema>;
+
+/** Catalog filters in the portal URL (FR-M17-03); anything unknown is dropped. */
+export const catalogQuerySchema = z.object({
+  platform: z.enum(SOCIAL_PLATFORMS).optional().catch(undefined),
+  tujuan: z.enum(CAMPAIGN_OBJECTIVES).optional().catch(undefined),
+  lokal: z
+    .literal("1")
+    .optional()
+    .catch(undefined)
+    .transform((value) => value === "1"),
+  urut: z.enum(CATALOG_SORTS).optional().catch(undefined),
+});
+
+export type CatalogQuery = z.output<typeof catalogQuerySchema>;

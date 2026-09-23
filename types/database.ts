@@ -125,6 +125,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "campaign_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "campaign_assets_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -145,12 +152,14 @@ export type Database = {
           creator_confirmed_at: string | null
           creator_id: string
           id: string
+          join_source: Database["public"]["Enums"]["assignment_join_source"]
           joined_at: string | null
           referral_code: string
           status: Database["public"]["Enums"]["assignment_status"]
           tracking_slug: string
           updated_at: string
           views_bonus_cap: number | null
+          withdrawn_at: string | null
         }
         Insert: {
           base_fee?: number | null
@@ -163,12 +172,14 @@ export type Database = {
           creator_confirmed_at?: string | null
           creator_id: string
           id?: string
+          join_source?: Database["public"]["Enums"]["assignment_join_source"]
           joined_at?: string | null
-          referral_code: string
+          referral_code?: string
           status?: Database["public"]["Enums"]["assignment_status"]
-          tracking_slug: string
+          tracking_slug?: string
           updated_at?: string
           views_bonus_cap?: number | null
+          withdrawn_at?: string | null
         }
         Update: {
           base_fee?: number | null
@@ -181,12 +192,14 @@ export type Database = {
           creator_confirmed_at?: string | null
           creator_id?: string
           id?: string
+          join_source?: Database["public"]["Enums"]["assignment_join_source"]
           joined_at?: string | null
           referral_code?: string
           status?: Database["public"]["Enums"]["assignment_status"]
           tracking_slug?: string
           updated_at?: string
           views_bonus_cap?: number | null
+          withdrawn_at?: string | null
         }
         Relationships: [
           {
@@ -201,6 +214,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
             referencedColumns: ["id"]
           },
           {
@@ -228,12 +248,16 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          access: Database["public"]["Enums"]["campaign_access"]
+          allowed_platforms: Database["public"]["Enums"]["social_platform"][]
           brief: string
+          claim_grace_days: number
           client_id: string
           closing_notes: string
           code: string
           created_at: string
           created_by: string | null
+          creator_budget: number
           default_base_fee: number
           default_bonus_per_1000_views: number
           default_bonus_per_registrant: number
@@ -242,13 +266,21 @@ export type Database = {
           hashtags: string[]
           id: string
           landing_url: string | null
+          local_only: boolean
+          max_clips_per_creator: number
+          max_payout_per_clip: number | null
+          max_payout_per_creator: number | null
           min_live_days: number
+          min_views_to_earn: number
           must_do: string[]
           must_not: string[]
           name: string
           objective: Database["public"]["Enums"]["campaign_objective"]
           package_price: number
           paid_label_required: boolean
+          payout_model: Database["public"]["Enums"]["payout_model"]
+          published_at: string | null
+          rate_per_1000_views: number
           start_date: string
           status: Database["public"]["Enums"]["campaign_status"]
           target_contents: number
@@ -257,12 +289,16 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          access?: Database["public"]["Enums"]["campaign_access"]
+          allowed_platforms?: Database["public"]["Enums"]["social_platform"][]
           brief?: string
+          claim_grace_days?: number
           client_id: string
           closing_notes?: string
           code: string
           created_at?: string
           created_by?: string | null
+          creator_budget?: number
           default_base_fee?: number
           default_bonus_per_1000_views?: number
           default_bonus_per_registrant?: number
@@ -271,13 +307,21 @@ export type Database = {
           hashtags?: string[]
           id?: string
           landing_url?: string | null
+          local_only?: boolean
+          max_clips_per_creator?: number
+          max_payout_per_clip?: number | null
+          max_payout_per_creator?: number | null
           min_live_days?: number
+          min_views_to_earn?: number
           must_do?: string[]
           must_not?: string[]
           name: string
           objective?: Database["public"]["Enums"]["campaign_objective"]
           package_price?: number
           paid_label_required?: boolean
+          payout_model?: Database["public"]["Enums"]["payout_model"]
+          published_at?: string | null
+          rate_per_1000_views?: number
           start_date: string
           status?: Database["public"]["Enums"]["campaign_status"]
           target_contents?: number
@@ -286,12 +330,16 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          access?: Database["public"]["Enums"]["campaign_access"]
+          allowed_platforms?: Database["public"]["Enums"]["social_platform"][]
           brief?: string
+          claim_grace_days?: number
           client_id?: string
           closing_notes?: string
           code?: string
           created_at?: string
           created_by?: string | null
+          creator_budget?: number
           default_base_fee?: number
           default_bonus_per_1000_views?: number
           default_bonus_per_registrant?: number
@@ -300,13 +348,21 @@ export type Database = {
           hashtags?: string[]
           id?: string
           landing_url?: string | null
+          local_only?: boolean
+          max_clips_per_creator?: number
+          max_payout_per_clip?: number | null
+          max_payout_per_creator?: number | null
           min_live_days?: number
+          min_views_to_earn?: number
           must_do?: string[]
           must_not?: string[]
           name?: string
           objective?: Database["public"]["Enums"]["campaign_objective"]
           package_price?: number
           paid_label_required?: boolean
+          payout_model?: Database["public"]["Enums"]["payout_model"]
+          published_at?: string | null
+          rate_per_1000_views?: number
           start_date?: string
           status?: Database["public"]["Enums"]["campaign_status"]
           target_contents?: number
@@ -444,6 +500,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_payments_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
             referencedColumns: ["id"]
           },
           {
@@ -653,6 +716,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "creator_portal_assignments"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["assignment_id"]
           },
           {
             foreignKeyName: "contents_created_by_fkey"
@@ -946,6 +1016,13 @@ export type Database = {
             referencedRelation: "creator_portal_assignments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "link_clicks_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["assignment_id"]
+          },
         ]
       }
       metric_snapshots: {
@@ -1195,6 +1272,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "ops_time_logs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ops_time_logs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -1299,6 +1383,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "creator_portal_assignments"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: true
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["assignment_id"]
           },
           {
             foreignKeyName: "payouts_created_by_fkey"
@@ -1415,6 +1506,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "registrant_reports_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["assignment_id"]
+          },
+          {
             foreignKeyName: "registrant_reports_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
@@ -1426,6 +1524,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registrant_reports_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
             referencedColumns: ["id"]
           },
           {
@@ -1487,6 +1592,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_share_links_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
             referencedColumns: ["id"]
           },
           {
@@ -1582,6 +1694,13 @@ export type Database = {
             referencedRelation: "client_portal_campaigns"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["id"]
+          },
         ]
       }
       client_portal_creators: {
@@ -1608,6 +1727,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
             referencedColumns: ["id"]
           },
         ]
@@ -1638,6 +1764,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
             referencedColumns: ["id"]
           },
           {
@@ -1709,10 +1842,21 @@ export type Database = {
             referencedRelation: "client_portal_campaigns"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "campaign_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["id"]
+          },
         ]
       }
       creator_portal_assignments: {
         Row: {
+          access: Database["public"]["Enums"]["campaign_access"] | null
+          allowed_platforms:
+            | Database["public"]["Enums"]["social_platform"][]
+            | null
           base_fee: number | null
           bonus_per_1000_views: number | null
           bonus_per_registrant: number | null
@@ -1724,23 +1868,35 @@ export type Database = {
             | Database["public"]["Enums"]["campaign_objective"]
             | null
           campaign_status: Database["public"]["Enums"]["campaign_status"] | null
+          claim_grace_days: number | null
           client_name: string | null
           contents_committed: number | null
           creator_confirmed_at: string | null
           end_date: string | null
           hashtags: string[] | null
           id: string | null
+          join_source:
+            | Database["public"]["Enums"]["assignment_join_source"]
+            | null
           joined_at: string | null
           landing_url: string | null
+          local_only: boolean | null
+          max_clips_per_creator: number | null
+          max_payout_per_clip: number | null
+          max_payout_per_creator: number | null
           min_live_days: number | null
+          min_views_to_earn: number | null
           must_do: string[] | null
           must_not: string[] | null
           paid_label_required: boolean | null
+          payout_model: Database["public"]["Enums"]["payout_model"] | null
+          rate_per_1000_views: number | null
           referral_code: string | null
           start_date: string | null
           status: Database["public"]["Enums"]["assignment_status"] | null
           tracking_slug: string | null
           views_bonus_cap: number | null
+          withdrawn_at: string | null
         }
         Relationships: [
           {
@@ -1757,7 +1913,50 @@ export type Database = {
             referencedRelation: "client_portal_campaigns"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      creator_portal_catalog: {
+        Row: {
+          allowed_platforms:
+            | Database["public"]["Enums"]["social_platform"][]
+            | null
+          asset_count: number | null
+          assignment_id: string | null
+          assignment_status:
+            | Database["public"]["Enums"]["assignment_status"]
+            | null
+          brief: string | null
+          budget_exhausted: boolean | null
+          budget_remaining_pct: number | null
+          claim_grace_days: number | null
+          client_name: string | null
+          code: string | null
+          end_date: string | null
+          hashtags: string[] | null
+          id: string | null
+          local_only: boolean | null
+          max_clips_per_creator: number | null
+          max_payout_per_clip: number | null
+          max_payout_per_creator: number | null
+          min_live_days: number | null
+          min_views_to_earn: number | null
+          must_do: string[] | null
+          must_not: string[] | null
+          name: string | null
+          objective: Database["public"]["Enums"]["campaign_objective"] | null
+          paid_label_required: boolean | null
+          published_at: string | null
+          rate_per_1000_views: number | null
+          start_date: string | null
+        }
+        Relationships: []
       }
       creator_portal_contents: {
         Row: {
@@ -1796,6 +1995,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "contents_campaign_creator_id_fkey"
             columns: ["campaign_creator_id"]
             isOneToOne: false
@@ -1822,6 +2028,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "creator_portal_assignments"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["assignment_id"]
           },
         ]
       }
@@ -1893,6 +2106,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "campaign_creators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payouts_campaign_creator_id_fkey"
             columns: ["campaign_creator_id"]
             isOneToOne: true
@@ -1919,6 +2139,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "creator_portal_assignments"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_campaign_creator_id_fkey"
+            columns: ["campaign_creator_id"]
+            isOneToOne: true
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["assignment_id"]
           },
         ]
       }
@@ -2099,11 +2326,25 @@ export type Database = {
       }
     }
     Functions: {
+      accept_creator_terms: { Args: never; Returns: string }
       anonymize_creator: { Args: { target_id: string }; Returns: string[] }
       assert_campaign_editable: {
         Args: { p_campaign_id: string }
         Returns: undefined
       }
+      campaign_budget_exhausted: {
+        Args: { target_campaign_id: string }
+        Returns: boolean
+      }
+      campaign_creator_cost: {
+        Args: { target_campaign_id: string }
+        Returns: number
+      }
+      campaign_open_for_catalog: {
+        Args: { target_campaign_id: string }
+        Returns: boolean
+      }
+      campaign_today: { Args: never; Returns: string }
       client_owns_campaign: {
         Args: { target_campaign_id: string }
         Returns: boolean
@@ -2113,6 +2354,10 @@ export type Database = {
         Returns: string
       }
       creator_assigned_to_campaign: {
+        Args: { target_campaign_id: string }
+        Returns: boolean
+      }
+      creator_can_view_campaign_assets: {
         Args: { target_campaign_id: string }
         Returns: boolean
       }
@@ -2134,10 +2379,13 @@ export type Database = {
       }
       current_client_id: { Args: never; Returns: string }
       current_creator_id: { Args: never; Returns: string }
+      current_creator_terms_version: { Args: never; Returns: string }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      generate_referral_code: { Args: never; Returns: string }
+      generate_tracking_slug: { Args: { stage_name: string }; Returns: string }
       generate_verification_code: { Args: never; Returns: string }
       get_masked_bank_account: {
         Args: { p_creator_id: string }
@@ -2160,7 +2408,9 @@ export type Database = {
     }
     Enums: {
       asset_type: "video" | "foto" | "dokumen" | "tautan"
+      assignment_join_source: "mandiri" | "tim"
       assignment_status: "diundang" | "bergabung" | "mundur" | "selesai"
+      campaign_access: "terbuka" | "undangan"
       campaign_objective: "pendaftar" | "awareness" | "event"
       campaign_status: "draft" | "aktif" | "selesai" | "dibatalkan"
       client_payment_status: "belum_dibayar" | "sebagian" | "lunas"
@@ -2190,6 +2440,7 @@ export type Database = {
         | "pembayaran"
         | "laporan"
         | "lainnya"
+      payout_model: "per_views" | "paket"
       payout_status: "draf" | "disetujui" | "dibayar"
       review_decision: "disetujui" | "revisi" | "ditolak"
       review_status: "menunggu_review" | "disetujui" | "revisi" | "ditolak"
@@ -2328,7 +2579,9 @@ export const Constants = {
   public: {
     Enums: {
       asset_type: ["video", "foto", "dokumen", "tautan"],
+      assignment_join_source: ["mandiri", "tim"],
       assignment_status: ["diundang", "bergabung", "mundur", "selesai"],
+      campaign_access: ["terbuka", "undangan"],
       campaign_objective: ["pendaftar", "awareness", "event"],
       campaign_status: ["draft", "aktif", "selesai", "dibatalkan"],
       client_payment_status: ["belum_dibayar", "sebagian", "lunas"],
@@ -2361,6 +2614,7 @@ export const Constants = {
         "laporan",
         "lainnya",
       ],
+      payout_model: ["per_views", "paket"],
       payout_status: ["draf", "disetujui", "dibayar"],
       review_decision: ["disetujui", "revisi", "ditolak"],
       review_status: ["menunggu_review", "disetujui", "revisi", "ditolak"],

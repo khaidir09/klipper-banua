@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Download, ExternalLink } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import { AssignmentStatusBadge, CampaignStatusBadge } from "@/components/status/status-badge";
 import { CopyButton } from "@/components/forms/copy-button";
 import { DetailList } from "@/components/layout/detail-list";
 import { PageHeader } from "@/components/layout/page-header";
-import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCreator } from "@/lib/auth/guards";
 import { dueSnapshots, suggestCheckpoint } from "@/lib/calculations/checkpoints";
-import { ASSET_TYPE_LABELS } from "@/lib/constants/campaigns";
+import { canWithdraw } from "@/lib/campaigns/open";
 import { PAYOUT_STATUS_LABELS } from "@/lib/constants/finance";
 import {
   getPortalAssignment,
@@ -22,23 +22,14 @@ import {
 } from "@/lib/data/portal";
 import { publicEnv } from "@/lib/env";
 import { formatRupiah } from "@/lib/format/currency";
-import { formatCalendarDate, formatCalendarRange } from "@/lib/format/date";
+import { formatCalendarDate, formatCalendarRange, formatDate } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { AssetListCard, BriefCards, PerViewsTermsCard } from "../../campaign-parts";
 import { ConfirmBriefCard } from "./confirm-brief-card";
 import { SubmissionsPanel, type PortalContentView } from "./submissions-panel";
+import { WithdrawCard } from "./withdraw-card";
 
 export const metadata: Metadata = { title: "Brief penugasan" };
-
-function List({ items, empty }: { items: string[]; empty: string }) {
-  if (!items.length) return <p className="text-sm text-muted-foreground">{empty}</p>;
-  return (
-    <ul className="list-disc space-y-1 pl-5 text-sm">
-      {items.map((item) => (
-        <li key={item}>{item}</li>
-      ))}
-    </ul>
-  );
-}
 
 export default async function PortalAssignmentPage({
   params,
@@ -130,6 +121,14 @@ export default async function PortalAssignmentPage({
   // FR-M13-10: the brief has to be accepted before anything can be sent.
   const awaitingConfirmation =
     assignment.status === "diundang" && assignment.campaign_status === "aktif";
+  const perViews = assignment.payout_model === "per_views";
+  // FR-M17-05: leaving is possible until a clip of theirs is approved.
+  const mayWithdraw = canWithdraw({
+    assignmentStatus: assignment.status,
+    campaignStatus: assignment.campaign_status,
+    payoutModel: assignment.payout_model,
+    approvedClipCount: contents.filter((content) => content.review_status === "disetujui").length,
+  });
 
   return (
     <div className="space-y-6">
@@ -137,7 +136,7 @@ export default async function PortalAssignmentPage({
         title={assignment.campaign_name}
         description={`${assignment.client_name} · ${formatCalendarRange(assignment.start_date, assignment.end_date)}`}
         backHref="/portal/penugasan"
-        backLabel="Penugasan saya"
+        backLabel="Kampanye Saya"
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <CampaignStatusBadge status={assignment.campaign_status} />
@@ -156,54 +155,24 @@ export default async function PortalAssignmentPage({
           />
         ) : null}
 
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>
-              <h2>Brief</h2>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm whitespace-pre-line">
-              {assignment.brief || (
-                <span className="text-muted-foreground">Belum ada deskripsi brief.</span>
-              )}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {assignment.hashtags.map((tag) => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-              <Badge variant={assignment.paid_label_required ? "default" : "outline"}>
-                {assignment.paid_label_required
-                  ? "Label berbayar wajib"
-                  : "Label berbayar tidak wajib"}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+        {assignment.status === "mundur" ? (
+          <Alert className="lg:col-span-2">
+            <CircleAlert />
+            <AlertDescription>
+              {assignment.withdrawn_at
+                ? `Anda mundur dari kampanye ini pada ${formatDate(assignment.withdrawn_at, tz)}.`
+                : "Anda sudah mundur dari kampanye ini."}
+            </AlertDescription>
+          </Alert>
+        ) : null}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2>Yang wajib</h2>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <List items={assignment.must_do} empty="Belum ada poin wajib." />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2>Larangan</h2>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <List items={assignment.must_not} empty="Belum ada larangan." />
-          </CardContent>
-        </Card>
+        <BriefCards
+          brief={assignment.brief}
+          hashtags={assignment.hashtags}
+          paidLabelRequired={assignment.paid_label_required}
+          mustDo={assignment.must_do}
+          mustNot={assignment.must_not}
+        />
 
         <Card>
           <CardHeader>
@@ -240,146 +209,131 @@ export default async function PortalAssignmentPage({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2>Kesepakatan honor</h2>
-            </CardTitle>
-            <CardDescription>
-              Honor dihitung setelah kampanye selesai dan konten memenuhi minimal hari tayang.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DetailList
-              items={[
-                { label: "Honor dasar", value: formatRupiah(assignment.base_fee) },
-                {
-                  label: "Bonus per 1.000 views",
-                  value: formatRupiah(assignment.bonus_per_1000_views),
-                },
-                {
-                  label: "Bonus per pendaftar",
-                  value: formatRupiah(assignment.bonus_per_registrant),
-                },
-                {
-                  label: "Batas bonus views",
-                  value:
-                    assignment.views_bonus_cap === null
-                      ? "Tanpa batas"
-                      : formatRupiah(assignment.views_bonus_cap),
-                },
-                { label: "Konten disepakati", value: `${assignment.contents_committed} konten` },
-                { label: "Minimal hari tayang", value: `${assignment.min_live_days} hari` },
-              ]}
+        {perViews ? (
+          <>
+            <PerViewsTermsCard terms={assignment} />
+            {/* The clip form arrives with Phase 17 (FR-M18-01). */}
+            {assignment.status === "mundur" ? null : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    <h2>Kirim klip</h2>
+                  </CardTitle>
+                  <CardDescription>
+                    Posting klip di akun media sosial Anda yang terdaftar, cantumkan kode
+                    verifikasi di caption, lalu kirim tautannya di sini.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Formulir kirim klip dan bukti views segera tersedia di halaman ini.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            {mayWithdraw ? <WithdrawCard assignmentId={assignment.id} /> : null}
+          </>
+        ) : (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <h2>Kesepakatan honor</h2>
+                </CardTitle>
+                <CardDescription>
+                  Honor dihitung setelah kampanye selesai dan konten memenuhi minimal hari tayang.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DetailList
+                  items={[
+                    { label: "Honor dasar", value: formatRupiah(assignment.base_fee) },
+                    {
+                      label: "Bonus per 1.000 views",
+                      value: formatRupiah(assignment.bonus_per_1000_views),
+                    },
+                    {
+                      label: "Bonus per pendaftar",
+                      value: formatRupiah(assignment.bonus_per_registrant),
+                    },
+                    {
+                      label: "Batas bonus views",
+                      value:
+                        assignment.views_bonus_cap === null
+                          ? "Tanpa batas"
+                          : formatRupiah(assignment.views_bonus_cap),
+                    },
+                    {
+                      label: "Konten disepakati",
+                      value: `${assignment.contents_committed} konten`,
+                    },
+                    { label: "Minimal hari tayang", value: `${assignment.min_live_days} hari` },
+                  ]}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <h2>Honor saya</h2>
+                </CardTitle>
+                <CardDescription>
+                  {payout
+                    ? payout.status === "draf"
+                      ? "Masih dihitung tim dan bisa berubah sampai disetujui."
+                      : "Sudah diperiksa tim."
+                    : "Honor dihitung setelah kampanye selesai."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {payout ? (
+                  <DetailList
+                    items={[
+                      { label: "Honor dasar", value: formatRupiah(payout.base_amount) },
+                      { label: "Bonus views", value: formatRupiah(payout.views_bonus) },
+                      { label: "Bonus pendaftar", value: formatRupiah(payout.registrant_bonus) },
+                      {
+                        label: "Penyesuaian",
+                        value: payout.adjustment_amount
+                          ? `${formatRupiah(payout.adjustment_amount)}${payout.adjustment_reason ? ` — ${payout.adjustment_reason}` : ""}`
+                          : "–",
+                        wide: true,
+                      },
+                      { label: "Total", value: formatRupiah(payout.total_amount) },
+                      {
+                        label: "Status",
+                        value:
+                          payout.status === "draf"
+                            ? "Sedang dihitung"
+                            : PAYOUT_STATUS_LABELS[payout.status],
+                      },
+                      ...(payout.paid_at
+                        ? [{ label: "Dibayar pada", value: formatCalendarDate(payout.paid_at) }]
+                        : []),
+                    ]}
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Belum ada perhitungan honor untuk penugasan ini.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <SubmissionsPanel
+              campaignId={assignment.campaign_id}
+              assignmentId={assignment.id}
+              campaignRunning={assignment.campaign_status === "aktif"}
+              confirmed={assignment.status !== "diundang"}
+              contentsCommitted={assignment.contents_committed}
+              timezone={tz}
+              contents={contentViews}
             />
-          </CardContent>
-        </Card>
+          </>
+        )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2>Honor saya</h2>
-            </CardTitle>
-            <CardDescription>
-              {payout
-                ? payout.status === "draf"
-                  ? "Masih dihitung tim dan bisa berubah sampai disetujui."
-                  : "Sudah diperiksa tim."
-                : "Honor dihitung setelah kampanye selesai."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {payout ? (
-              <DetailList
-                items={[
-                  { label: "Honor dasar", value: formatRupiah(payout.base_amount) },
-                  { label: "Bonus views", value: formatRupiah(payout.views_bonus) },
-                  { label: "Bonus pendaftar", value: formatRupiah(payout.registrant_bonus) },
-                  {
-                    label: "Penyesuaian",
-                    value: payout.adjustment_amount
-                      ? `${formatRupiah(payout.adjustment_amount)}${payout.adjustment_reason ? ` — ${payout.adjustment_reason}` : ""}`
-                      : "–",
-                    wide: true,
-                  },
-                  { label: "Total", value: formatRupiah(payout.total_amount) },
-                  {
-                    label: "Status",
-                    value:
-                      payout.status === "draf"
-                        ? "Sedang dihitung"
-                        : PAYOUT_STATUS_LABELS[payout.status],
-                  },
-                  ...(payout.paid_at
-                    ? [{ label: "Dibayar pada", value: formatCalendarDate(payout.paid_at) }]
-                    : []),
-                ]}
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Belum ada perhitungan honor untuk penugasan ini.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <SubmissionsPanel
-          campaignId={assignment.campaign_id}
-          assignmentId={assignment.id}
-          campaignRunning={assignment.campaign_status === "aktif"}
-          confirmed={assignment.status !== "diundang"}
-          contentsCommitted={assignment.contents_committed}
-          timezone={tz}
-          contents={contentViews}
-        />
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>
-              <h2>Materi kampanye</h2>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {assets.length ? (
-              <ul className="divide-y">
-                {assets.map((asset) => {
-                  const href = asset.signed_url ?? asset.external_url;
-                  return (
-                    <li key={asset.id} className="flex flex-wrap items-center gap-3 py-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{asset.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {ASSET_TYPE_LABELS[asset.type]}
-                          {asset.notes ? ` · ${asset.notes}` : ""}
-                        </p>
-                      </div>
-                      {href ? (
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          data-cta
-                          className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
-                        >
-                          {asset.file_path ? (
-                            <Download className="size-4" aria-hidden />
-                          ) : (
-                            <ExternalLink className="size-4" aria-hidden />
-                          )}
-                          {asset.file_path ? "Unduh" : "Buka"}
-                        </a>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Berkas tidak tersedia</span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">Belum ada materi untuk kampanye ini.</p>
-            )}
-          </CardContent>
-        </Card>
+        <AssetListCard assets={assets} />
       </div>
     </div>
   );

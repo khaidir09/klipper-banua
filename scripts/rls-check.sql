@@ -126,8 +126,24 @@ values ('f1000000-0000-4000-8000-000000000093', 'f1000000-0000-4000-8000-0000000
 insert into storage.objects (bucket_id, name) values
   ('audience-proofs', 'f1000000-0000-4000-8000-000000000003/rls-own.png'),
   ('audience-proofs', 'f1000000-0000-4000-8000-000000000004/rls-other.png');
+-- Phase 16 (M17): the fixtures above are legacy campaigns (paket + undangan),
+-- so they stay out of the catalog. f1…90 is an open per_views campaign the
+-- portal creator (now an active klipper) has not joined.
+update public.campaigns set payout_model = 'paket', access = 'undangan'
+  where id in ('f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000022',
+               'f1000000-0000-4000-8000-000000000026', 'f1000000-0000-4000-8000-000000000094');
+update public.creators set status = 'aktif', terms_version = '2026-10', terms_agreed_at = now()
+  where id = 'f1000000-0000-4000-8000-000000000003';
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, access, payout_model,
+                              brief, package_price, target_views, rate_per_1000_views, creator_budget, allowed_platforms)
+values ('f1000000-0000-4000-8000-000000000090', 'f1000000-0000-4000-8000-000000000001', 'RLS-OPEN-01', 'RLS Terbuka', 'awareness',
+        public.campaign_today(), public.campaign_today() + 30, 'aktif', 'terbuka', 'per_views',
+        'Brief', 99000000, 500000, 10000, 5000000, '{tiktok}');
+insert into public.campaign_assets (id, campaign_id, title, type, file_path)
+values ('f1000000-0000-4000-8000-000000000091', 'f1000000-0000-4000-8000-000000000090', 'Video mentah', 'video', 'f1000000-0000-4000-8000-000000000090/rls-open.mp4');
 -- Campaign material is stored as `<campaign_id>/<file>` (lib/storage/upload.ts).
 insert into storage.objects (bucket_id, name) values
+  ('campaign-assets', 'f1000000-0000-4000-8000-000000000090/rls-open.mp4'),
   ('campaign-assets', 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'),
   ('campaign-assets', 'f1000000-0000-4000-8000-000000000022/rls-unassigned.png'),
   ('content-drafts', 'f1000000-0000-4000-8000-000000000007/rls-assigned.mp4'),
@@ -340,6 +356,18 @@ insert into rls_cases values
   ('storage:audience-proofs-other', 'select', $q$select count(*) from storage.objects where bucket_id = 'audience-proofs' and name = 'f1000000-0000-4000-8000-000000000004/rls-other.png'$q$),
   ('storage:audience-proofs-other', 'insert', $q$insert into storage.objects (bucket_id, name) values ('audience-proofs', 'f1000000-0000-4000-8000-000000000004/rls-new.png')$q$),
   ('storage:audience-proofs-other', 'delete', $q$delete from storage.objects where bucket_id = 'audience-proofs' and name = 'f1000000-0000-4000-8000-000000000004/rls-other.png'$q$);
+
+-- Phase 16 (M17): the catalog, joining an open campaign and its material.
+insert into rls_cases values
+  ('creator_portal_catalog', 'select', $q$select count(*) from public.creator_portal_catalog where id = 'f1000000-0000-4000-8000-000000000090'$q$),
+  -- Legacy and invite-only campaigns never reach the catalog.
+  ('creator_portal_catalog_closed', 'select', $q$select count(*) from public.creator_portal_catalog where id <> 'f1000000-0000-4000-8000-000000000090'$q$),
+  ('campaign_creators_join_own', 'insert', $q$insert into public.campaign_creators (campaign_id, creator_id) values ('f1000000-0000-4000-8000-000000000090', 'f1000000-0000-4000-8000-000000000003')$q$),
+  ('campaign_creators_join_other', 'insert', $q$insert into public.campaign_creators (campaign_id, creator_id) values ('f1000000-0000-4000-8000-000000000090', 'f1000000-0000-4000-8000-000000000020')$q$),
+  ('campaign_creators_join_invite', 'insert', $q$insert into public.campaign_creators (campaign_id, creator_id) values ('f1000000-0000-4000-8000-000000000022', 'f1000000-0000-4000-8000-000000000003')$q$),
+  ('creator_portal_assets_open', 'select', $q$select count(*) from public.creator_portal_assets where campaign_id = 'f1000000-0000-4000-8000-000000000090'$q$),
+  ('creator_portal_assets_invite', 'select', $q$select count(*) from public.creator_portal_assets where campaign_id = 'f1000000-0000-4000-8000-000000000022'$q$),
+  ('storage:campaign-assets-open', 'select', $q$select count(*) from storage.objects where bucket_id = 'campaign-assets' and name = 'f1000000-0000-4000-8000-000000000090/rls-open.mp4'$q$);
 
 -- Client portal (M14): the portal reads through views, and the contact row
 -- that carries the account must stay out of the client's own reach.
@@ -564,6 +592,19 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) valu
   ('storage:audience-proofs-other', 'insert', 'a', 'a', 'd', 'd', 'd'),
   ('storage:audience-proofs-other', 'delete', 'a', 'a', 'd', 'd', 'd');
 
+-- Phase 16 (M17): an active klipper reads the catalog and the material of an
+-- open campaign, and inserts their own assignment only (the trigger fills in
+-- the rest, see guards-check.sql). The team keeps its usual access.
+insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) values
+  ('creator_portal_catalog', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_catalog_closed', 'select', 'd', 'd', 'd', 'd', 'd'),
+  ('campaign_creators_join_own', 'insert', 'a', 'a', 'd', 'd', 'a'),
+  ('campaign_creators_join_other', 'insert', 'a', 'a', 'd', 'd', 'd'),
+  ('campaign_creators_join_invite', 'insert', 'a', 'a', 'd', 'd', 'd'),
+  ('creator_portal_assets_open', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_assets_invite', 'select', 'd', 'd', 'd', 'd', 'd'),
+  ('storage:campaign-assets-open', 'select', 'a', 'a', 'd', 'd', 'a');
+
 -- ---------------------------------------------------------------------------
 -- Run every case for every role.
 -- ---------------------------------------------------------------------------
@@ -641,6 +682,20 @@ where n.nspname = 'public'
     )
   );
 
+-- FR-M17-03: the catalog never carries the package price, targets, the budget
+-- amount, fee defaults or internal notes.
+create temporary table catalog_forbidden on commit drop as
+select column_name::text
+from information_schema.columns
+where table_schema = 'public' and table_name = 'creator_portal_catalog'
+  and column_name in (
+    'package_price', 'target_contents', 'target_views', 'target_registrants', 'creator_budget',
+    'default_base_fee', 'default_bonus_per_1000_views', 'default_bonus_per_registrant',
+    'default_views_bonus_cap', 'closing_notes', 'notes', 'created_by', 'landing_url'
+  );
+\echo '--- Forbidden columns in creator_portal_catalog (expect 0 rows) ---'
+select column_name from catalog_forbidden;
+
 \echo '--- Manager reads bank details only masked (expect bank + ******7890) ---'
 select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from rls_ids), 'role', 'authenticated')::text, true) is not null as claims_set;
 set local role authenticated;
@@ -661,6 +716,7 @@ begin
           and (not c.relrowsecurity
             or not exists (select 1 from pg_policies p where p.schemaname = 'public' and p.tablename = c.relname))))
   );
+  failures := failures + (select count(*) from catalog_forbidden);
   if failures > 0 then
     raise exception 'RLS check failed: % problem(s), see above', failures;
   end if;

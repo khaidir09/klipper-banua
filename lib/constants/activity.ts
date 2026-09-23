@@ -61,6 +61,10 @@ export const ACTIVITY_ACTION_LABELS = {
   block: "Memblokir klipper",
   unblock: "Membuka blokir klipper",
   deletion_request: "Meminta penghapusan akun",
+  budget_change: "Mengubah anggaran klipper",
+  join_campaign: "Bergabung ke kampanye",
+  withdraw_campaign: "Mundur dari kampanye",
+  accept_terms: "Menyetujui Syarat Klipper terbaru",
 } as const;
 
 export type ActivityAction = keyof typeof ACTIVITY_ACTION_LABELS;

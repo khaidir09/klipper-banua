@@ -32,6 +32,9 @@ export const DEMO = {
   portalRevisionContentId: "de300000-0000-4000-8000-0000000000d2",
   /** Primary contact of the demo client, who gets the client portal account. */
   contactId: "de300000-0000-4000-8000-0000000000b1",
+  // Phase 16 (M17): an open per_views campaign in the klipper catalog.
+  openCampaignId: "de300000-0000-4000-8000-0000000000c3",
+  openCampaignCode: "DEMO-KLIP-2026",
 } as const;
 
 const creatorId = (n: number) => `de300000-0000-4000-8000-0000000000a${n}`;
@@ -258,6 +261,77 @@ async function seedPortalAccount(
 }
 
 /**
+ * An open per_views campaign for the klipper catalog (M17, phase 16). Nobody
+ * has joined it: the creator E2E flow joins and withdraws.
+ */
+async function seedOpenCampaign(
+  admin: SupabaseClient<Database>,
+  ownerId: string | null,
+  now: Date,
+) {
+  const check = (label: string, error: { message: string } | null) => {
+    if (error) throw new Error(`${label}: ${error.message}`);
+  };
+
+  check(
+    "open campaign",
+    (
+      await admin.from("campaigns").upsert({
+        id: DEMO.openCampaignId,
+        client_id: DEMO.clientId,
+        code: DEMO.openCampaignCode,
+        name: "Klip Wisuda Universitas Demo Borneo",
+        objective: "awareness",
+        brief:
+          "Potong video wisuda Universitas Demo Borneo menjadi klip pendek 15–60 detik. Pilih momen yang menyentuh atau lucu, beri teks singkat, dan ajak penonton mengenal kampus.",
+        must_do: [
+          "Tulis kode verifikasi Anda di caption",
+          "Sebut nama Universitas Demo Borneo di teks atau suara",
+        ],
+        must_not: ["Mengubah makna ucapan narasumber", "Memakai musik tanpa izin"],
+        hashtags: ["#WisudaDemoBorneo", "#KuliahDiBanua"],
+        paid_label_required: true,
+        landing_url: null,
+        start_date: iso(addDays(now, -2)),
+        end_date: iso(addDays(now, 30)),
+        min_live_days: 14,
+        status: "aktif",
+        package_price: 12_000_000,
+        target_views: 500_000,
+        payout_model: "per_views",
+        access: "terbuka",
+        rate_per_1000_views: 10_000,
+        creator_budget: 5_000_000,
+        max_payout_per_clip: 500_000,
+        max_payout_per_creator: 1_500_000,
+        min_views_to_earn: 1_000,
+        max_clips_per_creator: 3,
+        allowed_platforms: ["tiktok", "instagram", "youtube"],
+        local_only: false,
+        claim_grace_days: 3,
+        published_at: addDays(now, -2).toISOString(),
+        created_by: ownerId,
+      })
+    ).error,
+  );
+
+  check(
+    "open campaign asset",
+    (
+      await admin.from("campaign_assets").upsert({
+        id: "de300000-0000-4000-8000-0000000000f3",
+        campaign_id: DEMO.openCampaignId,
+        title: "Video wisuda lengkap (tautan)",
+        type: "tautan",
+        external_url: "https://kampus-demo.example/video-wisuda",
+        notes: "Durasi 2 jam; potong bagian terbaik.",
+        created_by: ownerId,
+      })
+    ).error,
+  );
+}
+
+/**
  * A running campaign for the creator portal (M13, phase 10): two assignments,
  * one approved content that is already live (ready for a metric submission)
  * and one waiting for a new draft after a revision request.
@@ -305,6 +379,9 @@ async function seedPortalCampaign(
         default_bonus_per_1000_views: 4_000,
         default_bonus_per_registrant: 20_000,
         default_views_bonus_cap: 200_000,
+        // Created before v4.0: a package campaign, invite-only (PRD 5.3).
+        payout_model: "paket",
+        access: "undangan",
         created_by: ownerId,
       })
     ).error,
@@ -683,6 +760,8 @@ async function main() {
           default_bonus_per_1000_views: 5_000,
           default_bonus_per_registrant: 25_000,
           default_views_bonus_cap: 300_000,
+          payout_model: "paket",
+          access: "undangan",
           closing_notes: "",
           created_by: owner?.id ?? null,
         })
@@ -691,9 +770,10 @@ async function main() {
   }
 
   await seedPortalCampaign(admin, owner?.id ?? null, proof, now);
+  await seedOpenCampaign(admin, owner?.id ?? null, now);
 
   console.log(
-    `Demo data ready: 1 client, ${CREATORS.length} creators, campaigns ${DEMO.campaignCode} and ${DEMO.portalCampaignCode}.`,
+    `Demo data ready: 1 client, ${CREATORS.length} creators, campaigns ${DEMO.campaignCode}, ${DEMO.portalCampaignCode} and ${DEMO.openCampaignCode}.`,
   );
   console.log(
     portalEmail

@@ -6,6 +6,7 @@ config({ path: ".env.local", quiet: true });
 export const DEMO_CAMPAIGN_ID = "de300000-0000-4000-8000-0000000000c1";
 /** The campaign that stays running, for the creator portal (M13). */
 export const DEMO_PORTAL_CAMPAIGN_ID = "de300000-0000-4000-8000-0000000000c2";
+export const DEMO_OPEN_CAMPAIGN_ID = "de300000-0000-4000-8000-0000000000c3";
 export const demoCreatorId = (n: number) => `de300000-0000-4000-8000-0000000000a${n}`;
 export const PROOF_FILE = "scripts/assets/demo-audience-proof.png";
 

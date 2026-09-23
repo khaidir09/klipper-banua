@@ -29,6 +29,16 @@ const validCampaign = {
   default_bonus_per_1000_views: "5.000",
   default_bonus_per_registrant: "25.000",
   default_views_bonus_cap: "",
+  access: "terbuka",
+  rate_per_1000_views: "10.000",
+  creator_budget: "5.000.000",
+  max_payout_per_clip: "",
+  max_payout_per_creator: "1.000.000",
+  min_views_to_earn: "1.000",
+  max_clips_per_creator: "3",
+  allowed_platforms: ["youtube", "tiktok", "tiktok"],
+  local_only: false,
+  claim_grace_days: "3",
 };
 
 describe("parseRupiah", () => {
@@ -75,6 +85,45 @@ describe("campaignSchema", () => {
     expect(
       campaignSchema.safeParse({ ...validCampaign, package_price: "1.500.000,50" }).success,
     ).toBe(false);
+  });
+});
+
+describe("campaignSchema per_views fields (FR-M17-01)", () => {
+  it("parses rates, caps and platforms", () => {
+    const result = campaignSchema.parse(validCampaign);
+    expect(result.rate_per_1000_views).toBe(10_000);
+    expect(result.creator_budget).toBe(5_000_000);
+    expect(result.max_payout_per_clip).toBeNull();
+    expect(result.max_payout_per_creator).toBe(1_000_000);
+    expect(result.min_views_to_earn).toBe(1_000);
+    // Deduplicated and in the enum's order.
+    expect(result.allowed_platforms).toEqual(["tiktok", "youtube"]);
+  });
+
+  it("refuses a zero cap and an out-of-range clip limit", () => {
+    expect(campaignSchema.safeParse({ ...validCampaign, max_payout_per_clip: "0" }).success).toBe(
+      false,
+    );
+    expect(campaignSchema.safeParse({ ...validCampaign, max_clips_per_creator: "0" }).success).toBe(
+      false,
+    );
+    expect(
+      campaignSchema.safeParse({ ...validCampaign, max_clips_per_creator: "51" }).success,
+    ).toBe(false);
+    expect(campaignSchema.safeParse({ ...validCampaign, claim_grace_days: "61" }).success).toBe(
+      false,
+    );
+  });
+
+  it("accepts an unfinished draft", () => {
+    const result = campaignSchema.parse({
+      ...validCampaign,
+      rate_per_1000_views: "",
+      creator_budget: "",
+      allowed_platforms: [],
+    });
+    expect(result.rate_per_1000_views).toBe(0);
+    expect(result.allowed_platforms).toEqual([]);
   });
 });
 
