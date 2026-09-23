@@ -25,8 +25,9 @@ export const metadata: Metadata = {
 /**
  * Describes what the product actually does, so every claim here is checkable
  * against PRD Bagian 9 and the database it documents. v4.0 adds the klipper
- * registration (M16); DRAFT wording awaits the owner (PRD 13.2 no. 6). The legal entity name
- * and address are deliberately absent until the founder settles them
+ * registration (M16); wording approved by the owner on 23 Sep 2026 (PRD 13.2
+ * no. 6). The legal entity name and address are deliberately absent until the
+ * founder settles them
  * (PRD 13.2 no. 1 dan no. 11).
  */
 const SECTIONS: LegalSection[] = [

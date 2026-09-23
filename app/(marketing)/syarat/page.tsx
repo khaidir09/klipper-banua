@@ -27,8 +27,8 @@ export const metadata: Metadata = {
  * Mirrors the rules the application enforces (PRD M1–M8, v4.0: M16–M19), so
  * nothing here promises behaviour the product does not have. A registration
  * at /daftar agrees to this page as version `CREATOR_TERMS_VERSION`; bump it
- * with any material change. DRAFT: the wording awaits the owner and legal
- * review (PRD 13.2 no. 5).
+ * with any material change. Wording approved by the owner on 23 Sep 2026
+ * (PRD 13.2 no. 5).
  */
 const SECTIONS: LegalSection[] = [
   {

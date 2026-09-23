@@ -671,8 +671,8 @@ _Catatan implementasi:_ klipper berstatus `diblokir` masih dikeluarkan dari port
 | 2   | Tarif per 1.000 views yang wajar untuk pasar Kalimantan, dan apakah kampanye "khusus lokal" dibayar lebih tinggi | Founder + uji coba |
 | 3   | Nominal `MIN_WITHDRAWAL` (usulan Rp 50.000) dan siapa yang menanggung biaya transfer antarbank/e-wallet | Founder |
 | 4   | Kewajiban PPh 21/23 atas honor klipper di model terbuka (klipper tanpa NPWP, pemotongan saat penarikan?) — **penghalang rilis Fase 18** | Konsultan pajak |
-| 5   | Isi Syarat Klipper: hak pakai materi, larangan bot/engagement palsu, sanksi, masa tayang minimum, penanganan saldo saat diblokir — **penghalang rilis Fase 15** | Founder + konsultasi hukum |
-| 6   | Pembaruan Kebijakan Privasi untuk pendaftaran mandiri dan penyimpanan rekening oleh klipper — **penghalang rilis Fase 15** | Founder + konsultasi hukum |
+| 5   | ~~Isi Syarat Klipper: hak pakai materi, larangan bot/engagement palsu, sanksi, masa tayang minimum, penanganan saldo saat diblokir~~ — **terjawab 23 Sep 2026:** isi `/syarat` (Syarat Klipper versi `2026-10`) disetujui owner | Founder + konsultasi hukum |
+| 6   | ~~Pembaruan Kebijakan Privasi untuk pendaftaran mandiri dan penyimpanan rekening oleh klipper~~ — **terjawab 23 Sep 2026:** isi `/privasi` disetujui owner | Founder + konsultasi hukum |
 | 7   | Ambang persentase audiens Kalimantan untuk lencana lokal (usulan 50%) | Pilot |
 | 8   | Default `max_clips_per_creator`, `claim_grace_days`, dan `min_live_days` untuk kampanye `per_views` | Pilot |
 | 9   | Apakah nama klien boleh tampil di katalog klipper, atau perlu opsi nama samaran per kampanye | Klien pilot |
