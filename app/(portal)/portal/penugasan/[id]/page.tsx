@@ -9,15 +9,20 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCreator } from "@/lib/auth/guards";
 import { dueSnapshots, suggestCheckpoint } from "@/lib/calculations/checkpoints";
-import { canWithdraw } from "@/lib/campaigns/open";
+import { CLIP_BLOCKER_MESSAGES, clipSubmissionBlockers } from "@/lib/campaigns/clips";
+import { campaignToday, canWithdraw } from "@/lib/campaigns/open";
+import { CREATOR_TERMS_VERSION } from "@/lib/constants/creators";
 import { PAYOUT_STATUS_LABELS } from "@/lib/constants/finance";
 import {
   getPortalAssignment,
   getPortalPayout,
+  getPortalProfile,
   listPortalAssets,
+  listPortalClips,
   listPortalContents,
   listPortalMetrics,
   listPortalReviews,
+  listPortalSocialAccounts,
   listPortalSubmissions,
 } from "@/lib/data/portal";
 import { publicEnv } from "@/lib/env";
@@ -25,6 +30,8 @@ import { formatRupiah } from "@/lib/format/currency";
 import { formatCalendarDate, formatCalendarRange, formatDate } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AssetListCard, BriefCards, PerViewsTermsCard } from "../../campaign-parts";
+import { TermsNotice } from "../../kampanye/terms-notice";
+import { SubmitClipCard } from "../../klip/submit-clip-card";
 import { ConfirmBriefCard } from "./confirm-brief-card";
 import { SubmissionsPanel, type PortalContentView } from "./submissions-panel";
 import { WithdrawCard } from "./withdraw-card";
@@ -43,10 +50,14 @@ export default async function PortalAssignmentPage({
   const assignment = await getPortalAssignment(supabase, id);
   if (!assignment) notFound();
 
-  const [assets, contents, payout] = await Promise.all([
+  const perViews = assignment.payout_model === "per_views";
+  const tz = session.profile.timezone;
+
+  const [assets, contents, payout, clipContext] = await Promise.all([
     listPortalAssets(supabase, assignment.campaign_id),
     listPortalContents(supabase, id),
-    getPortalPayout(supabase, id),
+    perViews ? null : getPortalPayout(supabase, id),
+    perViews ? loadClipContext(supabase, assignment.campaign_id, id, tz) : null,
   ]);
 
   const contentIds = contents.map((content) => content.id);
@@ -56,7 +67,6 @@ export default async function PortalAssignmentPage({
     listPortalSubmissions(supabase, contentIds),
   ]);
 
-  const tz = session.profile.timezone;
   const now = new Date();
   const due = dueSnapshots(
     contents.map((content) => ({
@@ -121,7 +131,6 @@ export default async function PortalAssignmentPage({
   // FR-M13-10: the brief has to be accepted before anything can be sent.
   const awaitingConfirmation =
     assignment.status === "diundang" && assignment.campaign_status === "aktif";
-  const perViews = assignment.payout_model === "per_views";
   // FR-M17-05: leaving is possible until a clip of theirs is approved.
   const mayWithdraw = canWithdraw({
     assignmentStatus: assignment.status,
@@ -212,24 +221,39 @@ export default async function PortalAssignmentPage({
         {perViews ? (
           <>
             <PerViewsTermsCard terms={assignment} />
-            {/* The clip form arrives with Phase 17 (FR-M18-01). */}
-            {assignment.status === "mundur" ? null : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    <h2>Kirim klip</h2>
-                  </CardTitle>
-                  <CardDescription>
-                    Posting klip di akun media sosial Anda yang terdaftar, cantumkan kode
-                    verifikasi di caption, lalu kirim tautannya di sini.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Formulir kirim klip dan bukti views segera tersedia di halaman ini.
-                  </p>
-                </CardContent>
-              </Card>
+            {clipContext && clipContext.termsVersion !== CREATOR_TERMS_VERSION ? (
+              <div className="lg:col-span-2">
+                <TermsNotice version={CREATOR_TERMS_VERSION} />
+              </div>
+            ) : null}
+            {assignment.status === "mundur" || !clipContext ? null : (
+              <SubmitClipCard
+                assignmentId={assignment.id}
+                campaignId={assignment.campaign_id}
+                platforms={assignment.allowed_platforms.filter((platform) =>
+                  clipContext.registeredPlatforms.includes(platform),
+                )}
+                verificationCode={clipContext.verificationCode}
+                maxClips={assignment.max_clips_per_creator}
+                activeClipCount={clipContext.activeClipCount}
+                blocker={(() => {
+                  const [first] = clipSubmissionBlockers({
+                    creatorStatus: clipContext.creatorStatus,
+                    termsVersion: clipContext.termsVersion,
+                    currentTermsVersion: CREATOR_TERMS_VERSION,
+                    assignmentStatus: assignment.status,
+                    campaignStatus: assignment.campaign_status,
+                    endDate: assignment.end_date,
+                    today: campaignToday(),
+                    budgetExhausted: clipContext.budgetExhausted,
+                    maxClipsPerCreator: assignment.max_clips_per_creator,
+                    activeClipCount: clipContext.activeClipCount,
+                  });
+                  return first ? CLIP_BLOCKER_MESSAGES[first] : null;
+                })()}
+                clips={clipContext.clips}
+                timezone={tz}
+              />
             )}
             {mayWithdraw ? <WithdrawCard assignmentId={assignment.id} /> : null}
           </>
@@ -337,4 +361,28 @@ export default async function PortalAssignmentPage({
       </div>
     </div>
   );
+}
+
+/** What the clip card needs (FR-M18-01): the klipper, their accounts and clips. */
+async function loadClipContext(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  campaignId: string,
+  assignmentId: string,
+  timezone: string,
+) {
+  const [profile, accounts, clips, { data: budgetExhausted }] = await Promise.all([
+    getPortalProfile(supabase),
+    listPortalSocialAccounts(supabase),
+    listPortalClips(supabase, { assignmentId, timezone }),
+    supabase.rpc("campaign_budget_exhausted", { target_campaign_id: campaignId }),
+  ]);
+  return {
+    verificationCode: profile?.verification_code ?? "",
+    creatorStatus: profile?.status ?? "prospek",
+    termsVersion: profile?.terms_version ?? null,
+    registeredPlatforms: accounts.map((account) => account.platform),
+    clips,
+    activeClipCount: clips.filter((clip) => clip.reviewStatus !== "ditolak").length,
+    budgetExhausted: budgetExhausted === true,
+  };
 }

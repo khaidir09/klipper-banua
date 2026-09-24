@@ -4,7 +4,7 @@
 | ------------------ | ------------------------------------------------------------------------------------------- |
 | Versi dokumen      | 1.0 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
 | Tanggal            | 23 September 2026                                                                           |
-| Status             | Fase 0–11, 13, 14, 15, dan **16** selesai (fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri, kampanye terbuka dan katalog). **Tahap A lanjutan (Fase 17–18) dirancang, belum dikerjakan.** Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
+| Status             | Fase 0–11, 13, 14, 15, 16, dan **17** selesai (fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri, kampanye terbuka dan katalog, kiriman klip dan verifikasi views). **Fase 18 (saldo dan penarikan) dirancang, belum dikerjakan.** Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
 | Acuan model        | ayoklip.com (klipper daftar sendiri → pilih kampanye → posting → kirim tautan + bukti views → diverifikasi → saldo → tarik) dengan pembeda lokal Kalimantan |
 | Pengguna versi ini | Tim internal (`owner`, `manager`); **klipper mendaftar sendiri** (peran `creator`); klien lewat undangan (Tahap A) dan mendaftar sendiri (Tahap B); pengunjung anonim membaca situs publik |
@@ -617,14 +617,16 @@ _Catatan implementasi:_ honor terpakai dibaca dari fungsi `campaign_creator_cost
 **Cakupan:** M18 (FR-M18-01 s.d. FR-M18-08), FR-M6-03, FR-M6-04, FR-M10-01, FR-M10-03. Kolom baru `contents` dan `metric_submissions`; normalisasi URL + unik global; trigger aturan kiriman (periode, batas klip, platform, anggaran); formulir kirim klip dan pembaruan views di portal; halaman `(app)/verifikasi` dengan checklist, penanda risiko, dan keputusan; `lib/calculations/clip-earning.ts` dan `fraud-flags.ts` dengan unit test. **Pengkreditan saldo di fase ini memakai `creator_ledger_entries` minimal** (tabel + fungsi kredit ber-kunci); tampilan saldo dan penarikan menyusul di Fase 18.
 **Kriteria penerimaan:**
 
-- [ ] Klipper dapat mengirim klip hanya untuk penugasan `bergabung` di kampanye `per_views` aktif; kiriman membuat konten + usulan metrik dalam satu transaksi.
-- [ ] URL yang sama (setelah normalisasi: huruf kecil, tanpa parameter pelacak, tanpa garis miring akhir) tidak dapat dikirim dua kali, termasuk oleh klipper lain.
-- [ ] Waktu tayang di luar `joined_at`–`end_date`, platform tidak diizinkan, dan kelebihan `max_clips_per_creator` ditolak di action dan trigger.
-- [ ] Persetujuan membuat snapshot resmi dan satu entri `honor_klip` sesuai 8.6; pembaruan views hanya mengkreditkan selisih.
-- [ ] Unit test 8.6 mencakup: di bawah `min_views_to_earn`, batas per klip, batas per klipper, sisa anggaran, views menurun, pembulatan, dan kredit nol.
-- [ ] Dua persetujuan bersamaan yang total kreditnya melebihi anggaran: satu berhasil, satu ditolak oleh database (diuji di `guards-check.sql`).
-- [ ] Revisi dan penolakan wajib beralasan; klipper melihat alasannya di portal.
-- [ ] Klip `dihapus` sebelum `min_live_days` menghasilkan entri `pembatalan`.
+- [x] Klipper dapat mengirim klip hanya untuk penugasan `bergabung` di kampanye `per_views` aktif; kiriman membuat konten + usulan metrik dalam satu transaksi.
+- [x] URL yang sama (setelah normalisasi: huruf kecil, tanpa parameter pelacak, tanpa garis miring akhir) tidak dapat dikirim dua kali, termasuk oleh klipper lain.
+- [x] Waktu tayang di luar `joined_at`–`end_date`, platform tidak diizinkan, dan kelebihan `max_clips_per_creator` ditolak di action dan trigger.
+- [x] Persetujuan membuat snapshot resmi dan satu entri `honor_klip` sesuai 8.6; pembaruan views hanya mengkreditkan selisih.
+- [x] Unit test 8.6 mencakup: di bawah `min_views_to_earn`, batas per klip, batas per klipper, sisa anggaran, views menurun, pembulatan, dan kredit nol.
+- [x] Dua persetujuan bersamaan yang total kreditnya melebihi anggaran: satu berhasil, satu ditolak oleh database (diuji di `guards-check.sql`).
+- [x] Revisi dan penolakan wajib beralasan; klipper melihat alasannya di portal.
+- [x] Klip `dihapus` sebelum `min_live_days` menghasilkan entri `pembatalan`.
+
+_Catatan implementasi:_ selama menunggu verifikasi, URL dan waktu tayang klip disimpan di `contents.proposed_posted_*`; persetujuan memindahkannya ke `posted_*` (status `tayang`), sehingga constraint FR-M6-04 tetap utuh dan metrik/laporan hanya menghitung klip disetujui (8.4). Kiriman lewat `submit_clip()` (_security invoker_: RLS dan trigger tetap berlaku) dengan trigger ditunda `contents_clip_needs_submission`; keputusan tim lewat `verify_clip()`, `verify_views_update()`, dan `cancel_clip()` (_security definer_, mengunci baris kampanye). Rumus 8.6 hanya di `lib/calculations/clip-earning.ts`; database menegakkan invarian (anggaran, batas per klipper, dan kredit tidak melebihi hasil views terverifikasi yang dibatasi per klip) — action menghitung ulang sekali bila ditolak `BUDGET_EXCEEDED`. "Dua persetujuan bersamaan" diuji di `guards-check.sql` P17-20 sebagai kredit yang dihitung sebelum persetujuan pertama tercatat. URL unik global kecuali klip `ditolak` (agar pemilik asli tetap bisa mengirim), tetapi klipper yang sama tidak dapat mengirim ulang URL yang pernah ditolak untuknya. Pembatalan karena kecurangan (FR-M18-07) hanya `owner`; klip menjadi `ditolak` dan tidak lagi tayang. Mundur (FR-M17-05) kini otomatis menolak klip yang masih menunggu dengan alasan `lainnya`. Penanda "diunggah jauh sebelum bergabung" diterapkan sebagai "tayang < 30 menit setelah bergabung" karena waktu tayang sebelum `joined_at` sudah ditolak. Kirim ulang setelah revisi memakai klaim views semula. Klipper melihat honor per klip lewat `creator_portal_contents.earned_amount`; `creator_portal_ledger` dan halaman Saldo di Fase 18. Kartu dasbor penarikan dan isi pengingat Telegram (FR-M10-05) juga di Fase 18. Fixture kampanye fase lama di `guards-check.sql` kini eksplisit `paket` + `undangan`.
 
 ### Fase 18 — v4.0: Saldo, Rekening, dan Penarikan
 
@@ -646,7 +648,7 @@ _Catatan implementasi:_ honor terpakai dibaca dari fungsi `campaign_creator_cost
 | Versi | Fitur |
 | ----- | ----- |
 | 1.1–3.2 | Tautan laporan, pengingat Telegram, portal kreator, portal klien, situs publik, konfirmasi penugasan — **selesai** (kecuali Fase 12) |
-| **4.0** | **Tahap A — klipper mandiri** (Fase 15–18) — Fase 15–16 **selesai** |
+| **4.0** | **Tahap A — klipper mandiri** (Fase 15–18) — Fase 15–17 **selesai** |
 | 4.0.x | Fase 12 yang direvisi: laporan dan usulan pendaftar dari portal klien |
 | **4.1** | **Tahap B — klien mandiri** (garis besar, PRD dirinci sebelum dikerjakan): pendaftaran klien/instansi dengan verifikasi tim; dompet klien dengan **deposit manual** (transfer + bukti, dikonfirmasi `owner`); klien membuat kampanye `per_views` sendiri (anggaran, tarif, brief, materi) yang ditinjau tim sebelum tayang di katalog; biaya platform (acuan 5%) dan add-on (khusus Klipper Lokal); anggaran terkunci saat kampanye aktif dan sisa dikembalikan ke dompet saat selesai; klien menandai klip bermasalah; invoice/kuitansi otomatis |
 | 4.2 | Penarikan terjadwal (batch) dan pengingat penarikan; papan peringkat di portal (nama panggung) |

@@ -14,7 +14,8 @@ create temporary table demo_campaigns on commit drop as
   select unnest(array[
     'de300000-0000-4000-8000-0000000000c1',  -- PMB campaign, run by the E2E owner flow
     'de300000-0000-4000-8000-0000000000c2',  -- portal campaign, always running (M13)
-    'de300000-0000-4000-8000-0000000000c3'   -- open per_views campaign in the catalog (M17)
+    'de300000-0000-4000-8000-0000000000c3',  -- open per_views campaign in the catalog (M17)
+    'de300000-0000-4000-8000-0000000000c4'   -- open per_views campaign with a joined klipper (M18)
   ]::uuid[]) as id;
 
 create temporary table demo_assignments on commit drop as
@@ -22,6 +23,8 @@ create temporary table demo_assignments on commit drop as
 create temporary table demo_contents on commit drop as
   select id from public.contents where campaign_creator_id in (select id from demo_assignments);
 
+-- Honor ledger (Phase 17) references the clips, so it goes first.
+delete from public.creator_ledger_entries where campaign_id in (select id from demo_campaigns);
 delete from public.metric_snapshots where content_id in (select id from demo_contents);
 delete from public.content_reviews where content_id in (select id from demo_contents);
 delete from public.contents where id in (select id from demo_contents);

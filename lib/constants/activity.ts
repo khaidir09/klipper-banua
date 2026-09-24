@@ -16,6 +16,7 @@ export const ACTIVITY_ENTITY_LABELS = {
   payout: "Honor",
   metric_submission: "Kiriman metrik kreator",
   client_payment: "Pembayaran klien",
+  creator_ledger_entry: "Saldo klipper",
 } as const;
 
 export type ActivityEntityType = keyof typeof ACTIVITY_ENTITY_LABELS;
@@ -65,6 +66,14 @@ export const ACTIVITY_ACTION_LABELS = {
   join_campaign: "Bergabung ke kampanye",
   withdraw_campaign: "Mundur dari kampanye",
   accept_terms: "Menyetujui Syarat Klipper terbaru",
+  submit_clip: "Mengirim klip",
+  resubmit_clip: "Mengirim ulang klip",
+  submit_views_update: "Mengirim pembaruan views",
+  verify_clip: "Memverifikasi klip",
+  verify_views_update: "Memverifikasi pembaruan views",
+  cancel_clip: "Membatalkan honor klip",
+  ledger_credit: "Menambah saldo honor klip",
+  ledger_cancel: "Membatalkan saldo honor klip",
 } as const;
 
 export type ActivityAction = keyof typeof ACTIVITY_ACTION_LABELS;

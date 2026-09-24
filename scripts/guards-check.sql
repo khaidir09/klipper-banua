@@ -59,6 +59,8 @@ delete from public.clients where id='22222222-0000-0000-0000-000000000001';
 insert into public.clients (id, name, type, province) values ('44444444-0000-0000-0000-000000000001','Review Client','kampus_swasta','Kalimantan Selatan');
 insert into public.creators (id, full_name, birth_date, province, status) values ('44444444-0000-0000-0000-0000000000a1','Review C','1995-01-01','Kalimantan Selatan','terverifikasi');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, paid_label_required) values ('44444444-0000-0000-0000-0000000000c1','44444444-0000-0000-0000-000000000001','REVIEW-2026-01','Review','awareness','2026-10-01','2026-10-31', true);
+-- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
+update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('44444444-0000-0000-0000-0000000000c1');
 insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values ('44444444-0000-0000-0000-0000000000d1','44444444-0000-0000-0000-0000000000c1','44444444-0000-0000-0000-0000000000a1','RVWABC','review-c');
 \set QUIET off
 
@@ -117,7 +119,11 @@ begin;
 insert into public.clients (id, name, type, province) values ('55555555-0000-0000-0000-000000000001','Metric Client','kampus_swasta','Kalimantan Selatan');
 insert into public.creators (id, full_name, birth_date, province, status) values ('55555555-0000-0000-0000-0000000000a1','Metric C','1995-01-01','Kalimantan Selatan','terverifikasi');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date) values ('55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-000000000001','METRIC-2026-01','Metric','awareness','2026-10-01','2026-10-31');
+-- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
+update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('55555555-0000-0000-0000-0000000000c1');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date) values ('55555555-0000-0000-0000-0000000000c2','55555555-0000-0000-0000-000000000001','METRIC-2026-02','Other','awareness','2026-10-01','2026-10-31');
+-- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
+update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('55555555-0000-0000-0000-0000000000c2');
 insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values ('55555555-0000-0000-0000-0000000000d1','55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-0000000000a1','MTRABC','metric-c');
 insert into public.contents (id, campaign_creator_id, platform, draft_url) values ('55555555-0000-0000-0000-0000000000e1','55555555-0000-0000-0000-0000000000d1','tiktok','https://drive.test/a');
 insert into public.contents (id, campaign_creator_id, platform, draft_url) values ('55555555-0000-0000-0000-0000000000e2','55555555-0000-0000-0000-0000000000d1','tiktok','https://drive.test/b');
@@ -159,6 +165,8 @@ begin;
 insert into public.clients (id, name, type, province) values ('66666666-0000-0000-0000-000000000001','Finance Client','kampus_swasta','Kalimantan Selatan');
 insert into public.creators (id, full_name, birth_date, province, status) values ('66666666-0000-0000-0000-0000000000a1','Finance C','1995-01-01','Kalimantan Selatan','terverifikasi');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status) values ('66666666-0000-0000-0000-0000000000c1','66666666-0000-0000-0000-000000000001','FIN-2026-01','Finance','awareness','2026-10-01','2026-10-31','aktif');
+-- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
+update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('66666666-0000-0000-0000-0000000000c1');
 insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values ('66666666-0000-0000-0000-0000000000d1','66666666-0000-0000-0000-0000000000c1','66666666-0000-0000-0000-0000000000a1','FNCABC','finance-c');
 \set QUIET off
 create temporary table p5_roles on commit drop as
@@ -216,6 +224,8 @@ begin;
 \set QUIET on
 insert into public.clients (id, name, type, province) values ('77777777-0000-0000-0000-000000000001','Ops Client','kampus_swasta','Kalimantan Selatan');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status) values ('77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-000000000001','OPS-2026-01','Ops','awareness','2026-10-01','2026-10-31','selesai');
+-- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
+update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('77777777-0000-0000-0000-0000000000c1');
 \set QUIET off
 create temporary table p6_roles on commit drop as
   select (select id from public.profiles where role='manager' limit 1) as manager_id,
@@ -295,6 +305,8 @@ insert into public.campaigns (id, client_id, code, name, objective, start_date, 
  ('99999999-0000-0000-0000-0000000000c1','99999999-0000-0000-0000-000000000001','SHARE-2026-01','Share done','awareness','2026-10-01','2026-10-31','selesai'),
  ('99999999-0000-0000-0000-0000000000c2','99999999-0000-0000-0000-000000000001','SHARE-2026-02','Share draft','awareness','2026-10-01','2026-10-31','draft'),
  ('99999999-0000-0000-0000-0000000000c3','99999999-0000-0000-0000-000000000001','SHARE-2026-03','Share live','awareness','2026-10-01','2026-10-31','aktif');
+-- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
+update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('99999999-0000-0000-0000-0000000000c1', '99999999-0000-0000-0000-0000000000c2', '99999999-0000-0000-0000-0000000000c3');
 \set QUIET off
 create temporary table p8_roles on commit drop as
   select (select id from public.profiles where role='manager' limit 1) as manager_id,
@@ -374,6 +386,8 @@ insert into public.clients (id, name, type, province) values ('88888888-0000-000
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, package_price, landing_url) values
  ('88888888-0000-0000-0000-0000000000c1','88888888-0000-0000-0000-000000000001','PORTAL-2026-01','Portal','awareness','2026-10-01','2026-10-31','aktif', 9000000, 'https://pmb.example.ac.id/daftar'),
  ('88888888-0000-0000-0000-0000000000c2','88888888-0000-0000-0000-000000000001','PORTAL-2026-02','Draft','awareness','2026-10-01','2026-10-31','draft', 5000000, null);
+-- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
+update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('88888888-0000-0000-0000-0000000000c1', '88888888-0000-0000-0000-0000000000c2');
 insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug) values
  ('88888888-0000-0000-0000-0000000000b1','88888888-0000-0000-0000-0000000000c1','88888888-0000-0000-0000-0000000000a1','PRTLAA','portal-a'),
  ('88888888-0000-0000-0000-0000000000b2','88888888-0000-0000-0000-0000000000c1','88888888-0000-0000-0000-0000000000a2','PRTLBB','portal-b'),
@@ -442,6 +456,8 @@ insert into public.creators (id, full_name, birth_date, province, status, profil
 insert into public.clients (id, name, type, province) values ('77777777-0000-0000-0000-000000000001','Portal Client 10','kampus_swasta','Kalimantan Selatan');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, landing_url) values
  ('77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-000000000001','PORTAL10-2026-01','Portal 10','awareness','2026-10-01','2026-10-31','aktif', null);
+-- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
+update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('77777777-0000-0000-0000-0000000000c1');
 -- Phase 14 gates the portal on a confirmed assignment, so this creator has
 -- already confirmed; the confirmation itself is exercised in Phase 14.
 insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug, status) values
@@ -555,6 +571,8 @@ insert into public.campaigns (id, client_id, code, name, objective, start_date, 
  ('66666666-0000-0000-0000-0000000000c1','66666666-0000-0000-0000-000000000001','KLIEN-2026-01','Kampanye Klien','awareness','2026-10-01','2026-10-31','aktif', 12000000),
  ('66666666-0000-0000-0000-0000000000c2','66666666-0000-0000-0000-000000000001','KLIEN-2026-02','Masih Draft','awareness','2026-10-01','2026-10-31','draft', 5000000),
  ('66666666-0000-0000-0000-0000000000c3','66666666-0000-0000-0000-000000000002','KLIEN-2026-03','Kampanye Lain','awareness','2026-10-01','2026-10-31','aktif', 7000000);
+-- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
+update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('66666666-0000-0000-0000-0000000000c1', '66666666-0000-0000-0000-0000000000c2', '66666666-0000-0000-0000-0000000000c3');
 
 select set_config('request.jwt.claims', json_build_object('sub','66666666-0000-0000-0000-0000000000f1','role','authenticated')::text, true) is not null as client_claims;
 set local role authenticated;
@@ -622,6 +640,8 @@ insert into public.creators (id, full_name, birth_date, province, status, profil
 insert into public.clients (id, name, type, province) values ('55555555-0000-0000-0000-000000000001','Portal Client 14','kampus_swasta','Kalimantan Selatan');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, landing_url) values
  ('55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-000000000001','PORTAL14-2026-01','Portal 14','awareness','2026-10-01','2026-10-31','aktif', null);
+-- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
+update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('55555555-0000-0000-0000-0000000000c1');
 -- Both assignments start as the team creates them: invited, unconfirmed.
 insert into public.campaign_creators (id, campaign_id, creator_id, referral_code, tracking_slug, base_fee) values
  ('55555555-0000-0000-0000-0000000000b1','55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-0000000000a1','PRTLFA','portal14-a', 1500000),
@@ -994,5 +1014,243 @@ reset role;
 \echo 'P16-38. legacy assignments keep their model and team source (expect paket / tim)'
 select c.payout_model, cc.join_source from public.campaign_creators cc join public.campaigns c on c.id = cc.campaign_id
 where cc.id = '16161616-0000-0000-0000-0000000000b6';
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 17 (v4.0): clip submissions, verification and the honor ledger
+-- (PRD M18, 8.6, FR-M19-01, FR-M19-02)
+-- ---------------------------------------------------------------------------
+begin;
+create temporary table p17_roles on commit drop as
+select
+  (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id,
+  (select id from public.profiles where role = 'owner' and is_active limit 1) as owner_id;
+
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+select id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', email,
+       jsonb_build_object('role', 'creator'), '{}'::jsonb, now(), now()
+from (values
+  ('17171717-0000-0000-0000-0000000000f1'::uuid, 'guard.p17.a@example.test'),
+  ('17171717-0000-0000-0000-0000000000f2'::uuid, 'guard.p17.b@example.test')
+) as u(id, email);
+
+insert into public.creators (id, full_name, stage_name, birth_date, province, status, terms_version, terms_agreed_at, profile_id) values
+ ('17171717-0000-0000-0000-0000000000a1','Klipper A','Klip A','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'17171717-0000-0000-0000-0000000000f1'),
+ ('17171717-0000-0000-0000-0000000000a2','Klipper B','Klip B','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'17171717-0000-0000-0000-0000000000f2');
+insert into public.creator_social_accounts (creator_id, platform, handle) values
+ ('17171717-0000-0000-0000-0000000000a1','tiktok','guard_p17_a'),
+ ('17171717-0000-0000-0000-0000000000a2','tiktok','guard_p17_b');
+insert into public.clients (id, name, type, province) values ('17171717-0000-0000-0000-000000000001','Clip Client 17','kampus_swasta','Kalimantan Selatan');
+-- Rp 10.000 per 1.000 views, Rp 400.000 budget, max 2 clips, 7 live days.
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, access, payout_model,
+                              brief, rate_per_1000_views, creator_budget, min_views_to_earn, max_clips_per_creator,
+                              allowed_platforms, min_live_days, claim_grace_days) values
+ ('17171717-0000-0000-0000-0000000000c1','17171717-0000-0000-0000-000000000001','CLIP17-01','Clip 17','awareness',
+  public.campaign_today() - 5, public.campaign_today() + 30,'aktif','terbuka','per_views','Brief',10000,400000,1000,2,
+  '{tiktok,youtube}',7,3);
+insert into public.campaign_creators (id, campaign_id, creator_id, status, join_source, joined_at, creator_confirmed_at) values
+ ('17171717-0000-0000-0000-0000000000b1','17171717-0000-0000-0000-0000000000c1','17171717-0000-0000-0000-0000000000a1','bergabung','mandiri',now() - interval '3 days',now() - interval '3 days'),
+ ('17171717-0000-0000-0000-0000000000b2','17171717-0000-0000-0000-0000000000c1','17171717-0000-0000-0000-0000000000a2','bergabung','mandiri',now() - interval '3 days',now() - interval '3 days');
+
+-- Klipper A.
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+set local role authenticated;
+\echo 'P17-1. allowed platform without a registered account (expect CLIP_NO_SOCIAL_ACCOUNT)'
+savepoint a; select public.submit_clip('17171717-0000-0000-0000-0000000000b1','youtube','https://youtube.com/shorts/p17yt',now() - interval '1 hour',5000,0,0,0,'x/p.png'); rollback to savepoint a;
+\echo 'P17-2. platform the campaign does not allow (expect CLIP_PLATFORM_NOT_ALLOWED)'
+savepoint b; select public.submit_clip('17171717-0000-0000-0000-0000000000b1','instagram','https://instagram.com/reel/p17ig',now() - interval '1 hour',5000,0,0,0,'x/p.png'); rollback to savepoint b;
+\echo 'P17-3. posted before joining (expect CLIP_OUTSIDE_PERIOD)'
+savepoint c; select public.submit_clip('17171717-0000-0000-0000-0000000000b1','tiktok','https://tiktok.com/@a/video/1700',now() - interval '4 days',5000,0,0,0,'x/p.png'); rollback to savepoint c;
+\echo 'P17-4. posted in the future (expect CLIP_POSTED_IN_FUTURE)'
+savepoint d; select public.submit_clip('17171717-0000-0000-0000-0000000000b1','tiktok','https://tiktok.com/@a/video/1700',now() + interval '1 day',5000,0,0,0,'x/p.png'); rollback to savepoint d;
+\echo 'P17-5. a clip without its views proof (expect CLIP_NEEDS_PROOF)'
+savepoint e;
+insert into public.contents (campaign_creator_id, platform, proposed_posted_url, proposed_posted_at, proposed_at)
+values ('17171717-0000-0000-0000-0000000000b1','tiktok','https://tiktok.com/@a/video/1709',now() - interval '1 hour',now());
+set constraints public.contents_clip_needs_submission immediate;
+rollback to savepoint e;
+\echo 'P17-6. a valid clip (expect menunggu_review / f / t / normalised URL / 1 open submission)'
+select public.submit_clip('17171717-0000-0000-0000-0000000000b1','tiktok','https://www.TikTok.com/@a/video/1701/?is_from_webapp=1',now() - interval '1 hour',23450,900,40,12,'17171717-0000-0000-0000-0000000000c1/p1.png') is not null as sent;
+select review_status, posted_url is not null as live, proposed_posted_url is not null as proposed, posted_url_normalized,
+       (select count(*) from public.metric_submissions s where s.content_id = c.id and s.status = 'menunggu') as open_submissions
+from public.contents c where campaign_creator_id = '17171717-0000-0000-0000-0000000000b1';
+\echo 'P17-7. the same video again with tracker parameters (expect contents_posted_url_normalized_key)'
+savepoint f; select public.submit_clip('17171717-0000-0000-0000-0000000000b1','tiktok','http://tiktok.com/@A/video/1701?utm_source=copy&_t=x',now() - interval '1 hour',100,0,0,0,'x/p.png'); rollback to savepoint f;
+\echo 'P17-8. a second clip, then a third over max_clips_per_creator (expect sent, then CLIP_LIMIT_REACHED)'
+select public.submit_clip('17171717-0000-0000-0000-0000000000b1','tiktok','https://tiktok.com/@a/video/1702',now() - interval '1 hour',23450,900,40,12,'17171717-0000-0000-0000-0000000000c1/p2.png') is not null as sent;
+savepoint g; select public.submit_clip('17171717-0000-0000-0000-0000000000b1','tiktok','https://tiktok.com/@a/video/1703',now() - interval '1 hour',100,0,0,0,'x/p.png'); rollback to savepoint g;
+\echo 'P17-9. changing the URL of a sent clip (expect CLIP_USE_VERIFY)'
+savepoint h; update public.contents set proposed_posted_url = 'https://tiktok.com/@a/video/9999' where posted_url_normalized = 'https://tiktok.com/@a/video/1701'; rollback to savepoint h;
+\echo 'P17-10. deleting the views proof of a clip (expect SUBMISSION_INITIAL_FIXED)'
+savepoint i; delete from public.metric_submissions where content_id = (select id from public.contents where posted_url_normalized = 'https://tiktok.com/@a/video/1701'); rollback to savepoint i;
+\echo 'P17-11. a views update before approval (expect VIEWS_UPDATE_NOT_ALLOWED)'
+savepoint j; insert into public.metric_submissions (content_id, checkpoint, captured_at, views, proof_path)
+select id, 'lainnya', now(), 30000, 'x/p.png' from public.contents where posted_url_normalized = 'https://tiktok.com/@a/video/1701'; rollback to savepoint j;
+reset role;
+
+-- Klipper B.
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as klipper_b;
+set local role authenticated;
+\echo 'P17-12. another klipper claims the same video (expect contents_posted_url_normalized_key)'
+savepoint k; select public.submit_clip('17171717-0000-0000-0000-0000000000b2','tiktok','https://m.tiktok.com/@a/video/1701#comments',now() - interval '1 hour',100,0,0,0,'x/p.png'); rollback to savepoint k;
+\echo 'P17-13. B cannot see the clips of A (expect 0)'
+select count(*) as visible from public.creator_portal_contents where campaign_creator_id = '17171717-0000-0000-0000-0000000000b1';
+reset role;
+
+create temporary table p17_clips on commit drop as
+select
+  (select id from public.contents where posted_url_normalized = 'https://tiktok.com/@a/video/1701') as clip1,
+  (select id from public.contents where posted_url_normalized = 'https://tiktok.com/@a/video/1702') as clip2;
+grant select on p17_clips to authenticated;
+
+-- Manager.
+select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from p17_roles), 'role', 'authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+\echo 'P17-14. the package review path on a clip (expect CLIP_USE_VERIFY)'
+savepoint l; insert into public.content_reviews (content_id, decision, notes) select clip1, 'revisi', 'x' from p17_clips; rollback to savepoint l;
+\echo 'P17-15. approve without the full checklist (expect CHECKLIST_INCOMPLETE)'
+savepoint m; select public.verify_clip((select clip1 from p17_clips),'disetujui','{"kode_verifikasi":true}'::jsonb,'',null,23450,234500); rollback to savepoint m;
+\echo 'P17-16. revision without notes (expect content_reviews_revision_notes_check)'
+savepoint n; select public.verify_clip((select clip1 from p17_clips),'revisi','{}'::jsonb,'',null,null,0); rollback to savepoint n;
+\echo 'P17-17. reject without a reason (expect CLIP_REJECT_NEEDS_REASON)'
+savepoint o; select public.verify_clip((select clip1 from p17_clips),'ditolak','{}'::jsonb,'Bukan akun Anda',null,null,0); rollback to savepoint o;
+\echo 'P17-18. a credit above what the verified views earn (expect CREDIT_ABOVE_CLIP_EARNING)'
+savepoint p; select public.verify_clip((select clip1 from p17_clips),'disetujui',
+  '{"kode_verifikasi":true,"akun_sesuai":true,"sesuai_brief":true,"tanpa_larangan":true,"hashtag":true,"label_berbayar":true,"dalam_periode":true,"views_cocok":true,"tanpa_views_palsu":true}'::jsonb,
+  '',null,23450,300000); rollback to savepoint p;
+\echo 'P17-19. approve clip 1 at 23.450 views (expect disetujui / tayang / t / 23450 / 23450 / 234500 / 234500)'
+select public.verify_clip((select clip1 from p17_clips),'disetujui',
+  '{"kode_verifikasi":true,"akun_sesuai":true,"sesuai_brief":true,"tanpa_larangan":true,"hashtag":true,"label_berbayar":true,"dalam_periode":true,"views_cocok":true,"tanpa_views_palsu":true}'::jsonb,
+  'OK',null,23450,234500) is not null as reviewed;
+select c.review_status, c.live_status, c.posted_url is not null as live, c.verified_views,
+       (select views from public.metric_snapshots s where s.content_id = c.id) as snapshot_views,
+       public.clip_credited_amount(c.id) as credited,
+       public.campaign_creator_cost('17171717-0000-0000-0000-0000000000c1') as campaign_cost
+from public.contents c where c.id = (select clip1 from p17_clips);
+\echo 'P17-20. two approvals at once: clip 2 credit computed before clip 1 was credited (expect BUDGET_EXCEEDED)'
+-- Both verifiers saw cost 0 and computed Rp 234.500 each. verify_clip locks
+-- the campaign row, so the second one waits for the first and is re-checked
+-- against it: 234.500 + 234.500 > 400.000.
+savepoint q; select public.verify_clip((select clip2 from p17_clips),'disetujui',
+  '{"kode_verifikasi":true,"akun_sesuai":true,"sesuai_brief":true,"tanpa_larangan":true,"hashtag":true,"label_berbayar":true,"dalam_periode":true,"views_cocok":true,"tanpa_views_palsu":true}'::jsonb,
+  '',null,23450,234500); rollback to savepoint q;
+\echo 'P17-21. clip 2 with the recomputed, budget-limited credit (expect 165500 / t / 400000 / t)'
+select public.verify_clip((select clip2 from p17_clips),'disetujui',
+  '{"kode_verifikasi":true,"akun_sesuai":true,"sesuai_brief":true,"tanpa_larangan":true,"hashtag":true,"label_berbayar":true,"dalam_periode":true,"views_cocok":true,"tanpa_views_palsu":true}'::jsonb,
+  '',null,23450,165500,true) is not null as reviewed;
+select public.clip_credited_amount((select clip2 from p17_clips)) as credited,
+       (select credit_limited from public.metric_submissions where content_id = (select clip2 from p17_clips)) as limited,
+       public.campaign_creator_cost('17171717-0000-0000-0000-0000000000c1') as campaign_cost,
+       public.campaign_budget_exhausted('17171717-0000-0000-0000-0000000000c1') as exhausted;
+\echo 'P17-22. the team edits a clip directly (expect CLIP_USE_VERIFY)'
+savepoint r; update public.contents set live_status = 'dihapus', removed_at = now() where id = (select clip1 from p17_clips); rollback to savepoint r;
+\echo 'P17-23. the team writes the ledger directly (expect LEDGER_FUNCTION_ONLY)'
+savepoint s; insert into public.creator_ledger_entries (creator_id, entry_type, amount, campaign_id, content_id)
+values ('17171717-0000-0000-0000-0000000000a1','honor_klip',1000000,'17171717-0000-0000-0000-0000000000c1',(select clip1 from p17_clips)); rollback to savepoint s;
+reset role;
+
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as klipper_b;
+set local role authenticated;
+\echo 'P17-24. a new clip once the budget is used up (expect CLIP_BUDGET_EXHAUSTED)'
+savepoint t; select public.submit_clip('17171717-0000-0000-0000-0000000000b2','tiktok','https://tiktok.com/@b/video/1704',now() - interval '1 hour',100,0,0,0,'x/p.png'); rollback to savepoint t;
+reset role;
+
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+set local role authenticated;
+\echo 'P17-25. a views update within 24 hours (expect VIEWS_UPDATE_TOO_SOON)'
+savepoint u; insert into public.metric_submissions (content_id, checkpoint, captured_at, views, proof_path)
+select clip1, 'lainnya', now(), 41000, 'x/p.png' from p17_clips; rollback to savepoint u;
+reset role;
+select set_config('request.jwt.claims', '', true) is not null as no_claims;
+update public.metric_submissions set created_at = created_at - interval '2 days' where content_id = (select clip1 from p17_clips);
+
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+set local role authenticated;
+\echo 'P17-26. a views update after 24 hours (expect INSERT 0 1)'
+insert into public.metric_submissions (content_id, checkpoint, captured_at, views, proof_path)
+select clip1, 'H+1', now(), 41000, '17171717-0000-0000-0000-0000000000c1/p3.png' from p17_clips;
+reset role;
+
+select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from p17_roles), 'role', 'authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+\echo 'P17-27. accepted while the budget is used up: no credit (expect lainnya / 41000 / 234500 / 1)'
+select public.verify_views_update((select id from public.metric_submissions where content_id = (select clip1 from p17_clips) and status = 'menunggu'), true, 41000, '', 0, true) is not null as accepted;
+select (select checkpoint from public.metric_submissions where content_id = (select clip1 from p17_clips) order by created_at desc limit 1) as checkpoint,
+       (select verified_views from public.contents where id = (select clip1 from p17_clips)) as verified,
+       public.clip_credited_amount((select clip1 from p17_clips)) as credited,
+       (select count(*) from public.creator_ledger_entries where content_id = (select clip1 from p17_clips)) as entries;
+\echo 'P17-28. the team raises the budget (expect UPDATE 1)'
+update public.campaigns set creator_budget = 800000 where id = '17171717-0000-0000-0000-0000000000c1';
+reset role;
+select set_config('request.jwt.claims', '', true) is not null as no_claims;
+update public.metric_submissions set created_at = created_at - interval '2 days' where content_id = (select clip1 from p17_clips);
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+set local role authenticated;
+insert into public.metric_submissions (content_id, checkpoint, captured_at, views, proof_path)
+select clip1, 'lainnya', now(), 41000, '17171717-0000-0000-0000-0000000000c1/p4.png' from p17_clips;
+reset role;
+select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from p17_roles), 'role', 'authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+\echo 'P17-29. the next update only credits the difference (expect 410000 / 2 entries)'
+select public.verify_views_update((select id from public.metric_submissions where content_id = (select clip1 from p17_clips) and status = 'menunggu'), true, 41000, '', 175500, false) is not null as accepted;
+select public.clip_credited_amount((select clip1 from p17_clips)) as credited,
+       (select count(*) from public.creator_ledger_entries where content_id = (select clip1 from p17_clips)) as entries;
+\echo 'P17-30. clip 1 taken down before min_live_days (expect 410000, then dihapus / 0 / pembatalan -410000)'
+select public.cancel_clip((select clip1 from p17_clips), 'dihapus', now());
+select c.live_status, public.clip_credited_amount(c.id) as credited,
+       (select entry_type || ' ' || amount from public.creator_ledger_entries e where e.content_id = c.id and e.entry_type = 'pembatalan') as cancellation
+from public.contents c where c.id = (select clip1 from p17_clips);
+\echo 'P17-31. a manager cancels a clip for fraud (expect OWNER_ONLY)'
+savepoint v; select public.cancel_clip((select clip2 from p17_clips), 'kecurangan', null, 'views_tidak_wajar', 'Views dibeli'); rollback to savepoint v;
+reset role;
+
+select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p17_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+\echo 'P17-32. the owner cancels clip 2 for fraud (expect 165500, then ditolak / f / views_tidak_wajar / 0)'
+select public.cancel_clip((select clip2 from p17_clips), 'kecurangan', null, 'views_tidak_wajar', 'Views dibeli');
+select review_status, posted_url is not null as live, rejection_reason, public.clip_credited_amount(id) as credited
+from public.contents where id = (select clip2 from p17_clips);
+reset role;
+
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+set local role authenticated;
+\echo 'P17-33. A sends the rejected clip again (expect CLIP_URL_REJECTED_BEFORE)'
+savepoint w; select public.submit_clip('17171717-0000-0000-0000-0000000000b1','tiktok','https://tiktok.com/@a/video/1702',now() - interval '1 hour',100,0,0,0,'x/p.png'); rollback to savepoint w;
+\echo 'P17-34. A reads the outcome in the portal (expect dihapus disetujui 0 / belum_tayang ditolak 0 views_tidak_wajar)'
+select live_status, review_status, earned_amount, rejection_reason from public.creator_portal_contents
+where campaign_creator_id = '17171717-0000-0000-0000-0000000000b1' order by created_at;
+reset role;
+
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as klipper_b;
+set local role authenticated;
+\echo 'P17-35. the real owner of a rejected video can still send it (expect sent)'
+select public.submit_clip('17171717-0000-0000-0000-0000000000b2','tiktok','https://tiktok.com/@a/video/1702',now() - interval '1 hour',5000,0,0,0,'17171717-0000-0000-0000-0000000000c1/p5.png') is not null as sent;
+reset role;
+select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from p17_roles), 'role', 'authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+\echo 'P17-36. the team asks B for a revision (expect revisi)'
+select public.verify_clip((select id from public.contents where campaign_creator_id = '17171717-0000-0000-0000-0000000000b2'),'revisi','{}'::jsonb,'Kode verifikasi belum ada di caption',null,null,0) is not null as reviewed;
+select review_status from public.contents where campaign_creator_id = '17171717-0000-0000-0000-0000000000b2';
+reset role;
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as klipper_b;
+set local role authenticated;
+\echo 'P17-37. B reads the note, then sends the clip again with the same URL (expect note, then menunggu_review / 1)'
+select notes from public.creator_portal_reviews where content_id = (select id from public.creator_portal_contents where campaign_creator_id = '17171717-0000-0000-0000-0000000000b2');
+update public.contents set review_status = 'menunggu_review', revision_count = revision_count + 1 where campaign_creator_id = '17171717-0000-0000-0000-0000000000b2';
+select review_status, revision_count from public.creator_portal_contents where campaign_creator_id = '17171717-0000-0000-0000-0000000000b2';
+\echo 'P17-38. B withdraws: the waiting clip is cancelled (expect UPDATE 1, then ditolak / lainnya / ditolak)'
+update public.campaign_creators set status = 'mundur' where id = '17171717-0000-0000-0000-0000000000b2';
+select c.review_status, c.rejection_reason, s.status as submission
+from public.creator_portal_contents c join public.creator_portal_submissions s on s.content_id = c.id
+where c.campaign_creator_id = '17171717-0000-0000-0000-0000000000b2';
+reset role;
+
+select set_config('request.jwt.claims', '', true) is not null as no_claims;
+\echo 'P17-39. ledger entries cannot change, even as superuser (expect LEDGER_IMMUTABLE twice)'
+savepoint x; update public.creator_ledger_entries set amount = 1 where campaign_id = '17171717-0000-0000-0000-0000000000c1'; rollback to savepoint x;
+savepoint y; delete from public.creator_ledger_entries where campaign_id = '17171717-0000-0000-0000-0000000000c1'; rollback to savepoint y;
+\echo 'P17-40. the database and the app normalise alike (expect https://youtube.com/watch?list=l&v=abc)'
+select public.normalize_clip_url('https://m.YouTube.com/watch?v=AbC&si=zz&list=L&t=30#x') as normalised;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;

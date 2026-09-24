@@ -35,6 +35,11 @@ export const DEMO = {
   // Phase 16 (M17): an open per_views campaign in the klipper catalog.
   openCampaignId: "de300000-0000-4000-8000-0000000000c3",
   openCampaignCode: "DEMO-KLIP-2026",
+  // Phase 17 (M18): an open campaign the portal klipper has already joined,
+  // for sending a clip and having it verified.
+  clipCampaignId: "de300000-0000-4000-8000-0000000000c4",
+  clipCampaignCode: "DEMO-KLIP2-2026",
+  clipAssignmentId: "de300000-0000-4000-8000-0000000000b4",
 } as const;
 
 const creatorId = (n: number) => `de300000-0000-4000-8000-0000000000a${n}`;
@@ -326,6 +331,92 @@ async function seedOpenCampaign(
         external_url: "https://kampus-demo.example/video-wisuda",
         notes: "Durasi 2 jam; potong bagian terbaik.",
         created_by: ownerId,
+      })
+    ).error,
+  );
+}
+
+/**
+ * An open per_views campaign the portal klipper (creator 1) joined three days
+ * ago, with no clips yet (M18, phase 17). The E2E flow sends a clip, the
+ * manager verifies it and the honor lands in the ledger.
+ */
+async function seedClipCampaign(
+  admin: SupabaseClient<Database>,
+  ownerId: string | null,
+  now: Date,
+) {
+  const check = (label: string, error: { message: string } | null) => {
+    if (error) throw new Error(`${label}: ${error.message}`);
+  };
+
+  check(
+    "clip campaign",
+    (
+      await admin.from("campaigns").upsert({
+        id: DEMO.clipCampaignId,
+        client_id: DEMO.clientId,
+        code: DEMO.clipCampaignCode,
+        name: "Klip Dies Natalis Universitas Demo Borneo",
+        objective: "awareness",
+        brief:
+          "Potong video Dies Natalis Universitas Demo Borneo menjadi klip pendek 15–60 detik: penampilan mahasiswa, pidato rektor, atau suasana kampus.",
+        must_do: ["Tulis kode verifikasi Anda di caption", "Sebut nama Universitas Demo Borneo"],
+        must_not: ["Mengubah makna ucapan narasumber"],
+        hashtags: ["#DiesNatalisDemoBorneo"],
+        paid_label_required: true,
+        landing_url: null,
+        start_date: iso(addDays(now, -5)),
+        end_date: iso(addDays(now, 25)),
+        min_live_days: 14,
+        status: "aktif",
+        package_price: 8_000_000,
+        target_views: 300_000,
+        payout_model: "per_views",
+        access: "terbuka",
+        rate_per_1000_views: 10_000,
+        creator_budget: 3_000_000,
+        max_payout_per_clip: 500_000,
+        max_payout_per_creator: 1_000_000,
+        min_views_to_earn: 1_000,
+        max_clips_per_creator: 3,
+        allowed_platforms: ["tiktok", "instagram"],
+        local_only: false,
+        claim_grace_days: 3,
+        published_at: addDays(now, -5).toISOString(),
+        created_by: ownerId,
+      })
+    ).error,
+  );
+
+  check(
+    "clip campaign asset",
+    (
+      await admin.from("campaign_assets").upsert({
+        id: "de300000-0000-4000-8000-0000000000f4",
+        campaign_id: DEMO.clipCampaignId,
+        title: "Video Dies Natalis (tautan)",
+        type: "tautan",
+        external_url: "https://kampus-demo.example/video-dies-natalis",
+        notes: "",
+        created_by: ownerId,
+      })
+    ).error,
+  );
+
+  const joinedAt = addDays(now, -3).toISOString();
+  check(
+    "clip assignment",
+    (
+      await admin.from("campaign_creators").upsert({
+        id: DEMO.clipAssignmentId,
+        campaign_id: DEMO.clipCampaignId,
+        creator_id: creatorId(1),
+        status: "bergabung",
+        join_source: "mandiri",
+        contents_committed: 3,
+        joined_at: joinedAt,
+        creator_confirmed_at: joinedAt,
       })
     ).error,
   );
@@ -771,9 +862,10 @@ async function main() {
 
   await seedPortalCampaign(admin, owner?.id ?? null, proof, now);
   await seedOpenCampaign(admin, owner?.id ?? null, now);
+  await seedClipCampaign(admin, owner?.id ?? null, now);
 
   console.log(
-    `Demo data ready: 1 client, ${CREATORS.length} creators, campaigns ${DEMO.campaignCode}, ${DEMO.portalCampaignCode} and ${DEMO.openCampaignCode}.`,
+    `Demo data ready: 1 client, ${CREATORS.length} creators, campaigns ${DEMO.campaignCode}, ${DEMO.portalCampaignCode}, ${DEMO.openCampaignCode} and ${DEMO.clipCampaignCode}.`,
   );
   console.log(
     portalEmail

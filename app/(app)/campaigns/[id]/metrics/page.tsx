@@ -24,7 +24,8 @@ export default async function CampaignMetricsPage({ params }: { params: Promise<
   const [assignments, metrics, pendingSubmissions] = await Promise.all([
     listAssignments(supabase, id),
     getCampaignMetrics(supabase, id),
-    listPendingSubmissions(supabase, id),
+    // FR-M18-05: views of per_views clips are verified on /verifikasi.
+    campaign.payout_model === "per_views" ? [] : listPendingSubmissions(supabase, id),
   ]);
 
   // Every content returned here has gone live (posted_at is set).

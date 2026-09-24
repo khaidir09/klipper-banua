@@ -1,6 +1,8 @@
 import {
+  BadgeCheck,
   Building2,
   ClipboardList,
+  Clapperboard,
   Compass,
   Home,
   LayoutDashboard,
@@ -27,6 +29,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Klien", href: "/clients", icon: Building2 },
   { label: "Kreator", href: "/creators", icon: Users },
   { label: "Kampanye", href: "/campaigns", icon: Megaphone },
+  { label: "Verifikasi", href: "/verifikasi", icon: BadgeCheck },
   { label: "Aktivitas", href: "/activity", icon: ScrollText, roles: ["owner"] },
   { label: "Pengaturan", href: "/settings", icon: Settings },
 ];
@@ -36,6 +39,7 @@ export const PORTAL_NAV_ITEMS: NavItem[] = [
   { label: "Beranda", href: "/portal", icon: Home, exact: true },
   { label: "Kampanye", href: "/portal/kampanye", icon: Compass },
   { label: "Kampanye Saya", href: "/portal/penugasan", icon: ClipboardList },
+  { label: "Klip Saya", href: "/portal/klip", icon: Clapperboard },
   { label: "Profil", href: "/portal/profil", icon: User },
 ];
 

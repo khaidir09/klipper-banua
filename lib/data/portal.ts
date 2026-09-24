@@ -1,5 +1,12 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { claimDeadline, viewsUpdateState } from "@/lib/campaigns/clips";
+import { campaignToday } from "@/lib/campaigns/open";
+import type { ClipRejectionReason } from "@/lib/constants/clips";
+import type { LiveStatus, ReviewDecision, ReviewStatus } from "@/lib/constants/contents";
+import type { SocialPlatform } from "@/lib/constants/creators";
+import type { SubmissionStatus } from "@/lib/constants/metrics";
+import { formatCalendarDate, formatDateTime } from "@/lib/format/date";
 import type { Database } from "@/types/database";
 import { CAMPAIGN_ASSET_BUCKET } from "./campaigns";
 import { AUDIENCE_PROOF_BUCKET } from "./creators";
@@ -68,10 +75,15 @@ export type PortalContent = NonNullableExcept<
   | "proposed_posted_url"
   | "proposed_posted_at"
   | "proposed_at"
+  | "verified_views"
+  | "rejection_reason"
 >;
 export type PortalReview = NonNullableExcept<ReviewView, never>;
 export type PortalMetric = NonNullableExcept<MetricView, never>;
-export type PortalSubmission = NonNullableExcept<SubmissionView, "reviewed_at">;
+export type PortalSubmission = NonNullableExcept<
+  SubmissionView,
+  "reviewed_at" | "verified_views" | "credited_amount"
+>;
 export type PortalPayout = NonNullableExcept<PayoutView, "paid_at">;
 export type PortalSocialAccount = NonNullableExcept<
   SocialAccountView,
@@ -286,4 +298,148 @@ export async function listPortalSocialAccounts(
     ...row,
     proof_url: row.audience_proof_path ? (urls.get(row.audience_proof_path) ?? null) : null,
   }));
+}
+
+/* ------------------------------------------------------------------ */
+/* Clips of per_views campaigns (PRD M18)                              */
+/* ------------------------------------------------------------------ */
+
+export type PortalClipSubmission = {
+  id: string;
+  views: number;
+  verifiedViews: number | null;
+  status: SubmissionStatus;
+  reviewNotes: string;
+  creditedAmount: number | null;
+  creditLimited: boolean;
+  createdAt: string;
+};
+
+export type PortalClip = {
+  id: string;
+  assignmentId: string;
+  campaignId: string;
+  campaignName: string;
+  platform: SocialPlatform;
+  /** The live URL: approved, or as sent while it waits. */
+  url: string | null;
+  postedAt: string | null;
+  reviewStatus: ReviewStatus;
+  liveStatus: LiveStatus;
+  removedAt: string | null;
+  revisionCount: number;
+  verifiedViews: number | null;
+  earnedAmount: number;
+  rejectionReason: ClipRejectionReason | null;
+  lastReview: { decision: ReviewDecision; notes: string; createdAt: string } | null;
+  submissions: PortalClipSubmission[];
+  /** FR-M18-05: whether a views update can be sent now, and why not. */
+  viewsUpdate: { allowed: boolean; message: string | null };
+  createdAt: string;
+};
+
+/**
+ * FR-M18-01 … FR-M18-05: the klipper's clips on `per_views` campaigns, newest
+ * first, with their review, honor and whether new views can be sent. Pass an
+ * assignment to limit the list to one campaign.
+ */
+export async function listPortalClips(
+  supabase: SupabaseClient<Database>,
+  options: { assignmentId?: string; timezone: string },
+): Promise<PortalClip[]> {
+  let assignmentsQuery = supabase
+    .from("creator_portal_assignments")
+    .select("id, campaign_id, campaign_name, campaign_status, end_date, claim_grace_days")
+    .eq("payout_model", "per_views");
+  if (options.assignmentId) assignmentsQuery = assignmentsQuery.eq("id", options.assignmentId);
+  const { data: assignmentRows, error: assignmentsError } = await assignmentsQuery;
+  if (assignmentsError) throw new Error(assignmentsError.message);
+
+  const assignments = new Map(
+    (assignmentRows as PortalAssignment[]).map((row) => [row.id, row] as const),
+  );
+  if (!assignments.size) return [];
+
+  const { data: contentRows, error } = await supabase
+    .from("creator_portal_contents")
+    .select("*")
+    .in("campaign_creator_id", [...assignments.keys()])
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  const contents = contentRows as PortalContent[];
+
+  const ids = contents.map((content) => content.id);
+  const [reviews, submissions] = await Promise.all([
+    listPortalReviews(supabase, ids),
+    listPortalSubmissions(supabase, ids),
+  ]);
+
+  const now = new Date();
+  const today = campaignToday(now);
+
+  return contents.map((content) => {
+    const assignment = assignments.get(content.campaign_creator_id)!;
+    const own = submissions.filter((row) => row.content_id === content.id);
+    const review = reviews.find((row) => row.content_id === content.id);
+
+    const state = viewsUpdateState({
+      reviewStatus: content.review_status,
+      liveStatus: content.live_status,
+      campaignStatus: assignment.campaign_status,
+      endDate: assignment.end_date,
+      claimGraceDays: assignment.claim_grace_days,
+      today,
+      lastSubmittedAt: own[0]?.created_at ?? null,
+      hasPendingSubmission: own.some((row) => row.status === "menunggu"),
+      now,
+    });
+    let message: string | null = null;
+    if (!state.allowed) {
+      switch (state.reason) {
+        case "too_soon":
+          message = `Pembaruan views berikutnya bisa dikirim mulai ${formatDateTime(state.nextAt, options.timezone)}.`;
+          break;
+        case "pending":
+          message = "Pembaruan views sebelumnya masih menunggu verifikasi tim.";
+          break;
+        case "closed":
+          message = `Masa klaim berakhir ${formatCalendarDate(claimDeadline(assignment.end_date, assignment.claim_grace_days))}.`;
+          break;
+        default:
+          message = null;
+      }
+    }
+
+    return {
+      id: content.id,
+      assignmentId: content.campaign_creator_id,
+      campaignId: content.campaign_id,
+      campaignName: assignment.campaign_name,
+      platform: content.platform,
+      url: content.posted_url ?? content.proposed_posted_url,
+      postedAt: content.posted_at ?? content.proposed_posted_at,
+      reviewStatus: content.review_status,
+      liveStatus: content.live_status,
+      removedAt: content.removed_at,
+      revisionCount: content.revision_count,
+      verifiedViews: content.verified_views === null ? null : Number(content.verified_views),
+      earnedAmount: Number(content.earned_amount),
+      rejectionReason: content.rejection_reason,
+      lastReview: review
+        ? { decision: review.decision, notes: review.notes, createdAt: review.created_at }
+        : null,
+      submissions: own.map((row) => ({
+        id: row.id,
+        views: Number(row.views),
+        verifiedViews: row.verified_views === null ? null : Number(row.verified_views),
+        status: row.status,
+        reviewNotes: row.review_notes,
+        creditedAmount: row.credited_amount === null ? null : Number(row.credited_amount),
+        creditLimited: row.credit_limited,
+        createdAt: row.created_at,
+      })),
+      viewsUpdate: { allowed: state.allowed, message },
+      createdAt: content.created_at,
+    };
+  });
 }

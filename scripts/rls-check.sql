@@ -78,6 +78,10 @@ insert into public.metric_submissions (id, content_id, checkpoint, captured_at, 
   ('f1000000-0000-4000-8000-000000000025', 'f1000000-0000-4000-8000-000000000023', 'H+1', now(), 'x/submission-b.png', 'menunggu');
 insert into public.client_payments (id, campaign_id, invoice_number, amount, due_date)
 values ('f1000000-0000-4000-8000-000000000017', 'f1000000-0000-4000-8000-000000000007', 'RLS-INV-1', 1000000, '2026-11-01');
+-- Phase 17 (M18, FR-M19-01): one honor credit. Triggers are off here, so the
+-- fixture can go in directly; the guard is tested in guards-check.sql.
+insert into public.creator_ledger_entries (id, creator_id, entry_type, amount, campaign_id, content_id)
+values ('f1000000-0000-4000-8000-000000000070', 'f1000000-0000-4000-8000-000000000003', 'honor_klip', 10000, 'f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000011');
 insert into public.ops_time_logs (id, campaign_id, user_id, activity, minutes, log_date)
 values ('f1000000-0000-4000-8000-000000000018', 'f1000000-0000-4000-8000-000000000007', (select owner_id from rls_ids), 'review', 30, '2026-10-02');
 insert into public.report_share_links (id, campaign_id, token_hash, created_by)
@@ -369,6 +373,14 @@ insert into rls_cases values
   ('creator_portal_assets_invite', 'select', $q$select count(*) from public.creator_portal_assets where campaign_id = 'f1000000-0000-4000-8000-000000000022'$q$),
   ('storage:campaign-assets-open', 'select', $q$select count(*) from storage.objects where bucket_id = 'campaign-assets' and name = 'f1000000-0000-4000-8000-000000000090/rls-open.mp4'$q$);
 
+-- Phase 17 (M18, FR-M19-01): the ledger is read by the team and written by
+-- the verification functions only; nobody inserts, changes or deletes rows.
+insert into rls_cases values
+  ('creator_ledger_entries', 'select', $q$select count(*) from public.creator_ledger_entries where id = 'f1000000-0000-4000-8000-000000000070'$q$),
+  ('creator_ledger_entries', 'insert', $q$insert into public.creator_ledger_entries (creator_id, entry_type, amount, campaign_id, content_id) values ('f1000000-0000-4000-8000-000000000003', 'honor_klip', 99, 'f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000011')$q$),
+  ('creator_ledger_entries', 'update', $q$update public.creator_ledger_entries set notes = notes where id = 'f1000000-0000-4000-8000-000000000070'$q$),
+  ('creator_ledger_entries', 'delete', $q$delete from public.creator_ledger_entries where id = 'f1000000-0000-4000-8000-000000000070'$q$);
+
 -- Client portal (M14): the portal reads through views, and the contact row
 -- that carries the account must stay out of the client's own reach.
 insert into rls_cases values
@@ -605,6 +617,15 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) valu
   ('creator_portal_assets_invite', 'select', 'd', 'd', 'd', 'd', 'd'),
   ('storage:campaign-assets-open', 'select', 'a', 'a', 'd', 'd', 'a');
 
+-- Phase 17 (M18): the ledger is internal; the klipper sees their honor per
+-- clip through creator_portal_contents.earned_amount (Phase 18 adds
+-- creator_portal_ledger).
+insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) values
+  ('creator_ledger_entries', 'select', 'a', 'a', 'd', 'd', 'd'),
+  ('creator_ledger_entries', 'insert', 'd', 'd', 'd', 'd', 'd'),
+  ('creator_ledger_entries', 'update', 'd', 'd', 'd', 'd', 'd'),
+  ('creator_ledger_entries', 'delete', 'd', 'd', 'd', 'd', 'd');
+
 -- ---------------------------------------------------------------------------
 -- Run every case for every role.
 -- ---------------------------------------------------------------------------
@@ -693,7 +714,14 @@ where table_schema = 'public' and table_name = 'creator_portal_catalog'
     'default_base_fee', 'default_bonus_per_1000_views', 'default_bonus_per_registrant',
     'default_views_bonus_cap', 'closing_notes', 'notes', 'created_by', 'landing_url'
   );
-\echo '--- Forbidden columns in creator_portal_catalog (expect 0 rows) ---'
+-- FR-M18-04: the team's caption check and the clip's normalised URL stay
+-- internal on the portal's clip view.
+insert into catalog_forbidden
+select table_name::text || '.' || column_name::text
+from information_schema.columns
+where table_schema = 'public' and table_name = 'creator_portal_contents'
+  and column_name in ('caption_code_checked', 'posted_url_normalized', 'created_by');
+\echo '--- Forbidden columns in creator_portal_catalog / creator_portal_contents (expect 0 rows) ---'
 select column_name from catalog_forbidden;
 
 \echo '--- Manager reads bank details only masked (expect bank + ******7890) ---'

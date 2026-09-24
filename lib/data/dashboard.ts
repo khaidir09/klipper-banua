@@ -5,12 +5,15 @@ import { liveDays, removedBeforeMinLiveDays } from "@/lib/calculations/live-dura
 import type { Database } from "@/types/database";
 
 type CampaignRef = { id: string; code: string; name: string; status: string };
+type JoinedCampaign = CampaignRef & {
+  payout_model: Database["public"]["Enums"]["payout_model"];
+};
 
 const OPEN_STATUSES = new Set(["draft", "aktif"]);
 
 type Joined = {
   assignment: {
-    campaign: CampaignRef | null;
+    campaign: JoinedCampaign | null;
     creator: { full_name: string; stage_name: string } | null;
   };
 };
@@ -52,12 +55,20 @@ export type EarlyRemovalItem = {
   removedAt: string;
 };
 
-const JOIN = `assignment:campaign_creators!inner(campaign:campaigns(id, code, name, status, min_live_days), creator:creators(full_name, stage_name))`;
+const JOIN = `assignment:campaign_creators!inner(campaign:campaigns(id, code, name, status, min_live_days, payout_model), creator:creators(full_name, stage_name))`;
 
 function openRows<T extends Joined>(rows: T[]) {
   return rows.filter(
     (row) => row.assignment.campaign && OPEN_STATUSES.has(row.assignment.campaign.status),
   );
+}
+
+/**
+ * Package campaigns only. Clips of `per_views` campaigns have their own
+ * queue on /verifikasi (FR-M10-03, lib/data/clips.ts).
+ */
+function paketRows<T extends Joined>(rows: T[]) {
+  return openRows(rows).filter((row) => row.assignment.campaign!.payout_model === "paket");
 }
 
 /**
@@ -75,7 +86,8 @@ export async function getDueSnapshotItems(
     .eq("live_status", "tayang");
   if (error) throw new Error(error.message);
 
-  const liveRows = openRows(data ?? []);
+  // Checkpoints are a package-campaign rule; clips get views updates (FR-M18-05).
+  const liveRows = paketRows(data ?? []);
   const byContent = new Map(liveRows.map((row) => [row.id, row]));
   return dueSnapshots(
     liveRows.map((row) => ({
@@ -137,7 +149,7 @@ export async function getDashboard(
          content:contents!inner(
            platform,
            assignment:campaign_creators!inner(
-             campaign:campaigns(id, code, name, status, min_live_days),
+             campaign:campaigns(id, code, name, status, min_live_days, payout_model),
              creator:creators(full_name, stage_name)
            )
          )`,
@@ -166,7 +178,7 @@ export async function getDashboard(
 
   // FR-M10-03: oldest waiting first. `updated_at` moves when a new draft is
   // submitted, i.e. when the content (re)entered the queue.
-  const pendingItems: PendingItem[] = openRows(pending.data ?? []).map((row) => ({
+  const pendingItems: PendingItem[] = paketRows(pending.data ?? []).map((row) => ({
     contentId: row.id,
     campaign: row.assignment.campaign!,
     creatorName: creatorName(row),
@@ -198,7 +210,7 @@ export async function getDashboard(
 
   // FR-M10-01 (v2.0): both kinds of creator submission in one queue.
   const creatorSubmissions: CreatorSubmissionItem[] = [
-    ...openRows((metricSubmissions.data ?? []).map((row) => ({ ...row, ...row.content }))).map(
+    ...paketRows((metricSubmissions.data ?? []).map((row) => ({ ...row, ...row.content }))).map(
       (row) => ({
         kind: "metrik" as const,
         id: row.id,
@@ -208,7 +220,7 @@ export async function getDashboard(
         sentAt: row.created_at,
       }),
     ),
-    ...openRows(liveReports.data ?? []).map((row) => ({
+    ...paketRows(liveReports.data ?? []).map((row) => ({
       kind: "tayang" as const,
       id: row.id,
       campaign: row.assignment.campaign!,

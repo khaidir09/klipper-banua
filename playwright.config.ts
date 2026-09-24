@@ -61,7 +61,7 @@ export default defineConfig({
     },
     {
       name: "creator",
-      testMatch: /(portal(-flow)?|katalog)\.spec\.ts/,
+      testMatch: /(portal(-flow)?|katalog|klip)\.spec\.ts/,
       // Runs after the owner flow so the demo campaign is live with a brief.
       dependencies: ["owner"],
       use: { storageState: "e2e/.auth/creator.json" },

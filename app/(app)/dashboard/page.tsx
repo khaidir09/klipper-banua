@@ -5,9 +5,11 @@ import {
   BadgeCheck,
   Check,
   ChevronRight,
+  Clapperboard,
   ClipboardCheck,
   Inbox,
   Timer,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -16,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { requireInternal } from "@/lib/auth/guards";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/constants/creators";
 import { CHECKPOINT_LABELS } from "@/lib/constants/metrics";
+import { listClipQueue, listLowBudgetCampaigns } from "@/lib/data/clips";
 import { countKlipperQueues } from "@/lib/data/creators";
 import { getDashboard } from "@/lib/data/dashboard";
 import { formatRupiah } from "@/lib/format/currency";
@@ -212,10 +215,13 @@ export default async function DashboardPage() {
   const { profile } = await requireInternal();
   const tz = profile.timezone;
   const supabase = await createSupabaseServerClient();
-  const [data, klipper] = await Promise.all([
+  const [data, klipper, clipQueue, lowBudget] = await Promise.all([
     getDashboard(supabase, new Date(), tz),
     countKlipperQueues(supabase),
+    listClipQueue(supabase),
+    listLowBudgetCampaigns(supabase),
   ]);
+  const overdueClips = clipQueue.clips.filter((item) => item.overdue).length;
   const platform = (value: string) => SOCIAL_PLATFORM_LABELS[value as SocialPlatform] ?? value;
 
   return (
@@ -229,7 +235,26 @@ export default async function DashboardPage() {
           them, so they outrank the standing figures below. */}
       <section aria-labelledby="butuh-tindakan" className="space-y-3">
         <SectionHeading id="butuh-tindakan">Butuh tindakan</SectionHeading>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {/* v4.0 (FR-M10-01, FR-M10-03): clips of per_views campaigns. */}
+          <ActionCard
+            label="Klip menunggu verifikasi"
+            count={clipQueue.clips.length}
+            href="/verifikasi#klip"
+            icon={Clapperboard}
+            waiting={
+              overdueClips
+                ? `${formatNumber(overdueClips)} lewat 24 jam`
+                : "Klipper menunggu keputusan"
+            }
+          />
+          <ActionCard
+            label="Pembaruan views menunggu"
+            count={clipQueue.viewsUpdates.length}
+            href="/verifikasi#views"
+            icon={TrendingUp}
+            waiting="Selisih honor belum dikreditkan"
+          />
           <ActionCard
             label="Konten menunggu review"
             count={data.pending.length}
@@ -258,6 +283,13 @@ export default async function DashboardPage() {
             href="/creators/lencana"
             icon={BadgeCheck}
             waiting="Bukti audiens menunggu diperiksa"
+          />
+          <ActionCard
+            label="Anggaran klipper < 10%"
+            count={lowBudget.length}
+            href="#anggaran-menipis"
+            icon={AlertTriangle}
+            waiting="Kampanye hampir tidak menerima klip baru"
           />
         </div>
       </section>
@@ -292,6 +324,22 @@ export default async function DashboardPage() {
       <section aria-labelledby="antrean" className="space-y-3">
         <SectionHeading id="antrean">Antrean kerja</SectionHeading>
         <div className="grid gap-4 lg:grid-cols-2">
+          <ListCard
+            id="anggaran-menipis"
+            title="Sisa anggaran klipper di bawah 10%"
+            description="Kampanye per views yang anggaran honornya hampir habis. Naikkan anggaran atau siapkan penutupan."
+            empty="Semua kampanye per views masih punya anggaran cukup."
+            total={lowBudget.length}
+          >
+            {lowBudget.slice(0, LIST_LIMIT).map((campaign) => (
+              <Row key={campaign.id} href={`/campaigns/${campaign.id}/overview`}>
+                <span className="font-medium">{campaign.name}</span>{" "}
+                <span className="text-muted-foreground">
+                  {campaign.code} · sisa {campaign.remainingPct}%
+                </span>
+              </Row>
+            ))}
+          </ListCard>
           <ListCard
             id="snapshot-jatuh-tempo"
             title="Snapshot jatuh tempo"

@@ -630,6 +630,7 @@ export type Database = {
       contents: {
         Row: {
           campaign_creator_id: string
+          caption_code_checked: boolean
           caption_draft: string
           created_at: string
           created_by: string | null
@@ -640,16 +641,22 @@ export type Database = {
           platform: Database["public"]["Enums"]["social_platform"]
           posted_at: string | null
           posted_url: string | null
+          posted_url_normalized: string | null
           proposed_at: string | null
           proposed_posted_at: string | null
           proposed_posted_url: string | null
+          rejection_reason:
+            | Database["public"]["Enums"]["clip_rejection_reason"]
+            | null
           removed_at: string | null
           review_status: Database["public"]["Enums"]["review_status"]
           revision_count: number
           updated_at: string
+          verified_views: number | null
         }
         Insert: {
           campaign_creator_id: string
+          caption_code_checked?: boolean
           caption_draft?: string
           created_at?: string
           created_by?: string | null
@@ -660,16 +667,22 @@ export type Database = {
           platform: Database["public"]["Enums"]["social_platform"]
           posted_at?: string | null
           posted_url?: string | null
+          posted_url_normalized?: string | null
           proposed_at?: string | null
           proposed_posted_at?: string | null
           proposed_posted_url?: string | null
+          rejection_reason?:
+            | Database["public"]["Enums"]["clip_rejection_reason"]
+            | null
           removed_at?: string | null
           review_status?: Database["public"]["Enums"]["review_status"]
           revision_count?: number
           updated_at?: string
+          verified_views?: number | null
         }
         Update: {
           campaign_creator_id?: string
+          caption_code_checked?: boolean
           caption_draft?: string
           created_at?: string
           created_by?: string | null
@@ -680,13 +693,18 @@ export type Database = {
           platform?: Database["public"]["Enums"]["social_platform"]
           posted_at?: string | null
           posted_url?: string | null
+          posted_url_normalized?: string | null
           proposed_at?: string | null
           proposed_posted_at?: string | null
           proposed_posted_url?: string | null
+          rejection_reason?:
+            | Database["public"]["Enums"]["clip_rejection_reason"]
+            | null
           removed_at?: string | null
           review_status?: Database["public"]["Enums"]["review_status"]
           revision_count?: number
           updated_at?: string
+          verified_views?: number | null
         }
         Relationships: [
           {
@@ -774,6 +792,126 @@ export type Database = {
             columns: ["creator_id"]
             isOneToOne: true
             referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_ledger_entries: {
+        Row: {
+          amount: number
+          campaign_id: string | null
+          content_id: string | null
+          created_at: string
+          created_by: string | null
+          creator_id: string
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          id: string
+          metric_submission_id: string | null
+          notes: string
+          withdrawal_id: string | null
+        }
+        Insert: {
+          amount: number
+          campaign_id?: string | null
+          content_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          creator_id: string
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          id?: string
+          metric_submission_id?: string | null
+          notes?: string
+          withdrawal_id?: string | null
+        }
+        Update: {
+          amount?: number
+          campaign_id?: string | null
+          content_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          creator_id?: string
+          entry_type?: Database["public"]["Enums"]["ledger_entry_type"]
+          id?: string
+          metric_submission_id?: string | null
+          notes?: string
+          withdrawal_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_ledger_entries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_metric_submission_id_fkey"
+            columns: ["metric_submission_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_metric_submission_id_fkey"
+            columns: ["metric_submission_id"]
+            isOneToOne: false
+            referencedRelation: "metric_submissions"
             referencedColumns: ["id"]
           },
         ]
@@ -1109,6 +1247,8 @@ export type Database = {
           comments: number
           content_id: string
           created_at: string
+          credit_limited: boolean
+          credited_amount: number | null
           id: string
           likes: number
           proof_path: string
@@ -1121,6 +1261,7 @@ export type Database = {
           status: Database["public"]["Enums"]["submission_status"]
           submitted_by: string | null
           updated_at: string
+          verified_views: number | null
           views: number
         }
         Insert: {
@@ -1129,6 +1270,8 @@ export type Database = {
           comments?: number
           content_id: string
           created_at?: string
+          credit_limited?: boolean
+          credited_amount?: number | null
           id?: string
           likes?: number
           proof_path: string
@@ -1141,6 +1284,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["submission_status"]
           submitted_by?: string | null
           updated_at?: string
+          verified_views?: number | null
           views?: number
         }
         Update: {
@@ -1149,6 +1293,8 @@ export type Database = {
           comments?: number
           content_id?: string
           created_at?: string
+          credit_limited?: boolean
+          credited_amount?: number | null
           id?: string
           likes?: number
           proof_path?: string
@@ -1161,6 +1307,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["submission_status"]
           submitted_by?: string | null
           updated_at?: string
+          verified_views?: number | null
           views?: number
         }
         Relationships: [
@@ -1966,6 +2113,7 @@ export type Database = {
           created_at: string | null
           draft_file_path: string | null
           draft_url: string | null
+          earned_amount: number | null
           id: string | null
           live_status: Database["public"]["Enums"]["live_status"] | null
           platform: Database["public"]["Enums"]["social_platform"] | null
@@ -1974,10 +2122,14 @@ export type Database = {
           proposed_at: string | null
           proposed_posted_at: string | null
           proposed_posted_url: string | null
+          rejection_reason:
+            | Database["public"]["Enums"]["clip_rejection_reason"]
+            | null
           removed_at: string | null
           review_status: Database["public"]["Enums"]["review_status"] | null
           revision_count: number | null
           updated_at: string | null
+          verified_views: number | null
         }
         Relationships: [
           {
@@ -2290,6 +2442,8 @@ export type Database = {
           comments: number | null
           content_id: string | null
           created_at: string | null
+          credit_limited: boolean | null
+          credited_amount: number | null
           id: string | null
           likes: number | null
           proof_path: string | null
@@ -2298,6 +2452,7 @@ export type Database = {
           saves: number | null
           shares: number | null
           status: Database["public"]["Enums"]["submission_status"] | null
+          verified_views: number | null
           views: number | null
         }
         Relationships: [
@@ -2332,6 +2487,10 @@ export type Database = {
         Args: { p_campaign_id: string }
         Returns: undefined
       }
+      assignment_payout_model: {
+        Args: { target_assignment_id: string }
+        Returns: Database["public"]["Enums"]["payout_model"]
+      }
       campaign_budget_exhausted: {
         Args: { target_campaign_id: string }
         Returns: boolean
@@ -2345,9 +2504,23 @@ export type Database = {
         Returns: boolean
       }
       campaign_today: { Args: never; Returns: string }
+      cancel_clip: {
+        Args: {
+          p_content_id: string
+          p_kind: string
+          p_notes?: string
+          p_rejection_reason?: Database["public"]["Enums"]["clip_rejection_reason"]
+          p_removed_at?: string
+        }
+        Returns: number
+      }
       client_owns_campaign: {
         Args: { target_campaign_id: string }
         Returns: boolean
+      }
+      clip_credited_amount: {
+        Args: { target_content_id: string }
+        Returns: number
       }
       content_campaign_id: {
         Args: { p_campaign_creator_id: string }
@@ -2396,13 +2569,72 @@ export type Database = {
       }
       is_active_member: { Args: never; Returns: boolean }
       is_owner: { Args: never; Returns: boolean }
+      normalize_clip_url: { Args: { url: string }; Returns: string }
       open_report_share_link: {
         Args: { p_token_hash: string }
         Returns: string
       }
+      record_clip_cancellation: {
+        Args: {
+          p_campaign_id: string
+          p_content_id: string
+          p_creator_id: string
+          p_notes: string
+        }
+        Returns: number
+      }
+      record_clip_credit: {
+        Args: {
+          p_campaign_id: string
+          p_content_id: string
+          p_creator_id: string
+          p_credit: number
+          p_submission_id: string
+          p_verified_views: number
+        }
+        Returns: undefined
+      }
       request_creator_account_deletion: { Args: never; Returns: undefined }
       review_metric_submission: {
         Args: { p_accept: boolean; p_id: string; p_notes?: string }
+        Returns: string
+      }
+      submit_clip: {
+        Args: {
+          p_assignment_id: string
+          p_comments: number
+          p_likes: number
+          p_platform: Database["public"]["Enums"]["social_platform"]
+          p_posted_at: string
+          p_posted_url: string
+          p_proof_path: string
+          p_shares: number
+          p_views: number
+        }
+        Returns: string
+      }
+      verify_clip: {
+        Args: {
+          p_checklist: Json
+          p_content_id: string
+          p_credit: number
+          p_credit_limited?: boolean
+          p_decision: Database["public"]["Enums"]["review_decision"]
+          p_notes: string
+          p_rejection_reason: Database["public"]["Enums"]["clip_rejection_reason"]
+          p_verified_views: number
+        }
+        Returns: string
+      }
+      verify_views_update: {
+        Args: {
+          p_accept: boolean
+          p_credit: number
+          p_credit_limited?: boolean
+          p_notes: string
+          p_submission_id: string
+          p_verified_views: number
+        }
         Returns: string
       }
     }
@@ -2423,6 +2655,13 @@ export type Database = {
         | "event_organizer"
         | "umkm"
         | "lainnya"
+      clip_rejection_reason:
+        | "bukan_pemilik"
+        | "langgar_brief"
+        | "di_luar_periode"
+        | "duplikat"
+        | "views_tidak_wajar"
+        | "lainnya"
       creator_status:
         | "prospek"
         | "terverifikasi"
@@ -2430,6 +2669,12 @@ export type Database = {
         | "nonaktif"
         | "diblokir"
       creator_tier: "nano" | "mikro" | "menengah"
+      ledger_entry_type:
+        | "honor_klip"
+        | "pembatalan"
+        | "penyesuaian"
+        | "penarikan"
+        | "pengembalian_penarikan"
       live_status: "belum_tayang" | "tayang" | "dihapus"
       metric_checkpoint: "H+1" | "H+3" | "H+7" | "akhir" | "lainnya"
       ops_activity:
@@ -2595,6 +2840,14 @@ export const Constants = {
         "umkm",
         "lainnya",
       ],
+      clip_rejection_reason: [
+        "bukan_pemilik",
+        "langgar_brief",
+        "di_luar_periode",
+        "duplikat",
+        "views_tidak_wajar",
+        "lainnya",
+      ],
       creator_status: [
         "prospek",
         "terverifikasi",
@@ -2603,6 +2856,13 @@ export const Constants = {
         "diblokir",
       ],
       creator_tier: ["nano", "mikro", "menengah"],
+      ledger_entry_type: [
+        "honor_klip",
+        "pembatalan",
+        "penyesuaian",
+        "penarikan",
+        "pengembalian_penarikan",
+      ],
       live_status: ["belum_tayang", "tayang", "dihapus"],
       metric_checkpoint: ["H+1", "H+3", "H+7", "akhir", "lainnya"],
       ops_activity: [

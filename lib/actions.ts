@@ -93,6 +93,42 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   SUBMISSION_NOT_FOUND: "Kiriman tidak ditemukan.",
   SUBMISSION_REJECT_NEEDS_NOTES: "Tulis alasan penolakan agar kreator tahu yang harus diperbaiki.",
   SUBMISSION_INTERNAL_ONLY: "Hanya tim yang dapat memverifikasi kiriman kreator.",
+  CLIP_NEEDS_URL: "Klip dikirim bersama tautan dan waktu tayangnya.",
+  CLIP_NEEDS_PROOF: "Klip dikirim bersama tangkapan layar views.",
+  CLIP_CREATOR_NOT_ACTIVE: "Akun klipper Anda belum aktif.",
+  CLIP_TERMS_OUTDATED:
+    "Syarat Klipper sudah diperbarui. Setujui versi terbaru sebelum mengirim klip.",
+  CLIP_ASSIGNMENT_NOT_JOINED: "Klip hanya dapat dikirim untuk kampanye yang sudah Anda ikuti.",
+  CLIP_CAMPAIGN_CLOSED: "Kampanye ini sudah tidak menerima klip baru.",
+  CLIP_BUDGET_EXHAUSTED: "Anggaran kampanye ini sudah habis, jadi klip baru tidak diterima.",
+  CLIP_PLATFORM_NOT_ALLOWED: "Kampanye ini tidak menerima klip dari platform tersebut.",
+  CLIP_NO_SOCIAL_ACCOUNT:
+    "Tambahkan akun media sosial untuk platform ini di Profil sebelum mengirim klip.",
+  CLIP_POSTED_IN_FUTURE: "Waktu tayang tidak boleh di masa depan.",
+  CLIP_OUTSIDE_PERIOD: "Waktu tayang harus di antara saat Anda bergabung dan akhir kampanye.",
+  CLIP_LIMIT_REACHED: "Anda sudah mengirim jumlah klip maksimal untuk kampanye ini.",
+  CLIP_URL_REJECTED_BEFORE: "Klip dengan tautan ini pernah ditolak dan tidak dapat dikirim lagi.",
+  CLIP_USE_VERIFY: "Klip kampanye per views diputuskan lewat halaman Verifikasi.",
+  CLIP_NOT_PER_VIEWS: "Konten kampanye paket direview di tab Konten.",
+  CLIP_INTERNAL_ONLY: "Hanya tim yang dapat memverifikasi klip.",
+  CLIP_NEEDS_VERIFIED_VIEWS: "Isi views terverifikasi dari halaman klip.",
+  CLIP_REJECT_NEEDS_REASON: "Pilih alasan penolakan.",
+  CLIP_REJECT_NEEDS_NOTES: "Tulis catatan penolakan untuk klipper.",
+  CLIP_NOT_APPROVED: "Hanya klip yang sudah disetujui yang dapat dibatalkan.",
+  CLIP_NOT_LIVE: "Klip ini tidak sedang tayang.",
+  CLIP_REMOVED_AT_INVALID: "Isi waktu klip dihapus; tidak boleh di masa depan.",
+  CLIP_CANCEL_KIND: "Jenis pembatalan tidak dikenal.",
+  SUBMISSION_INITIAL_FIXED: "Bukti views pertama tetap melekat pada klip dan tidak dapat ditarik.",
+  VIEWS_UPDATE_NOT_ALLOWED:
+    "Pembaruan views hanya untuk klip yang sudah disetujui dan masih tayang.",
+  VIEWS_UPDATE_CLOSED: "Masa klaim pembaruan views kampanye ini sudah berakhir.",
+  VIEWS_UPDATE_TOO_SOON: "Pembaruan views paling cepat 24 jam setelah kiriman terakhir.",
+  CREDIT_INVALID: "Nominal honor tidak valid.",
+  CREDIT_ABOVE_CLIP_EARNING: "Honor melebihi yang dihasilkan views terverifikasi klip ini.",
+  CREDIT_ABOVE_CREATOR_CAP: "Honor melebihi batas honor per klipper kampanye ini.",
+  BUDGET_EXCEEDED: "Anggaran kampanye tidak cukup untuk honor ini.",
+  LEDGER_IMMUTABLE: "Entri saldo tidak dapat diubah atau dihapus.",
+  LEDGER_FUNCTION_ONLY: "Entri saldo hanya dicatat lewat verifikasi klip.",
 };
 
 /** Check constraints whose violation deserves a specific message. */
@@ -117,6 +153,10 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
   campaigns_per_views_money_check:
     "Periksa tarif, anggaran, dan batas honor; nilainya tidak boleh negatif.",
   campaign_creators_campaign_creator_key: "Klipper ini sudah tercatat di kampanye tersebut.",
+  contents_posted_url_normalized_key:
+    "Klip dengan tautan ini sudah pernah dikirim, oleh Anda atau klipper lain.",
+  metric_submissions_pending_idx:
+    "Masih ada kiriman views yang menunggu verifikasi untuk klip ini.",
   creators_blocked_reason_check:
     "Kreator diblokir lewat tombol Blokir di halaman kreator, beserta alasannya.",
 };
