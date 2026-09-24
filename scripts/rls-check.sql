@@ -744,8 +744,9 @@ where n.nspname = 'public'
     )
   );
 
--- FR-M17-03: the catalog never carries the package price, targets, the budget
--- amount, fee defaults or internal notes.
+-- FR-M17-03: the catalog never carries the package price, targets, fee
+-- defaults or internal notes. The klipper budget is shown as budget_total /
+-- budget_used / budget_remaining, never under its internal column name.
 create temporary table catalog_forbidden on commit drop as
 select column_name::text
 from information_schema.columns

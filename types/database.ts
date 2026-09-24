@@ -2314,7 +2314,10 @@ export type Database = {
             | null
           brief: string | null
           budget_exhausted: boolean | null
+          budget_remaining: number | null
           budget_remaining_pct: number | null
+          budget_total: number | null
+          budget_used: number | null
           claim_grace_days: number | null
           client_name: string | null
           code: string | null

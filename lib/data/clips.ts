@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { budgetRemainingPct } from "@/lib/calculations/campaign-budget";
+import { budgetRemaining, budgetRemainingPct } from "@/lib/calculations/campaign-budget";
 import { clipEarning, type ClipEarning } from "@/lib/calculations/clip-earning";
 import { fraudFlags, type FraudFlag } from "@/lib/calculations/fraud-flags";
 import { CLIP_QUEUE_OVERDUE_HOURS, type ClipRejectionReason } from "@/lib/constants/clips";
@@ -466,7 +466,13 @@ export async function listCampaignClips(
 /* Dashboard (FR-M10-01)                                               */
 /* ------------------------------------------------------------------ */
 
-export type LowBudgetCampaign = CampaignRef & { remainingPct: number };
+export type LowBudgetCampaign = CampaignRef & {
+  remainingPct: number;
+  /** Whole Rupiah: `creator_budget`, honor spent, and what is left of it. */
+  budget: number;
+  used: number;
+  remaining: number;
+};
 
 /** Running per_views campaigns with less than 10% of the klipper budget left. */
 export async function listLowBudgetCampaigns(supabase: Supabase): Promise<LowBudgetCampaign[]> {
@@ -496,16 +502,22 @@ export async function listLowBudgetCampaigns(supabase: Supabase): Promise<LowBud
   }
 
   return campaigns
-    .map((campaign) => ({
-      id: campaign.id,
-      code: campaign.code,
-      name: campaign.name,
-      remainingPct: budgetRemainingPct({
+    .map((campaign) => {
+      const input = {
         creatorBudget: Number(campaign.creator_budget),
         creatorCost: cost.get(campaign.id) ?? 0,
         ratePer1000Views: Number(campaign.rate_per_1000_views),
-      }),
-    }))
+      };
+      return {
+        id: campaign.id,
+        code: campaign.code,
+        name: campaign.name,
+        remainingPct: budgetRemainingPct(input),
+        budget: input.creatorBudget,
+        used: Math.max(input.creatorCost, 0),
+        remaining: budgetRemaining(input),
+      };
+    })
     .filter((campaign) => campaign.remainingPct < 10)
     .sort((a, b) => a.remainingPct - b.remainingPct);
 }

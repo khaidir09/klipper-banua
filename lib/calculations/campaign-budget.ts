@@ -1,7 +1,7 @@
 /**
  * Klipper budget of a `per_views` campaign (PRD 8.4, FR-M17-06). Whole Rupiah
  * only. Mirrored in the database by `campaign_budget_exhausted()` and the
- * `budget_remaining_pct` column of `creator_portal_catalog`.
+ * `budget_remaining_pct` / `budget_remaining` columns of `creator_portal_catalog`.
  */
 
 export type CampaignBudgetInput = {
@@ -20,7 +20,7 @@ export function budgetRemaining({ creatorBudget, creatorCost }: CampaignBudgetIn
 
 /**
  * Share of the budget still available, 0–100, rounded down. The catalog shows
- * this instead of the amount (FR-M17-03).
+ * it next to the amounts (FR-M17-03).
  */
 export function budgetRemainingPct(input: CampaignBudgetInput): number {
   if (input.creatorBudget <= 0) return 0;

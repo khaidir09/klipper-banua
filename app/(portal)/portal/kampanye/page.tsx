@@ -82,7 +82,13 @@ function CatalogCard({ campaign }: { campaign: PortalCatalogCampaign }) {
             <dd>{platformList(campaign.allowed_platforms)}</dd>
           </div>
         </dl>
-        <BudgetMeter pct={campaign.budget_remaining_pct} exhausted={campaign.budget_exhausted} />
+        <BudgetMeter
+          pct={campaign.budget_remaining_pct}
+          exhausted={campaign.budget_exhausted}
+          total={campaign.budget_total}
+          used={campaign.budget_used}
+          remaining={campaign.budget_remaining}
+        />
         <p className="inline-flex items-center gap-1 font-medium text-primary">
           Lihat brief
           <ArrowRight className="size-4" aria-hidden />

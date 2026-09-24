@@ -19,7 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { requireInternal } from "@/lib/auth/guards";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/constants/creators";
 import { CHECKPOINT_LABELS } from "@/lib/constants/metrics";
-import { listClipQueue, listLowBudgetCampaigns } from "@/lib/data/clips";
+import { listClipQueue, listLowBudgetCampaigns, type LowBudgetCampaign } from "@/lib/data/clips";
 import { countKlipperQueues } from "@/lib/data/creators";
 import { countOpenWithdrawals } from "@/lib/data/withdrawals";
 import { getDashboard } from "@/lib/data/dashboard";
@@ -198,10 +198,44 @@ function Row({ href, children }: { href: string; children: React.ReactNode }) {
         href={href}
         className="-mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-2.5 text-sm hover:bg-accent/60"
       >
-        <span className="min-w-0">{children}</span>
+        <span className="min-w-0 flex-1">{children}</span>
         <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
       </Link>
     </li>
+  );
+}
+
+/** Spent vs. left of the klipper budget, in Rupiah and as a bar (FR-M8-06). */
+function BudgetUsage({ campaign }: { campaign: LowBudgetCampaign }) {
+  const usedPct = 100 - campaign.remainingPct;
+  return (
+    <span className="mt-1.5 block space-y-1">
+      <span
+        role="meter"
+        aria-label={`Anggaran terpakai ${campaign.name}`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={usedPct}
+        aria-valuetext={`${usedPct}% terpakai, sisa ${formatRupiah(campaign.remaining)}`}
+        className="block h-1.5 overflow-hidden rounded-full bg-muted"
+      >
+        <span
+          className="block h-full rounded-full bg-destructive"
+          style={{ width: `${usedPct}%` }}
+        />
+      </span>
+      <span className="flex flex-wrap justify-between gap-x-3 text-xs text-muted-foreground tabular-nums">
+        <span>
+          Dipakai <span className="text-foreground">{formatRupiah(campaign.used)}</span> dari{" "}
+          {formatRupiah(campaign.budget)}
+        </span>
+        <span>
+          Sisa{" "}
+          <span className="font-medium text-destructive">{formatRupiah(campaign.remaining)}</span> (
+          {campaign.remainingPct}%)
+        </span>
+      </span>
+    </span>
   );
 }
 
@@ -348,9 +382,8 @@ export default async function DashboardPage() {
             {lowBudget.slice(0, LIST_LIMIT).map((campaign) => (
               <Row key={campaign.id} href={`/campaigns/${campaign.id}/overview`}>
                 <span className="font-medium">{campaign.name}</span>{" "}
-                <span className="text-muted-foreground">
-                  {campaign.code} · sisa {campaign.remainingPct}%
-                </span>
+                <span className="text-muted-foreground">{campaign.code}</span>
+                <BudgetUsage campaign={campaign} />
               </Row>
             ))}
           </ListCard>

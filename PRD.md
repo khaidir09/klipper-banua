@@ -2,7 +2,7 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi dokumen      | 1.1 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
+| Versi dokumen      | 1.2 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
 | Tanggal            | 24 September 2026                                                                           |
 | Status             | Fase 0–11 dan 13–18 selesai: **Tahap A (klipper mandiri) lengkap** — fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri, kampanye terbuka dan katalog, kiriman klip dan verifikasi views, saldo dan penarikan. Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
@@ -262,7 +262,7 @@ Berlaku penuh untuk kampanye `paket`. Kampanye `per_views` memakai verifikasi pa
 
 ### M10 — Dasbor dan Pengingat
 
-- **FR-M10-01** _(diubah v4.0)_ Kartu ringkasan: kampanye aktif, **klip menunggu verifikasi**, **pembaruan views menunggu**, **pengajuan lencana lokal**, **penarikan menunggu** (hanya `owner`), **klipper baru 7 hari terakhir**, **kampanye dengan sisa anggaran < 10%**, invoice klien belum lunas, dan antrean lama kampanye `paket`.
+- **FR-M10-01** _(diubah v4.0)_ Kartu ringkasan: kampanye aktif, **klip menunggu verifikasi**, **pembaruan views menunggu**, **pengajuan lencana lokal**, **penarikan menunggu** (hanya `owner`), **klipper baru 7 hari terakhir**, **kampanye dengan sisa anggaran < 10%** (per kampanye: nominal terpakai dan sisa), invoice klien belum lunas, dan antrean lama kampanye `paket`.
 - **FR-M10-02** Snapshot jatuh tempo (kampanye `paket`), diurutkan dari yang paling lama terlambat.
 - **FR-M10-03** _(diubah v4.0)_ Antrean verifikasi klip diurutkan dari yang paling lama menunggu, dengan penanda kiriman yang melewati 24 jam.
 - **FR-M10-04** Peringatan konten `dihapus` sebelum `min_live_days`.
@@ -329,7 +329,7 @@ FR-M15-01 sampai FR-M15-08 tetap berlaku, dengan perubahan berikut:
   - `rate_per_1000_views` (Rp), `creator_budget` (anggaran honor klipper, Rp), `max_payout_per_clip` (opsional), `max_payout_per_creator` (opsional), `min_views_to_earn` (default 0), `max_clips_per_creator` (default 3);
   - `allowed_platforms` (subset `social_platform`, minimal satu), `local_only` (hanya pemegang lencana lokal), `claim_grace_days` (default 3), `published_at`.
 - **FR-M17-02** Syarat aktivasi kampanye `per_views`: brief terisi, minimal satu materi, `rate_per_1000_views > 0`, `creator_budget > 0`, `end_date ≥ hari ini`, `allowed_platforms` tidak kosong, dan `landing_url` untuk tujuan `pendaftar`. Ditegakkan di action dan trigger.
-- **FR-M17-03** **Katalog** di `/portal/kampanye` menampilkan kampanye `aktif` + `terbuka` yang belum lewat `end_date`: nama kampanye, nama klien, tujuan, platform, tarif per 1.000 views, batas per klip, **persentase sisa anggaran** (bukan nominal anggaran), tenggat, jumlah klip maksimal, penanda "Khusus Klipper Lokal", dan status "Anggaran habis". Filter: platform, tujuan, khusus lokal; urut: terbaru, tarif tertinggi, tenggat terdekat. Detail kampanye menampilkan brief lengkap dan materi **sebelum** bergabung.
+- **FR-M17-03** **Katalog** di `/portal/kampanye` menampilkan kampanye `aktif` + `terbuka` yang belum lewat `end_date`: nama kampanye, nama klien, tujuan, platform, tarif per 1.000 views, batas per klip, **sisa anggaran klipper dalam persen dan Rupiah** _(diubah v1.2)_: total `creator_budget`, honor terpakai, dan sisa, tanpa harga paket, tenggat, jumlah klip maksimal, penanda "Khusus Klipper Lokal", dan status "Anggaran habis". Filter: platform, tujuan, khusus lokal; urut: terbaru, tarif tertinggi, tenggat terdekat. Detail kampanye menampilkan brief lengkap dan materi **sebelum** bergabung.
 - **FR-M17-04** **Gabung**: satu tindakan yang menyatakan klipper telah membaca brief, poin wajib, dan larangan. Sistem membuat `campaign_creators` berstatus `bergabung` dengan `creator_confirmed_at` dan `joined_at` dari waktu server, beserta kode referal dan slug. Ditolak bila: klipper bukan `aktif`, syarat versi terbaru belum disetujui, kampanye bukan `aktif`/`terbuka`, lewat `end_date`, anggaran habis, atau `local_only` tanpa lencana. Bergabung dua kali ke kampanye yang sama tidak mungkin (unik).
 - **FR-M17-05** Klipper dapat **mundur** dari kampanye selama belum punya klip disetujui; klip yang menunggu verifikasi ikut dibatalkan.
 - **FR-M17-06** **Anggaran habis**: bila `sisa_anggaran < rate_per_1000_views` (tidak cukup membayar 1.000 views), kampanye otomatis ditandai "anggaran habis" di katalog, tidak menerima klipper baru maupun klip baru, dan tim mendapat kartu dasbor. Pembaruan views untuk klip yang sudah disetujui tetap diterima, tetapi honornya hanya dibayar sampai sisa anggaran (8.6).
@@ -400,7 +400,7 @@ View lama (`creator_portal_profile`, `_assignments`, `_assets`, `_contents`, `_r
 
 | View                               | Isi |
 | ---------------------------------- | --- |
-| `creator_portal_catalog`           | Kampanye `aktif` + `terbuka`: kolom brief, materi ringkas, tarif, batas, platform, `local_only`, tenggat, **persentase** sisa anggaran, status bergabung klipper yang sedang login. Tanpa `package_price`, target internal, nominal anggaran, dan catatan internal. Hanya terbaca oleh klipper berstatus `aktif`/`prospek` |
+| `creator_portal_catalog`           | Kampanye `aktif` + `terbuka`: kolom brief, materi ringkas, tarif, batas, platform, `local_only`, tenggat, sisa anggaran dalam **persen dan Rupiah** (`budget_total`, `budget_used`, `budget_remaining`), status bergabung klipper yang sedang login. Tanpa `package_price`, target internal, dan catatan internal. Hanya terbaca oleh klipper berstatus `aktif`/`prospek` |
 | `creator_portal_ledger`            | Entri buku besar miliknya |
 | `creator_portal_balance`           | Saldo tersedia, total diterima, total ditarik |
 | `creator_portal_withdrawals`       | Penarikannya, nomor rekening tersamar, tanpa `transfer_proof_path` |
@@ -702,4 +702,5 @@ _Catatan implementasi:_ minimum penarikan disimpan di `platform_settings` (satu 
 | 0.6   | 22 Sep 2026 | v3.1: situs publik (M15), Fase 13 |
 | 0.7   | 23 Sep 2026 | v3.2: konfirmasi penugasan oleh kreator (FR-M13-10), Fase 14 |
 | 1.0 | 23 Sep 2026 | **v4.0 — perubahan arah ke marketplace klipper terbuka (acuan ayoklip.com).** Pendaftaran klipper mandiri (M16), kampanye terbuka dan katalog (M17), kiriman klip dengan verifikasi pasca-tayang (M18), saldo dan penarikan manual (M19). Honor kampanye baru = tarif per 1.000 views terverifikasi dengan batas per klip/klipper/anggaran (8.6); skema honor dasar + bonus dipertahankan hanya untuk kampanye `paket` lama. Peran hanya dari `app_metadata`. Lencana Klipper Lokal menggantikan verifikasi wajib. Persetujuan konten oleh klien (FR-M14-04) ditunda. Klien mandiri dijadwalkan sebagai Tahap B (v4.1). Kriteria fase 0–14 diringkas menjadi tabel |
-| **1.1** | 24 Sep 2026 | Tahap A selesai (Fase 17–18). Minimum penarikan Rp 100.000 dan dapat diubah `owner` (`platform_settings`); PPh atas honor klipper ditunda sampai uji coba rilis berhasil dan legalitas usaha berdiri; biaya transfer ditanggung klipper (13.2 no. 3–4) |
+| 1.1 | 24 Sep 2026 | Tahap A selesai (Fase 17–18). Minimum penarikan Rp 100.000 dan dapat diubah `owner` (`platform_settings`); PPh atas honor klipper ditunda sampai uji coba rilis berhasil dan legalitas usaha berdiri; biaya transfer ditanggung klipper (13.2 no. 3–4) |
+| **1.2** | 24 Sep 2026 | FR-M17-03: katalog portal menampilkan anggaran klipper dalam Rupiah (total, terpakai, sisa) di samping persentase, disetujui founder; harga paket tetap tersembunyi. FR-M10-01: kartu anggaran menipis di dasbor menampilkan nominal terpakai dan sisa |

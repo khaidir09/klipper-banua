@@ -112,6 +112,9 @@ export default async function PortalCatalogCampaignPage({
             <BudgetMeter
               pct={campaign.budget_remaining_pct}
               exhausted={campaign.budget_exhausted}
+              total={campaign.budget_total}
+              used={campaign.budget_used}
+              remaining={campaign.budget_remaining}
             />
             <p className="mt-3 text-xs text-muted-foreground">
               Honor dibayar selama anggaran kampanye masih ada. Saat anggaran habis, kampanye tidak
