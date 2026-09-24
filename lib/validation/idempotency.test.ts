@@ -27,7 +27,6 @@ describe("form schemas are idempotent", () => {
       client_id: uuid,
       code: "pmb x 2026",
       name: "PMB",
-      objective: "pendaftar",
       brief: "",
       must_do: "a\nb",
       must_not: "",

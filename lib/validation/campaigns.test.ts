@@ -11,7 +11,6 @@ const validCampaign = {
   client_id: "3f6f2a57-6f5d-4f0f-9d8a-2a8a2f0b8c11",
   code: "pmb ubs 2026-01",
   name: "PMB 2026 Gelombang 1",
-  objective: "pendaftar",
   brief: "Ceritakan pengalaman kuliah.",
   must_do: "- Sebut beasiswa\n\n• Tunjukkan kampus",
   must_not: "Menyebut kampus lain",

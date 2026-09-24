@@ -83,7 +83,9 @@ export default async function CampaignLayout({
 
       <div className="flex flex-wrap items-center gap-2">
         <CampaignStatusBadge status={campaign.status} />
-        <Badge variant="outline">Tujuan: {CAMPAIGN_OBJECTIVE_LABELS[campaign.objective]}</Badge>
+        {campaign.objective ? (
+          <Badge variant="outline">Tujuan: {CAMPAIGN_OBJECTIVE_LABELS[campaign.objective]}</Badge>
+        ) : null}
         <Badge variant="outline">Akses: {CAMPAIGN_ACCESS_LABELS[campaign.access]}</Badge>
         <Badge variant="outline">Honor: {PAYOUT_MODEL_LABELS[campaign.payout_model]}</Badge>
         <div className="ml-auto">

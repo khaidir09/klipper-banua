@@ -76,7 +76,10 @@ export default async function CampaignOverviewPage({
                 ) : null,
               },
               { label: "Kode", value: <span className="font-mono">{campaign.code}</span> },
-              { label: "Tujuan", value: CAMPAIGN_OBJECTIVE_LABELS[campaign.objective] },
+              // Legacy paket campaigns only (FR-M4-01).
+              ...(campaign.objective
+                ? [{ label: "Tujuan", value: CAMPAIGN_OBJECTIVE_LABELS[campaign.objective] }]
+                : []),
               {
                 label: "URL tujuan",
                 value: campaign.landing_url ? (

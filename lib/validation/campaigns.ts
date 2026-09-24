@@ -3,7 +3,6 @@ import {
   ASSET_TYPES,
   ASSIGNMENT_STATUSES,
   CAMPAIGN_ACCESSES,
-  CAMPAIGN_OBJECTIVES,
   CAMPAIGN_STATUSES,
   CLAIM_GRACE_DAYS_LIMIT,
   MAX_CLIPS_PER_CREATOR_LIMIT,
@@ -85,7 +84,6 @@ export const campaignSchema = z
           }),
       ),
     name: z.string().trim().min(1, { message: "Nama kampanye wajib diisi." }).max(200),
-    objective: z.enum(CAMPAIGN_OBJECTIVES, { message: "Pilih tujuan kampanye." }),
     brief: optionalTextField,
     must_do: linesField,
     must_not: linesField,
@@ -211,7 +209,6 @@ export type AssignmentUpdateInput = z.output<typeof assignmentUpdateSchema>;
 /** Catalog filters in the portal URL (FR-M17-03); anything unknown is dropped. */
 export const catalogQuerySchema = z.object({
   platform: z.enum(SOCIAL_PLATFORMS).optional().catch(undefined),
-  tujuan: z.enum(CAMPAIGN_OBJECTIVES).optional().catch(undefined),
   lokal: z
     .literal("1")
     .optional()

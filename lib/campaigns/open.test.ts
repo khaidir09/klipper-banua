@@ -124,7 +124,7 @@ describe("activationBlockers for per_views (FR-M17-02)", () => {
     today: "2026-10-01",
   };
   const open = {
-    objective: "awareness" as const,
+    objective: null,
     landingUrl: null,
     assignmentStatuses: [],
     access: "terbuka" as const,
@@ -141,7 +141,6 @@ describe("activationBlockers for per_views (FR-M17-02)", () => {
   it("lists every missing requirement", () => {
     const blockers = activationBlockers({
       ...open,
-      objective: "pendaftar",
       perViews: {
         brief: " ",
         assetCount: 0,
@@ -152,7 +151,11 @@ describe("activationBlockers for per_views (FR-M17-02)", () => {
         today: "2026-10-01",
       },
     });
-    expect(blockers).toHaveLength(7);
+    expect(blockers).toHaveLength(6);
+  });
+
+  it("leaves the landing URL optional without a legacy objective", () => {
+    expect(activationBlockers({ ...open, landingUrl: "  ", perViews: ready })).toEqual([]);
   });
 
   it("accepts an end date of today", () => {

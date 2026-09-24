@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireCreator } from "@/lib/auth/guards";
 import { JOIN_BLOCKER_MESSAGES, campaignToday, joinBlockers } from "@/lib/campaigns/open";
-import { CAMPAIGN_OBJECTIVE_LABELS } from "@/lib/constants/campaigns";
 import { CREATOR_TERMS_VERSION } from "@/lib/constants/creators";
 import { getPortalCatalogCampaign, getPortalProfile, listPortalAssets } from "@/lib/data/portal";
 import { formatCalendarRange } from "@/lib/format/date";
@@ -72,12 +71,7 @@ export default async function PortalCatalogCampaignPage({
         description={`${campaign.client_name} · ${formatCalendarRange(campaign.start_date, campaign.end_date)}`}
         backHref="/portal/kampanye"
         backLabel="Katalog kampanye"
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline">{CAMPAIGN_OBJECTIVE_LABELS[campaign.objective]}</Badge>
-            {campaign.local_only ? <Badge>Khusus Klipper Lokal</Badge> : null}
-          </div>
-        }
+        actions={campaign.local_only ? <Badge>Khusus Klipper Lokal</Badge> : undefined}
       />
 
       {blockers.includes("terms_outdated") ? <TermsNotice version={CREATOR_TERMS_VERSION} /> : null}

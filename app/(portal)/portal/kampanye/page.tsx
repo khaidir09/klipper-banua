@@ -11,7 +11,6 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { requireCreator } from "@/lib/auth/guards";
 import { CATALOG_SORTS, CATALOG_SORT_LABELS, sortCatalog } from "@/lib/campaigns/open";
-import { CAMPAIGN_OBJECTIVES, CAMPAIGN_OBJECTIVE_LABELS } from "@/lib/constants/campaigns";
 import {
   CREATOR_TERMS_VERSION,
   SOCIAL_PLATFORMS,
@@ -34,12 +33,13 @@ function CatalogCard({ campaign }: { campaign: PortalCatalogCampaign }) {
   return (
     <Card className="relative">
       <CardHeader className="gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline">{CAMPAIGN_OBJECTIVE_LABELS[campaign.objective]}</Badge>
-          {campaign.local_only ? <Badge>Khusus Klipper Lokal</Badge> : null}
-          {campaign.budget_exhausted ? <Badge variant="destructive">Anggaran habis</Badge> : null}
-          {campaign.assignment_id ? <Badge variant="secondary">Sudah bergabung</Badge> : null}
-        </div>
+        {campaign.local_only || campaign.budget_exhausted || campaign.assignment_id ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {campaign.local_only ? <Badge>Khusus Klipper Lokal</Badge> : null}
+            {campaign.budget_exhausted ? <Badge variant="destructive">Anggaran habis</Badge> : null}
+            {campaign.assignment_id ? <Badge variant="secondary">Sudah bergabung</Badge> : null}
+          </div>
+        ) : null}
         <CardTitle className="text-base">
           <h2>
             {/* Stretched link: the whole card is the tap target on a phone. */}
@@ -111,11 +111,10 @@ export default async function PortalCatalogPage({ searchParams }: { searchParams
   const filtered = catalog.filter(
     (campaign) =>
       (!query.platform || campaign.allowed_platforms.includes(query.platform)) &&
-      (!query.tujuan || campaign.objective === query.tujuan) &&
       (!query.lokal || campaign.local_only),
   );
   const campaigns = sortCatalog(filtered, query.urut ?? "terbaru");
-  const filtering = Boolean(query.platform || query.tujuan || query.lokal);
+  const filtering = Boolean(query.platform || query.lokal);
 
   return (
     <div className="space-y-6">
@@ -143,7 +142,7 @@ export default async function PortalCatalogPage({ searchParams }: { searchParams
         <TermsNotice version={CREATOR_TERMS_VERSION} />
       ) : null}
 
-      <form method="get" className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-5">
+      <form method="get" className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-4">
         <Field>
           <FieldLabel htmlFor="platform">Platform</FieldLabel>
           <NativeSelect id="platform" name="platform" defaultValue={query.platform ?? ""}>
@@ -151,17 +150,6 @@ export default async function PortalCatalogPage({ searchParams }: { searchParams
             {SOCIAL_PLATFORMS.map((platform) => (
               <NativeSelectOption key={platform} value={platform}>
                 {SOCIAL_PLATFORM_LABELS[platform]}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="tujuan">Tujuan</FieldLabel>
-          <NativeSelect id="tujuan" name="tujuan" defaultValue={query.tujuan ?? ""}>
-            <NativeSelectOption value="">Semua tujuan</NativeSelectOption>
-            {CAMPAIGN_OBJECTIVES.map((objective) => (
-              <NativeSelectOption key={objective} value={objective}>
-                {CAMPAIGN_OBJECTIVE_LABELS[objective]}
               </NativeSelectOption>
             ))}
           </NativeSelect>

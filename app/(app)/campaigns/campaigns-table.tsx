@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/tables/data-table";
 import { columnHelper, type TableColumnDef } from "@/components/tables/table-features";
 import { CampaignStatusBadge } from "@/components/status/status-badge";
-import { CAMPAIGN_OBJECTIVE_LABELS } from "@/lib/constants/campaigns";
 import type { CampaignListItem } from "@/lib/data/campaigns";
 import { formatRupiah } from "@/lib/format/currency";
 import { formatCalendarRange } from "@/lib/format/date";
@@ -39,11 +38,6 @@ const columns: TableColumnDef<CampaignListItem>[] = helper.columns([
     header: "Periode",
     cell: (info) => formatCalendarRange(info.getValue(), info.row.original.end_date),
     meta: { className: "hidden lg:table-cell whitespace-nowrap" },
-  }),
-  helper.accessor("objective", {
-    header: "Tujuan",
-    cell: (info) => CAMPAIGN_OBJECTIVE_LABELS[info.getValue()],
-    meta: { className: "hidden lg:table-cell" },
   }),
   helper.display({
     id: "creators",

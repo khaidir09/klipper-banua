@@ -42,7 +42,8 @@ export type PerViewsActivationInput = {
  * campaigns; `access` defaults to `undangan`, the only mode they have.
  */
 export function activationBlockers(input: {
-  objective: CampaignObjective;
+  /** Only legacy `paket` campaigns have one (FR-M4-01). */
+  objective: CampaignObjective | null;
   landingUrl: string | null;
   assignmentStatuses: AssignmentStatus[];
   access?: CampaignAccess;

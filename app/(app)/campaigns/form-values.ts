@@ -9,7 +9,6 @@ export function campaignToFormValues(campaign: CampaignRow): CampaignFormInput {
     client_id: campaign.client_id,
     code: campaign.code,
     name: campaign.name,
-    objective: campaign.objective,
     brief: campaign.brief,
     must_do: campaign.must_do.join("\n"),
     must_not: campaign.must_not.join("\n"),

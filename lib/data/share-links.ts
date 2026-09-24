@@ -62,7 +62,7 @@ export async function openSharedReport(token: string) {
     campaign: {
       code: campaign.code,
       name: campaign.name,
-      objective: campaign.objective as CampaignObjective,
+      objective: campaign.objective as CampaignObjective | null,
       start_date: campaign.start_date,
       end_date: campaign.end_date,
       closing_notes: campaign.closing_notes,

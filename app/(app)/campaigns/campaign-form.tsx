@@ -23,8 +23,6 @@ import { FormAsideCard, FormHints, FormLayout } from "@/components/layout/form-l
 import {
   CAMPAIGN_ACCESSES,
   CAMPAIGN_ACCESS_LABELS,
-  CAMPAIGN_OBJECTIVES,
-  CAMPAIGN_OBJECTIVE_LABELS,
   PER_VIEWS_DEFAULTS,
   type PayoutModel,
 } from "@/lib/constants/campaigns";
@@ -72,7 +70,6 @@ const EMPTY: CampaignFormInput = {
   client_id: "",
   code: "",
   name: "",
-  objective: "pendaftar",
   brief: "",
   must_do: "",
   must_not: "",
@@ -157,13 +154,12 @@ export function CampaignForm({
   // used to sit empty and stays in view while the operator scrolls. `useWatch`
   // rather than `form.watch()`: it re-renders only on these fields and does not
   // opt the component out of the React Compiler.
-  const [clientId, code, objective, startDate, endDate, packagePrice, baseFee, rate, budget] =
+  const [clientId, code, startDate, endDate, packagePrice, baseFee, rate, budget] =
     useWatch({
       control: form.control,
       name: [
         "client_id",
         "code",
-        "objective",
         "start_date",
         "end_date",
         "package_price",
@@ -176,7 +172,6 @@ export function CampaignForm({
   const summary: { label: string; value: string; mono?: boolean }[] = [
     { label: "Klien", value: selectedClient?.name ?? "Belum dipilih" },
     { label: "Kode", value: code?.trim() || DASH, mono: true },
-    { label: "Tujuan", value: CAMPAIGN_OBJECTIVE_LABELS[objective] },
     { label: "Periode", value: summaryPeriod(startDate, endDate) },
     { label: "Harga paket", value: summaryRupiah(packagePrice) },
     ...(perViews
@@ -214,14 +209,14 @@ export function CampaignForm({
             campaignId
               ? "Perubahan pada kampanye yang sudah berjalan tercatat di log aktivitas."
               : "Kampanye baru selalu tersimpan sebagai Draft; aktifkan dari halaman kampanye.",
-            "Kampanye bertujuan Pendaftar butuh URL tujuan terisi sebelum dapat diaktifkan.",
             ...(perViews
               ? [
                   "Sebelum aktif: brief, minimal satu materi, tarif, anggaran, dan platform wajib terisi.",
                   "Anggaran dapat dinaikkan saat kampanye berjalan; tarif terkunci setelah ada klip disetujui.",
-                  "Klipper hanya melihat persentase sisa anggaran, bukan nominalnya.",
+                  "Klipper melihat anggaran klipper dan sisanya, tetapi tidak melihat harga paket.",
                 ]
               : [
+                  "Kampanye lama bertujuan Pendaftar butuh URL tujuan terisi sebelum dapat diaktifkan.",
                   "Skema honor di sini hanya nilai bawaan; tiap penugasan masih bisa memakai angka sendiri.",
                 ]),
             "Tulis nominal dalam Rupiah utuh tanpa titik, koma, atau singkatan.",
@@ -266,19 +261,6 @@ export function CampaignForm({
                 <FieldError errors={[errors.client_id]} />
               </Field>
               <Field>
-                <FieldLabel htmlFor="objective">Tujuan</FieldLabel>
-                <NativeSelect {...text("objective")}>
-                  {CAMPAIGN_OBJECTIVES.map((objective) => (
-                    <NativeSelectOption key={objective} value={objective}>
-                      {CAMPAIGN_OBJECTIVE_LABELS[objective]}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-                <FieldError errors={[errors.objective]} />
-              </Field>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field>
                 <FieldLabel htmlFor="code">Kode kampanye</FieldLabel>
                 <Input
                   {...text("code")}
@@ -288,12 +270,12 @@ export function CampaignForm({
                 <FieldDescription>Unik; huruf, angka, dan tanda hubung.</FieldDescription>
                 <FieldError errors={[errors.code]} />
               </Field>
-              <Field>
-                <FieldLabel htmlFor="name">Nama kampanye</FieldLabel>
-                <Input {...text("name")} />
-                <FieldError errors={[errors.name]} />
-              </Field>
             </div>
+            <Field>
+              <FieldLabel htmlFor="name">Nama kampanye</FieldLabel>
+              <Input {...text("name")} />
+              <FieldError errors={[errors.name]} />
+            </Field>
           </FieldSet>
 
           <FieldSet>
@@ -340,7 +322,7 @@ export function CampaignForm({
           </FieldSet>
 
           <FieldSet>
-            <FieldLegend>Tujuan & periode</FieldLegend>
+            <FieldLegend>Tautan & periode</FieldLegend>
             <Field>
               <FieldLabel htmlFor="landing_url">URL tujuan (landing_url)</FieldLabel>
               <Input
@@ -349,7 +331,9 @@ export function CampaignForm({
                 placeholder="https://pmb.kampus.ac.id/daftar"
               />
               <FieldDescription>
-                Tujuan tautan pelacakan. Wajib sebelum kampanye bertujuan pendaftar diaktifkan.
+                {perViews
+                  ? "Opsional. Halaman yang dibuka dari tautan pelacakan klipper."
+                  : "Tujuan tautan pelacakan. Wajib sebelum kampanye bertujuan pendaftar diaktifkan."}
               </FieldDescription>
               <FieldError errors={[errors.landing_url]} />
             </Field>

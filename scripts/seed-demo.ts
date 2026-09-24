@@ -286,7 +286,6 @@ async function seedOpenCampaign(
         client_id: DEMO.clientId,
         code: DEMO.openCampaignCode,
         name: "Klip Wisuda Universitas Demo Borneo",
-        objective: "awareness",
         brief:
           "Potong video wisuda Universitas Demo Borneo menjadi klip pendek 15–60 detik. Pilih momen yang menyentuh atau lucu, beri teks singkat, dan ajak penonton mengenal kampus.",
         must_do: [
@@ -358,7 +357,6 @@ async function seedClipCampaign(
         client_id: DEMO.clientId,
         code: DEMO.clipCampaignCode,
         name: "Klip Dies Natalis Universitas Demo Borneo",
-        objective: "awareness",
         brief:
           "Potong video Dies Natalis Universitas Demo Borneo menjadi klip pendek 15–60 detik: penampilan mahasiswa, pidato rektor, atau suasana kampus.",
         must_do: ["Tulis kode verifikasi Anda di caption", "Sebut nama Universitas Demo Borneo"],

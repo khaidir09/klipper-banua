@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 export type ReportCampaign = {
   code: string;
   name: string;
-  objective: CampaignObjective;
+  /** Legacy paket campaigns only (FR-M4-01). */
+  objective: CampaignObjective | null;
   start_date: string;
   end_date: string;
   closing_notes: string;
@@ -104,10 +105,12 @@ export function CampaignReportDocument({
               {formatCalendarRange(campaign.start_date, campaign.end_date)}
             </dd>
           </div>
-          <div>
-            <dt className="text-muted-foreground">Tujuan</dt>
-            <dd className="font-medium">{CAMPAIGN_OBJECTIVE_LABELS[campaign.objective]}</dd>
-          </div>
+          {campaign.objective ? (
+            <div>
+              <dt className="text-muted-foreground">Tujuan</dt>
+              <dd className="font-medium">{CAMPAIGN_OBJECTIVE_LABELS[campaign.objective]}</dd>
+            </div>
+          ) : null}
         </dl>
       </header>
 

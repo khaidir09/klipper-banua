@@ -282,7 +282,7 @@ export type Database = {
           must_do: string[]
           must_not: string[]
           name: string
-          objective: Database["public"]["Enums"]["campaign_objective"]
+          objective: Database["public"]["Enums"]["campaign_objective"] | null
           package_price: number
           paid_label_required: boolean
           payout_model: Database["public"]["Enums"]["payout_model"]
@@ -323,7 +323,7 @@ export type Database = {
           must_do?: string[]
           must_not?: string[]
           name: string
-          objective?: Database["public"]["Enums"]["campaign_objective"]
+          objective?: Database["public"]["Enums"]["campaign_objective"] | null
           package_price?: number
           paid_label_required?: boolean
           payout_model?: Database["public"]["Enums"]["payout_model"]
@@ -364,7 +364,7 @@ export type Database = {
           must_do?: string[]
           must_not?: string[]
           name?: string
-          objective?: Database["public"]["Enums"]["campaign_objective"]
+          objective?: Database["public"]["Enums"]["campaign_objective"] | null
           package_price?: number
           paid_label_required?: boolean
           payout_model?: Database["public"]["Enums"]["payout_model"]

@@ -1415,3 +1415,34 @@ delete from public.creator_ledger_entries where creator_id = '18181818-0000-0000
 reset role;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;
+
+-- ---------------------------------------------------------------------------
+-- PRD 1.3: the campaign objective belongs to legacy paket campaigns (FR-M4-01)
+-- ---------------------------------------------------------------------------
+begin;
+create temporary table obj_roles on commit drop as
+select (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id;
+grant select on obj_roles to authenticated;
+
+insert into public.clients (id, name, type, province) values ('0b0b0b0b-0000-0000-0000-000000000001','Objective Client','kampus_swasta','Kalimantan Selatan');
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, access, payout_model) values
+ ('0b0b0b0b-0000-0000-0000-0000000000c1','0b0b0b0b-0000-0000-0000-000000000001','OBJ-01','Paket lama','pendaftar','2026-10-01','2026-10-31','draft','undangan','paket'),
+ ('0b0b0b0b-0000-0000-0000-0000000000c2','0b0b0b0b-0000-0000-0000-000000000001','OBJ-02','Paket event','event','2026-10-01','2026-10-31','draft','undangan','paket');
+
+select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from obj_roles), 'role', 'authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+\echo 'OBJ-1. a new per_views campaign drops the objective it was sent (expect null / per_views)'
+insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date) values ('0b0b0b0b-0000-0000-0000-0000000000c3','0b0b0b0b-0000-0000-0000-000000000001','OBJ-03','Terbuka','pendaftar','2026-10-01','2026-10-31');
+select objective, payout_model from public.campaigns where id = '0b0b0b0b-0000-0000-0000-0000000000c3';
+\echo 'OBJ-2. a per_views campaign cannot get one later (expect null)'
+update public.campaigns set objective = 'awareness' where id = '0b0b0b0b-0000-0000-0000-0000000000c3';
+select objective from public.campaigns where id = '0b0b0b0b-0000-0000-0000-0000000000c3';
+\echo 'OBJ-3. legacy paket campaigns keep theirs (expect pendaftar / event)'
+update public.campaigns set name = 'Paket lama diubah' where id = '0b0b0b0b-0000-0000-0000-0000000000c1';
+select objective from public.campaigns where id in ('0b0b0b0b-0000-0000-0000-0000000000c1','0b0b0b0b-0000-0000-0000-0000000000c2') order by code;
+\echo 'OBJ-4. a paket draft switched to per_views loses it (expect null / per_views)'
+update public.campaigns set payout_model = 'per_views' where id = '0b0b0b0b-0000-0000-0000-0000000000c2';
+select objective, payout_model from public.campaigns where id = '0b0b0b0b-0000-0000-0000-0000000000c2';
+reset role;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;
