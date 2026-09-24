@@ -47,7 +47,7 @@ export default async function PortalHomePage() {
     .slice(0, 3);
   const DECISION_TEXT = {
     disetujui: "disetujui",
-    revisi: "perlu perbaikan",
+    revisi: "perlu diperbaiki",
     ditolak: "ditolak",
   } as const;
 
@@ -55,7 +55,7 @@ export default async function PortalHomePage() {
     <div className="space-y-6">
       <PageHeader
         title={greeting}
-        description="Kampanye yang Anda ikuti, brief, materi, dan kode referalnya ada di sini."
+        description="Kampanye yang kamu ikuti, klip yang lagi dicek tim, dan saldomu, semua ada di sini."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -72,7 +72,7 @@ export default async function PortalHomePage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Kampanye terbuka untuk Anda
+              Kampanye yang bisa kamu ikuti
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -82,7 +82,7 @@ export default async function PortalHomePage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Klip menunggu verifikasi
+              Klip lagi dicek tim
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -109,7 +109,7 @@ export default async function PortalHomePage() {
             <CardTitle>
               <h2 className="flex items-center gap-2">
                 <Clapperboard className="size-5" aria-hidden />
-                Keputusan terbaru
+                Kabar terbaru klipmu
               </h2>
             </CardTitle>
           </CardHeader>
@@ -139,18 +139,18 @@ export default async function PortalHomePage() {
           <CardTitle>
             <h2 className="flex items-center gap-2">
               <Compass className="size-5" aria-hidden />
-              Cari kampanye baru
+              Cari kampanye, mulai dapat honor
             </h2>
           </CardTitle>
           <CardDescription>
-            Baca brief di katalog, gabung, lalu posting klip di akun Anda. Honor dihitung per 1.000
-            views yang diverifikasi tim.
+            Pilih kampanye, baca brief-nya, gabung, lalu posting klip di akunmu. Setiap 1.000 views
+            yang lolos cek tim jadi honor di saldomu.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button asChild className="h-11">
             <Link href="/portal/kampanye">
-              Buka katalog
+              Lihat kampanye
               <ArrowRight aria-hidden />
             </Link>
           </Button>
@@ -158,7 +158,7 @@ export default async function PortalHomePage() {
       </Card>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">Kampanye berjalan</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Kampanye yang lagi jalan</h2>
         {running.length ? (
           <div className="grid gap-4 lg:grid-cols-2">
             {running.map((assignment) => (
@@ -167,17 +167,17 @@ export default async function PortalHomePage() {
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Belum ada kampanye berjalan untuk Anda.{" "}
+            Kamu belum ikut kampanye yang lagi jalan.{" "}
             {assignments.length ? (
               <>
-                Penugasan sebelumnya ada di{" "}
+                Kampanye lamamu ada di{" "}
                 <Link href="/portal/penugasan" className="font-medium underline">
                   Kampanye Saya
                 </Link>
                 .
               </>
             ) : (
-              "Pilih kampanye dari katalog untuk mulai."
+              "Yuk, pilih satu dari katalog dan mulai ngeklip."
             )}
           </p>
         )}

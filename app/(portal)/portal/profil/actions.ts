@@ -42,8 +42,8 @@ function revalidatePortalProfile() {
 function handleTaken(): ActionResult {
   return {
     status: "error",
-    message: "Akun tersebut sudah terdaftar di platform yang sama.",
-    fieldErrors: { handle: "Sudah dipakai klipper lain. Hubungi tim bila ini akun Anda." },
+    message: "Akun ini sudah terdaftar di platform yang sama.",
+    fieldErrors: { handle: "Sudah dipakai klipper lain. Kalau ini akunmu, hubungi tim, ya." },
   };
 }
 
@@ -230,7 +230,7 @@ export async function requestLocalBadgeAction(formData: FormData): Promise<Actio
   });
 
   revalidatePortalProfile();
-  return ok("Pengajuan lencana terkirim. Tim akan memeriksanya.");
+  return ok("Pengajuan lencana terkirim! Tim bakal cek dulu.");
 }
 
 /** FR-M16-09. The owner erases the data; saldo must be settled first (Phase 18). */
@@ -249,5 +249,5 @@ export async function requestAccountDeletionAction(): Promise<ActionResult> {
   });
 
   revalidatePortalProfile();
-  return ok("Permintaan penghapusan akun terkirim. Tim akan menghubungi Anda.");
+  return ok("Permintaan hapus akun terkirim. Tim bakal menghubungimu.");
 }

@@ -339,7 +339,7 @@ function PostedDialog({ content, onClose }: { content: PortalContentView; onClos
           <DialogHeader>
             <DialogTitle>Laporkan konten tayang</DialogTitle>
             <DialogDescription>
-              Kirim tautan konten yang sudah tayang. Tim akan mengonfirmasi, lalu Anda bisa mengirim
+              Kirim tautan konten yang sudah tayang. Tim bakal konfirmasi, lalu kamu bisa kirim
               bukti metrik.
             </DialogDescription>
           </DialogHeader>
@@ -470,8 +470,7 @@ function MetricDialog({
           <DialogHeader>
             <DialogTitle>Kirim bukti metrik</DialogTitle>
             <DialogDescription>
-              Isi angka sesuai tangkapan layar analitik Anda. Tim memverifikasi sebelum angka ini
-              dipakai.
+              Isi angka sesuai screenshot analitikmu. Tim memverifikasi sebelum angka ini dipakai.
             </DialogDescription>
           </DialogHeader>
 
@@ -601,7 +600,7 @@ export function SubmissionsPanel({
             <p className="text-sm text-muted-foreground">
               {campaignRunning && !confirmed
                 ? "Belum ada konten. Konfirmasi brief di atas untuk mulai mengirim draf."
-                : "Belum ada konten. Mulai dengan mengirim draf pertama Anda."}
+                : "Belum ada konten. Yuk, kirim draf pertamamu."}
             </p>
           ) : (
             contents.map((content) => {

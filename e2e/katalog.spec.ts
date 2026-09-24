@@ -64,13 +64,13 @@ test("a klipper finds an open campaign, joins it and withdraws", async ({ page }
     await page.getByRole("button", { name: "Mundur" }).click();
     await alertDialog(page).getByRole("button", { name: "Ya, mundur" }).click();
     await expectToast(page, /sudah mundur/);
-    await expect(page.getByText(/Anda mundur dari kampanye ini/)).toBeVisible();
+    await expect(page.getByText(/Kamu mundur dari kampanye ini/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Mundur" })).toHaveCount(0);
   });
 
   await test.step("the catalog remembers the klipper was on this campaign", async () => {
     await page.goto(`/portal/kampanye/${DEMO_OPEN_CAMPAIGN_ID}`);
-    await expect(page.getByText("Anda sudah tercatat di kampanye ini.")).toBeVisible();
+    await expect(page.getByText("Kamu sudah ikut kampanye ini.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Gabung" })).toHaveCount(0);
   });
 });

@@ -117,7 +117,7 @@ export function SocialAccountsManager({
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-muted-foreground">Belum ada akun media sosial.</p>
+        <p className="text-sm text-muted-foreground">Kamu belum menambahkan akun medsos.</p>
       )}
 
       <Button variant="outline" className="h-11 w-full sm:w-auto" onClick={() => setEditing("new")}>
@@ -167,7 +167,7 @@ function BadgeState({
     <div className="mt-2 space-y-2">
       {account.badge_review_notes ? (
         <p className="rounded-md bg-muted p-2 text-muted-foreground">
-          Pengajuan sebelumnya ditolak: {account.badge_review_notes}
+          Pengajuan sebelumnya belum lolos: {account.badge_review_notes}
         </p>
       ) : null}
       {hasBadge ? null : (
@@ -218,9 +218,9 @@ function AccountDialog({
       <DialogContent className="sm:max-w-lg">
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <DialogHeader>
-            <DialogTitle>{account ? "Ubah akun" : "Tambah akun media sosial"}</DialogTitle>
+            <DialogTitle>{account ? "Ubah akun" : "Tambah akun medsos"}</DialogTitle>
             <DialogDescription>
-              Klip hanya dihitung bila diposting dari akun yang terdaftar di sini.
+              Klip cuma dihitung kalau diposting dari akun yang terdaftar di sini.
             </DialogDescription>
           </DialogHeader>
 
@@ -331,9 +331,9 @@ function BadgeRequestDialog({
           <DialogHeader>
             <DialogTitle>Ajukan lencana Klipper Lokal</DialogTitle>
             <DialogDescription>
-              Lencana membuka kampanye khusus audiens Kalimantan. Syaratnya minimal{" "}
-              {LOCAL_BADGE_MIN_PCT}% audiens akun ini berada di Kalimantan, dibuktikan dengan
-              tangkapan layar analitik.
+              Punya lencana ini, kamu bisa ikut kampanye khusus audiens Kalimantan. Syaratnya
+              minimal {LOCAL_BADGE_MIN_PCT}% penonton akun ini ada di Kalimantan. Buktikan pakai
+              screenshot analitik.
             </DialogDescription>
           </DialogHeader>
 
@@ -381,8 +381,8 @@ function BadgeRequestDialog({
                 aria-invalid={Boolean(errors.audience_proof)}
               />
               <FieldDescription>
-                Halaman analitik yang menampilkan lokasi atau kota penonton. PNG, JPG, atau WebP,
-                maks. 5 MB.
+                Screenshot halaman analitik yang menampilkan lokasi atau kota penontonmu. PNG, JPG,
+                atau WebP, maks. 5 MB.
               </FieldDescription>
               {errors.audience_proof ? <FieldError>{errors.audience_proof}</FieldError> : null}
             </Field>

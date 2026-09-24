@@ -40,8 +40,8 @@ export function WithdrawCard({ assignmentId }: { assignmentId: string }) {
           <h2>Mundur dari kampanye</h2>
         </CardTitle>
         <CardDescription>
-          Selama belum ada klip Anda yang disetujui, Anda boleh mundur. Setelah mundur, Anda tidak
-          dapat bergabung lagi ke kampanye ini.
+          Kamu masih boleh mundur selama belum ada klipmu yang disetujui. Tapi ingat, sekali mundur,
+          kamu nggak bisa gabung lagi ke kampanye ini.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -56,7 +56,7 @@ export function WithdrawCard({ assignmentId }: { assignmentId: string }) {
             <AlertDialogHeader>
               <AlertDialogTitle>Mundur dari kampanye ini?</AlertDialogTitle>
               <AlertDialogDescription>
-                Anda tidak dapat bergabung lagi ke kampanye yang sama setelah mundur.
+                Setelah mundur, kamu nggak bisa gabung lagi ke kampanye ini.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

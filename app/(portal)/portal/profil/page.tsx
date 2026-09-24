@@ -39,7 +39,7 @@ export default async function PortalProfilePage() {
     <div className="space-y-6">
       <PageHeader
         title="Profil saya"
-        description="Kode verifikasi, akun media sosial, dan lencana Klipper Lokal. Perubahan data diri lewat tim."
+        description="Kode verifikasi, akun medsos, rekening, dan lencana Klipper Lokal kamu. Mau ubah data diri? Hubungi tim."
       />
 
       {creator ? <VerificationCodeCard code={creator.verification_code} /> : null}
@@ -47,10 +47,11 @@ export default async function PortalProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <h2>Akun media sosial</h2>
+            <h2>Akun medsos kamu</h2>
           </CardTitle>
           <CardDescription>
-            Daftarkan setiap akun yang Anda pakai untuk memposting klip.
+            Daftarkan semua akun yang kamu pakai buat posting klip. Klip dari akun yang nggak
+            terdaftar nggak dihitung.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,7 +109,7 @@ export default async function PortalProfilePage() {
                 ]}
               />
             ) : (
-              <p className="text-sm text-muted-foreground">Data klipper tidak tersedia.</p>
+              <p className="text-sm text-muted-foreground">Data dirimu belum tersedia.</p>
             )}
           </CardContent>
         </Card>

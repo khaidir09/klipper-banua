@@ -24,14 +24,14 @@ export default async function PortalClipsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Klip Saya"
-        description="Status verifikasi, views terverifikasi, dan honor setiap klip yang Anda kirim."
+        description="Pantau semua klip yang kamu kirim: sudah dicek atau belum, views yang dihitung, dan honor dari tiap klip."
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
         {[
-          { label: "Menunggu verifikasi", value: String(waiting) },
-          { label: "Perlu perbaikan", value: String(needsFix) },
-          { label: "Honor dari klip", value: formatRupiah(earned) },
+          { label: "Lagi dicek tim", value: String(waiting) },
+          { label: "Perlu diperbaiki", value: String(needsFix) },
+          { label: "Total honor klip", value: formatRupiah(earned) },
         ].map((item) => (
           <Card key={item.label}>
             <CardContent>
@@ -46,11 +46,11 @@ export default async function PortalClipsPage() {
         <ClipList clips={clips} timezone={session.profile.timezone} showCampaign />
       ) : (
         <p className="text-sm text-muted-foreground">
-          Belum ada klip. Buka{" "}
+          Kamu belum kirim klip. Buka{" "}
           <Link href="/portal/penugasan" className="font-medium underline">
             Kampanye Saya
           </Link>{" "}
-          lalu kirim klip dari halaman kampanyenya.
+          lalu kirim klip pertamamu dari halaman kampanyenya.
         </p>
       )}
     </div>

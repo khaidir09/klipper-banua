@@ -107,7 +107,7 @@ describe("clipDetailProblems", () => {
     ).toMatch(/masa depan/);
     expect(
       clipDetailProblems({ ...base, postedAt: new Date("2026-10-04T23:59:00Z") }).posted_at,
-    ).toMatch(/bergabung/);
+    ).toMatch(/kamu gabung/);
   });
 });
 

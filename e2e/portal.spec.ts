@@ -44,7 +44,7 @@ test("a creator sees their own brief and nothing internal", async ({ page }) => 
 
   await test.step("another assignment is not found", async () => {
     await page.goto("/portal/penugasan/de300000-0000-4000-8000-00000000ffff");
-    await expect(page.getByText("Data tidak ditemukan")).toBeVisible();
+    await expect(page.getByText("Halaman ini nggak ketemu")).toBeVisible();
   });
 
   await test.step("the profile shows this creator only", async () => {

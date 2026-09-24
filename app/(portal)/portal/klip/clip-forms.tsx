@@ -43,9 +43,9 @@ const PENDING_UPLOAD = "pending-upload";
 
 function proofFileProblem(file: File | null): string | null {
   if (!file) return null;
-  if (file.size > METRIC_PROOF_MAX_BYTES) return "Berkas lebih dari 10 MB.";
+  if (file.size > METRIC_PROOF_MAX_BYTES) return "Berkasnya lebih dari 10 MB. Coba kecilkan dulu.";
   if (!(METRIC_PROOF_MIME_TYPES as readonly string[]).includes(file.type)) {
-    return "Format bukti tidak didukung (PNG, JPG, WebP, PDF).";
+    return "Format berkas ini nggak didukung. Pakai PNG, JPG, WebP, atau PDF.";
   }
   return null;
 }
@@ -106,12 +106,12 @@ export function SubmitClipDialog({
     setServerError(null);
     startTransition(async () => {
       if (!file) {
-        setServerError("Unggah tangkapan layar views.");
+        setServerError("Unggah screenshot views-nya dulu.");
         return;
       }
       const upload = await uploadToBucket(METRIC_PROOF_BUCKET, campaignId, file);
       if (upload.error !== null) {
-        setServerError(`Bukti gagal diunggah: ${upload.error}`);
+        setServerError(`Screenshot gagal diunggah: ${upload.error}`);
         return;
       }
       const result = await submitClipAction({ ...values, proof_path: upload.path });
@@ -134,8 +134,8 @@ export function SubmitClipDialog({
           <DialogHeader>
             <DialogTitle>Kirim klip</DialogTitle>
             <DialogDescription>
-              Kirim klip yang sudah tayang di akun Anda. Tim memeriksa kode verifikasi, isi, dan
-              views sebelum honor masuk ke saldo.
+              Kirim klip yang sudah tayang di akunmu. Tim cek kode verifikasi, isi, dan views-nya
+              dulu, habis itu honornya masuk ke saldomu.
             </DialogDescription>
           </DialogHeader>
 
@@ -167,7 +167,7 @@ export function SubmitClipDialog({
                 placeholder="https://www.tiktok.com/@akun/video/…"
                 {...form.register("posted_url")}
               />
-              <FieldDescription>Satu video hanya dapat dikirim sekali.</FieldDescription>
+              <FieldDescription>Satu video cuma bisa dikirim sekali.</FieldDescription>
               <FieldError errors={[errors.posted_url]} />
             </Field>
 
@@ -206,7 +206,7 @@ export function SubmitClipDialog({
                 accept={METRIC_PROOF_MIME_TYPES.join(",")}
                 onChange={(event) => chooseFile(event.target.files?.[0] ?? null)}
               />
-              <FieldDescription>Wajib. Maksimal 10 MB.</FieldDescription>
+              <FieldDescription>Wajib diisi. Ukuran maksimal 10 MB.</FieldDescription>
               <FieldError errors={[errors.proof_path]} />
             </Field>
 
@@ -289,12 +289,12 @@ export function ViewsUpdateDialog({
     setServerError(null);
     startTransition(async () => {
       if (!file) {
-        setServerError("Unggah tangkapan layar views.");
+        setServerError("Unggah screenshot views-nya dulu.");
         return;
       }
       const upload = await uploadToBucket(METRIC_PROOF_BUCKET, campaignId, file);
       if (upload.error !== null) {
-        setServerError(`Bukti gagal diunggah: ${upload.error}`);
+        setServerError(`Screenshot gagal diunggah: ${upload.error}`);
         return;
       }
       const result = await submitViewsUpdateAction({ ...values, proof_path: upload.path });
@@ -317,8 +317,8 @@ export function ViewsUpdateDialog({
           <DialogHeader>
             <DialogTitle>Perbarui views</DialogTitle>
             <DialogDescription>
-              Kirim views terbaru dengan tangkapan layarnya. Setelah diverifikasi, selisih honornya
-              masuk ke saldo Anda.
+              Views klipmu naik? Kirim angka terbaru plus screenshot-nya. Setelah dicek tim,
+              tambahan honornya masuk ke saldomu.
             </DialogDescription>
           </DialogHeader>
 
@@ -358,7 +358,7 @@ export function ViewsUpdateDialog({
                 accept={METRIC_PROOF_MIME_TYPES.join(",")}
                 onChange={(event) => chooseFile(event.target.files?.[0] ?? null)}
               />
-              <FieldDescription>Wajib. Maksimal 10 MB.</FieldDescription>
+              <FieldDescription>Wajib diisi. Ukuran maksimal 10 MB.</FieldDescription>
               <FieldError errors={[errors.proof_path]} />
             </Field>
           </FieldGroup>

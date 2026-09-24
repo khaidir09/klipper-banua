@@ -27,7 +27,7 @@ import { uuidField } from "@/lib/validation/common";
 const joinSchema = z.object({
   campaign_id: uuidField,
   agreed: z.literal(true, {
-    message: "Centang pernyataan bahwa Anda sudah membaca brief, poin wajib, dan larangan.",
+    message: "Centang dulu pernyataan bahwa kamu sudah baca brief, yang wajib, dan yang dilarang.",
   }),
 });
 
@@ -87,7 +87,7 @@ export async function joinCampaignAction(values: unknown): Promise<ActionResult>
     if (error.code === PG_UNIQUE_VIOLATION && error.message.includes("campaign_creator_key")) {
       return fail(JOIN_BLOCKER_MESSAGES.already_joined);
     }
-    return fail(dbRuleMessage(error, "Gagal bergabung ke kampanye. Coba lagi."));
+    return fail(dbRuleMessage(error, "Gagal gabung kampanye. Coba lagi, ya."));
   }
 
   const { data: assignment } = await supabase
@@ -142,7 +142,7 @@ export async function withdrawAssignmentAction(values: unknown): Promise<ActionR
   ) {
     return fail(
       (approved ?? 0) > 0
-        ? "Anda tidak dapat mundur karena sudah ada klip yang disetujui."
+        ? "Kamu nggak bisa mundur karena sudah ada klipmu yang disetujui."
         : "Penugasan ini tidak dapat ditinggalkan dari portal.",
     );
   }
@@ -162,7 +162,7 @@ export async function withdrawAssignmentAction(values: unknown): Promise<ActionR
   });
 
   revalidatePortal();
-  return ok("Anda sudah mundur dari kampanye ini.");
+  return ok("Kamu sudah mundur dari kampanye ini.");
 }
 
 /** FR-M3-04: accept the current Syarat Klipper; the database logs it. */
@@ -173,5 +173,5 @@ export async function acceptTermsAction(): Promise<ActionResult> {
   if (error) return fail(dbRuleMessage(error, "Persetujuan gagal disimpan."));
 
   revalidatePortal();
-  return ok(`Syarat Klipper versi ${CREATOR_TERMS_VERSION} disetujui.`);
+  return ok(`Makasih! Syarat Klipper versi ${CREATOR_TERMS_VERSION} sudah kamu setujui.`);
 }

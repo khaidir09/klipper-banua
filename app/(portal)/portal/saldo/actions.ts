@@ -43,12 +43,12 @@ export async function saveOwnBankAccountAction(values: unknown): Promise<ActionR
   revalidateBalance();
   if (after && !after.holder_matches_name) {
     return ok(
-      "Rekening tersimpan. Nama pemilik berbeda dengan nama lengkap akun, jadi owner akan memeriksanya sebelum mentransfer.",
+      "Rekening tersimpan. Nama pemiliknya beda dengan nama lengkap akunmu, jadi owner bakal cek dulu sebelum transfer.",
     );
   }
   return ok(
     before
-      ? "Rekening diperbarui. Penarikan baru dapat diajukan 24 jam setelah perubahan."
+      ? "Rekening diperbarui. Kamu bisa tarik saldo lagi 24 jam dari sekarang."
       : "Rekening tersimpan.",
   );
 }
@@ -81,14 +81,14 @@ export async function requestWithdrawalAction(values: unknown): Promise<ActionRe
   if (blockers[0]) {
     const tz = session.profile.timezone;
     const messages: Record<WithdrawalBlocker, string> = {
-      creator_blocked: "Akun Anda diblokir, jadi saldo belum dapat ditarik.",
-      no_bank_account: "Isi rekening atau e-wallet terlebih dahulu.",
+      creator_blocked: "Akunmu diblokir, jadi saldo belum bisa ditarik.",
+      no_bank_account: "Isi rekening atau e-wallet dulu, ya.",
       bank_recently_changed: bank?.hold_until
-        ? `Rekening baru diubah. Penarikan dapat diajukan mulai ${formatDateTime(bank.hold_until, tz)}.`
-        : "Rekening baru diubah; tunggu 24 jam.",
-      withdrawal_in_progress: "Masih ada penarikan yang sedang diproses.",
+        ? `Rekeningmu baru diubah. Kamu bisa tarik saldo lagi mulai ${formatDateTime(bank.hold_until, tz)}.`
+        : "Rekeningmu baru diubah. Tunggu 24 jam, ya.",
+      withdrawal_in_progress: "Masih ada penarikan yang lagi diproses.",
       below_minimum: `Minimum penarikan ${formatRupiah(balance.min_withdrawal)}.`,
-      above_balance: `Nominal melebihi saldo tersedia (${formatRupiah(balance.available)}).`,
+      above_balance: `Nominalnya lebih besar dari saldomu (${formatRupiah(balance.available)}).`,
     };
     const message = messages[blockers[0]];
     return { status: "error", message, fieldErrors: { amount: message } };
@@ -109,7 +109,5 @@ export async function requestWithdrawalAction(values: unknown): Promise<ActionRe
   });
 
   revalidateBalance();
-  return ok(
-    `Penarikan ${formatRupiah(amount)} diajukan. Tim memproses paling lambat 1 hari kerja.`,
-  );
+  return ok(`Penarikan ${formatRupiah(amount)} diajukan! Tim transfer paling lambat 1 hari kerja.`);
 }

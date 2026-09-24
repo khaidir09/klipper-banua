@@ -78,12 +78,12 @@ export function BankAccountCard({
         <CardTitle>
           <h2 className="flex items-center gap-2">
             <Landmark className="size-5" aria-hidden />
-            Rekening penarikan
+            Rekening buat terima honor
           </h2>
         </CardTitle>
         <CardDescription>
-          Bank atau e-wallet atas nama Anda sendiri. Nama pemilik harus sama dengan nama lengkap
-          akun ({fullName}).
+          Bank atau e-wallet atas namamu sendiri. Nama pemiliknya harus sama dengan nama lengkap
+          akunmu ({fullName}).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -107,14 +107,14 @@ export function BankAccountCard({
               <Alert>
                 <CircleAlert />
                 <AlertDescription>
-                  Nama pemilik berbeda dengan nama lengkap akun. Owner memeriksanya sebelum
-                  mentransfer.
+                  Nama pemiliknya beda dengan nama lengkap akunmu. Owner bakal cek dulu sebelum
+                  transfer.
                 </AlertDescription>
               </Alert>
             ) : null}
             {account.holdUntilLabel ? (
               <p className="text-sm text-muted-foreground">
-                Rekening baru diubah. Penarikan dapat diajukan mulai {account.holdUntilLabel}.
+                Rekeningmu baru diubah. Kamu bisa tarik saldo lagi mulai {account.holdUntilLabel}.
               </p>
             ) : null}
             {readOnly ? null : (
@@ -160,7 +160,7 @@ export function BankAccountCard({
                 <Input id="bank-holder" {...form.register("account_holder")} />
                 {account ? (
                   <FieldDescription>
-                    Mengubah rekening menahan penarikan baru selama 24 jam.
+                    Habis ganti rekening, kamu baru bisa tarik saldo lagi setelah 24 jam.
                   </FieldDescription>
                 ) : null}
                 <FieldError errors={[errors.account_holder]} />
@@ -185,7 +185,7 @@ export function BankAccountCard({
         ) : null}
 
         {!account && readOnly ? (
-          <p className="text-sm text-muted-foreground">Belum ada rekening.</p>
+          <p className="text-sm text-muted-foreground">Kamu belum mengisi rekening.</p>
         ) : null}
       </CardContent>
     </Card>

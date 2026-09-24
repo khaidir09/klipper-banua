@@ -169,8 +169,8 @@ export default async function PortalAssignmentPage({
             <CircleAlert />
             <AlertDescription>
               {assignment.withdrawn_at
-                ? `Anda mundur dari kampanye ini pada ${formatDate(assignment.withdrawn_at, tz)}.`
-                : "Anda sudah mundur dari kampanye ini."}
+                ? `Kamu mundur dari kampanye ini pada ${formatDate(assignment.withdrawn_at, tz)}.`
+                : "Kamu sudah mundur dari kampanye ini."}
             </AlertDescription>
           </Alert>
         ) : null}
@@ -186,11 +186,11 @@ export default async function PortalAssignmentPage({
         <Card>
           <CardHeader>
             <CardTitle>
-              <h2>Kode referal dan tautan</h2>
+              <h2>Kode referal & tautanmu</h2>
             </CardTitle>
             <CardDescription>
-              Cantumkan tautan ini di bio atau keterangan, dan minta audiens memakai kode referal
-              saat mendaftar.
+              Taruh tautan ini di bio atau caption, lalu ajak penontonmu pakai kode referal ini
+              waktu daftar.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -212,7 +212,7 @@ export default async function PortalAssignmentPage({
             </div>
             {assignment.landing_url ? (
               <p className="text-xs text-muted-foreground">
-                Tautan mengarah ke halaman pendaftaran klien.
+                Tautan ini langsung membuka halaman pendaftaran klien.
               </p>
             ) : null}
           </CardContent>
@@ -265,7 +265,8 @@ export default async function PortalAssignmentPage({
                   <h2>Kesepakatan honor</h2>
                 </CardTitle>
                 <CardDescription>
-                  Honor dihitung setelah kampanye selesai dan konten memenuhi minimal hari tayang.
+                  Honor dihitung setelah kampanye selesai dan kontenmu sudah tayang sesuai minimal
+                  hari.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -300,13 +301,13 @@ export default async function PortalAssignmentPage({
             <Card>
               <CardHeader>
                 <CardTitle>
-                  <h2>Honor saya</h2>
+                  <h2>Honormu</h2>
                 </CardTitle>
                 <CardDescription>
                   {payout
                     ? payout.status === "draf"
-                      ? "Masih dihitung tim dan bisa berubah sampai disetujui."
-                      : "Sudah diperiksa tim."
+                      ? "Masih dihitung tim, angkanya bisa berubah sampai disetujui."
+                      : "Sudah dicek tim."
                     : "Honor dihitung setelah kampanye selesai."}
                 </CardDescription>
               </CardHeader>
@@ -339,7 +340,7 @@ export default async function PortalAssignmentPage({
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Belum ada perhitungan honor untuk penugasan ini.
+                    Honor kampanye ini belum dihitung.
                   </p>
                 )}
               </CardContent>

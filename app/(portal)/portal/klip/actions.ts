@@ -50,7 +50,7 @@ async function removeProof(supabase: Supabase, path: string) {
 }
 
 const DUPLICATE_URL_MESSAGE =
-  "Klip dengan tautan ini sudah pernah dikirim, oleh Anda atau klipper lain.";
+  "Klip dengan tautan ini sudah pernah dikirim, entah olehmu atau klipper lain.";
 
 /** FR-M18-01: a clip and its first views proof, in one transaction. */
 export async function submitClipAction(values: unknown): Promise<ActionResult> {
@@ -147,7 +147,7 @@ export async function submitClipAction(values: unknown): Promise<ActionResult> {
         fieldErrors: { posted_url: DUPLICATE_URL_MESSAGE },
       };
     }
-    return fail(dbRuleMessage(error, "Klip gagal dikirim. Coba lagi."));
+    return fail(dbRuleMessage(error, "Klip gagal dikirim. Coba lagi, ya."));
   }
 
   await logActivity(supabase, {
@@ -164,7 +164,7 @@ export async function submitClipAction(values: unknown): Promise<ActionResult> {
   });
 
   revalidateClips(assignment.id);
-  return ok("Klip terkirim dan menunggu verifikasi tim.");
+  return ok("Klip terkirim! Tim bakal cek views-nya dulu, habis itu honor masuk ke saldomu.");
 }
 
 /** FR-M18-03: after a revision request, send the same clip back for review. */
@@ -181,7 +181,7 @@ export async function resubmitClipAction(values: unknown): Promise<ActionResult>
     .maybeSingle();
   if (!content?.review_status) return fail("Klip tidak ditemukan.");
   if (content.review_status !== "revisi") {
-    return fail("Klip hanya dapat dikirim ulang setelah tim meminta perbaikan.");
+    return fail("Klip cuma bisa dikirim ulang kalau tim minta diperbaiki.");
   }
 
   const { error } = await supabase
@@ -202,7 +202,7 @@ export async function resubmitClipAction(values: unknown): Promise<ActionResult>
   });
 
   revalidateClips(content.campaign_creator_id);
-  return ok("Klip dikirim ulang dan menunggu verifikasi tim.");
+  return ok("Klip dikirim ulang. Tim bakal cek lagi, ya.");
 }
 
 /** FR-M18-05: new views for an approved clip, at most every 24 hours. */
@@ -251,10 +251,10 @@ export async function submitViewsUpdateAction(values: unknown): Promise<ActionRe
   if (!state.allowed) {
     await removeProof(supabase, input.proof_path);
     const messages = {
-      not_approved: "Pembaruan views hanya untuk klip yang sudah disetujui.",
-      not_live: "Klip ini tidak lagi tayang.",
-      closed: "Masa klaim pembaruan views kampanye ini sudah berakhir.",
-      pending: "Pembaruan views sebelumnya masih menunggu verifikasi tim.",
+      not_approved: "Update views cuma bisa untuk klip yang sudah disetujui.",
+      not_live: "Klip ini sudah nggak tayang.",
+      closed: "Waktu untuk update views kampanye ini sudah habis.",
+      pending: "Update views sebelumnya masih dicek tim. Tunggu sebentar, ya.",
       too_soon: "",
     } as const;
     return fail(
@@ -289,5 +289,5 @@ export async function submitViewsUpdateAction(values: unknown): Promise<ActionRe
   });
 
   revalidateClips(content.campaign_creator_id);
-  return ok("Pembaruan views terkirim dan menunggu verifikasi tim.");
+  return ok("Update views terkirim! Tim bakal cek dulu, ya.");
 }

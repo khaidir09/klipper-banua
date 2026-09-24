@@ -80,7 +80,7 @@ export default async function PortalCatalogCampaignPage({
         {campaign.assignment_id ? (
           <Alert className="lg:col-span-2">
             <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
-              <span>Anda sudah tercatat di kampanye ini.</span>
+              <span>Kamu sudah ikut kampanye ini.</span>
               <Button asChild size="sm" variant="outline">
                 <Link href={`/portal/penugasan/${campaign.assignment_id}`}>
                   Buka Kampanye Saya
@@ -111,8 +111,8 @@ export default async function PortalCatalogCampaignPage({
               remaining={campaign.budget_remaining}
             />
             <p className="mt-3 text-xs text-muted-foreground">
-              Honor dibayar selama anggaran kampanye masih ada. Saat anggaran habis, kampanye tidak
-              menerima klipper dan klip baru.
+              Honor dibayar selama anggarannya masih ada. Kalau anggaran habis, kampanye ditutup
+              untuk klipper dan klip baru, jadi jangan kelamaan.
             </p>
           </CardContent>
         </Card>
@@ -129,8 +129,8 @@ export default async function PortalCatalogCampaignPage({
           assets={assets}
           emptyMessage={
             creator.status === "prospek" && campaign.asset_count > 0
-              ? `Ada ${campaign.asset_count} materi. Tambahkan akun media sosial di Profil untuk mengunduhnya.`
-              : "Belum ada materi untuk kampanye ini."
+              ? `Ada ${campaign.asset_count} materi. Tambahkan akun medsos di Profil dulu biar bisa diunduh.`
+              : "Kampanye ini belum punya materi."
           }
         />
       </div>

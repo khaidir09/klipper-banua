@@ -99,7 +99,7 @@ export async function confirmAssignmentAction(values: unknown): Promise<ActionRe
   });
 
   revalidateAssignment(parsed.data.id);
-  return ok("Brief dikonfirmasi. Anda sudah bisa mengirim draf.");
+  return ok("Brief dikonfirmasi. Sekarang kamu bisa kirim draf.");
 }
 
 /** FR-M13-05: send a draft for an assignment on a running campaign. */
@@ -144,7 +144,7 @@ export async function submitDraftAction(values: unknown): Promise<ActionResult> 
   });
 
   revalidateAssignment(parsed.data.campaign_creator_id);
-  return ok("Draf terkirim dan menunggu review tim.");
+  return ok("Draf terkirim! Tim bakal cek dulu, ya.");
 }
 
 /**
@@ -251,7 +251,7 @@ export async function proposePostedAction(values: unknown): Promise<ActionResult
   });
 
   if (content.campaign_creator_id) revalidateAssignment(content.campaign_creator_id);
-  return ok("Laporan tayang terkirim. Tim akan mengonfirmasi.");
+  return ok("Laporan tayang terkirim. Tim bakal konfirmasi secepatnya.");
 }
 
 /** FR-M13-06: send metric numbers with a screenshot, for the team to verify. */
@@ -296,7 +296,7 @@ export async function submitMetricAction(values: unknown): Promise<ActionResult>
   });
 
   if (content.campaign_creator_id) revalidateAssignment(content.campaign_creator_id);
-  return ok("Bukti metrik terkirim dan menunggu verifikasi tim.");
+  return ok("Bukti metrik terkirim! Tim bakal cek dulu, ya.");
 }
 
 /** Withdraw a submission the team has not verified yet. */

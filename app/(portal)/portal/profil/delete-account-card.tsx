@@ -20,7 +20,7 @@ export function DeleteAccountCard({
   function request() {
     if (
       !window.confirm(
-        "Minta penghapusan akun? Tim akan menghapus data pribadi Anda setelah saldo diselesaikan. Tindakan ini tidak dapat dibatalkan setelah diproses.",
+        "Yakin mau hapus akun? Tim akan menghapus data pribadimu setelah saldomu beres. Kalau sudah diproses, ini nggak bisa dibatalkan.",
       )
     )
       return;
@@ -38,18 +38,18 @@ export function DeleteAccountCard({
           <h2>Hapus akun</h2>
         </CardTitle>
         <CardDescription>
-          Data pribadi Anda dihapus atas permintaan, sesuai Kebijakan Privasi. Riwayat kampanye
-          disimpan tanpa identitas Anda.
+          Kamu bisa minta data pribadimu dihapus, sesuai Kebijakan Privasi. Riwayat kampanye tetap
+          disimpan, tapi tanpa identitasmu.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {requestedAt ? (
           <p className="text-sm text-muted-foreground">
-            Permintaan dikirim {formatDate(requestedAt, timezone)}. Tim akan menghubungi Anda.
+            Permintaan dikirim {formatDate(requestedAt, timezone)}. Tim bakal menghubungimu.
           </p>
         ) : (
           <Button variant="outline" disabled={isPending} onClick={request}>
-            {isPending ? "Mengirim…" : "Minta penghapusan akun"}
+            {isPending ? "Mengirim…" : "Minta hapus akun"}
           </Button>
         )}
       </CardContent>

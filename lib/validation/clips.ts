@@ -9,7 +9,7 @@ import { countField } from "./money";
 const localDateTimeField = (message: string) =>
   z.string().refine(isLocalDateTimeInput, { message });
 
-const proofPathField = z.string().trim().min(1, { message: "Unggah tangkapan layar views." });
+const proofPathField = z.string().trim().min(1, { message: "Unggah screenshot views-nya dulu." });
 
 const requiredCountField = z.union([z.string(), z.number()]).pipe(countField);
 
@@ -18,7 +18,7 @@ export const clipSubmitSchema = z.object({
   assignment_id: uuidField,
   platform: z.enum(SOCIAL_PLATFORMS, { message: "Pilih platform." }),
   posted_url: optionalHttpUrl.refine((value) => value !== null, {
-    message: "Tempel tautan klip yang sudah tayang.",
+    message: "Tempel tautan klipmu yang sudah tayang.",
   }),
   posted_at: localDateTimeField("Waktu tayang wajib diisi."),
   views: requiredCountField,
@@ -28,7 +28,7 @@ export const clipSubmitSchema = z.object({
   proof_path: proofPathField,
   // FR-M18-03: the klipper states the code is in the caption; the team checks.
   code_in_caption: z.literal(true, {
-    message: "Pastikan kode verifikasi Anda ada di caption, lalu centang pernyataan ini.",
+    message: "Pastikan kode verifikasimu ada di caption, lalu centang pernyataan ini.",
   }),
 });
 

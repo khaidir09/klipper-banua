@@ -13,10 +13,10 @@ import { VerificationCodeCard } from "../profil/verification-code-card";
 export const metadata: Metadata = { title: "Mulai" };
 
 const STEPS = [
-  "Tambahkan akun media sosial yang Anda pakai untuk memposting klip.",
-  "Salin kode verifikasi dan tulis di caption setiap klip.",
-  "Pilih kampanye, baca brief, lalu buat dan posting klip di akun Anda.",
-  "Kirim tautan klip beserta bukti views. Honor masuk ke saldo setelah diverifikasi tim.",
+  "Tambahkan akun medsos yang kamu pakai buat posting klip.",
+  "Salin kode verifikasimu, lalu tulis di caption setiap klip.",
+  "Pilih kampanye, baca brief-nya, lalu bikin dan posting klip di akunmu.",
+  "Kirim tautan klip plus screenshot views. Setelah dicek tim, honornya masuk ke saldomu.",
 ];
 
 /**
@@ -38,13 +38,13 @@ export default async function PortalStartPage() {
     <div className="space-y-6">
       <PageHeader
         title="Selamat datang, klipper!"
-        description="Selesaikan dua langkah ini sebelum mengambil kampanye pertama."
+        description="Beresin dua langkah singkat ini dulu, habis itu kamu bisa ambil kampanye pertamamu."
       />
 
       <Card>
         <CardHeader>
           <CardTitle>
-            <h2>Cara kerja</h2>
+            <h2>Cara dapat honor</h2>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -59,10 +59,10 @@ export default async function PortalStartPage() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <h2>1. Akun media sosial</h2>
+            <h2>1. Akun medsos kamu</h2>
           </CardTitle>
           <CardDescription>
-            Minimal satu akun TikTok, Instagram, YouTube, atau Facebook milik Anda sendiri.
+            Cukup satu akun TikTok, Instagram, YouTube, atau Facebook, asal punya kamu sendiri.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -79,7 +79,7 @@ export default async function PortalStartPage() {
           </Button>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Tambahkan minimal satu akun media sosial untuk mengaktifkan akun Anda.
+            Tambahkan minimal satu akun medsos dulu supaya akunmu aktif.
           </p>
         )}
       </div>

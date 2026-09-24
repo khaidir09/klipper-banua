@@ -40,7 +40,7 @@ test("a klipper sends a clip, the team verifies it and the honor is credited", a
     await form.getByLabel("Tangkapan layar views").setInputFiles(PROOF_FILE);
     // FR-M18-03: the statement is required.
     await form.getByRole("button", { name: "Kirim klip" }).click();
-    await expect(form.getByText(/kode verifikasi Anda ada di caption/)).toBeVisible();
+    await expect(form.getByText(/kode verifikasimu ada di caption/)).toBeVisible();
     await form.getByLabel(/Kode verifikasi .* sudah ada di caption/).check();
     await form.getByRole("button", { name: "Kirim klip" }).click();
     await expectToast(page, "Klip terkirim dan menunggu verifikasi tim.");

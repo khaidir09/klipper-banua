@@ -40,26 +40,26 @@ export function ConfirmBriefCard({
     <Card className="border-primary lg:col-span-2">
       <CardHeader>
         <CardTitle>
-          <h2>Konfirmasi brief</h2>
+          <h2>Konfirmasi brief dulu, ya</h2>
         </CardTitle>
         <CardDescription>
-          Baca brief, poin wajib, dan larangan di bawah. Setelah dikonfirmasi, Anda dapat mengirim
-          draf, melaporkan konten tayang, dan mengirim bukti metrik.
+          Baca brief, yang wajib, dan yang dilarang di bawah. Setelah kamu konfirmasi, kamu bisa
+          kirim draf, lapor konten yang sudah tayang, dan kirim bukti metrik.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <ul className="list-disc space-y-1 pl-5 text-sm">
           <li>
-            Anda menyanggupi <strong>{contentsCommitted} konten</strong> untuk kampanye ini.
+            Kamu sanggup bikin <strong>{contentsCommitted} konten</strong> untuk kampanye ini.
           </li>
           <li>
-            Konten harus tetap tayang minimal <strong>{minLiveDays} hari</strong> agar honor
+            Konten jangan dihapus sebelum <strong>{minLiveDays} hari</strong> supaya honormu
             dihitung penuh.
           </li>
           <li>
             {paidLabelRequired
-              ? "Label berbayar wajib dicantumkan pada setiap konten."
-              : "Label berbayar tidak diwajibkan untuk kampanye ini."}
+              ? "Wajib pasang label berbayar di setiap konten."
+              : "Label berbayar nggak wajib untuk kampanye ini."}
           </li>
         </ul>
 
@@ -76,7 +76,7 @@ export function ConfirmBriefCard({
 
         <Button onClick={confirm} disabled={!agreed || isPending}>
           <CheckCircle2 aria-hidden />
-          {isPending ? "Menyimpan…" : "Konfirmasi dan mulai kerjakan"}
+          {isPending ? "Menyimpan…" : "Konfirmasi & mulai kerjakan"}
         </Button>
       </CardContent>
     </Card>

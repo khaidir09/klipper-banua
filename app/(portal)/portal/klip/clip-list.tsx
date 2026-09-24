@@ -83,13 +83,13 @@ export function ClipList({
                   <dd>{clip.postedAt ? formatDateTime(clip.postedAt, timezone) : "–"}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Views terverifikasi</dt>
+                  <dt className="text-muted-foreground">Views dihitung</dt>
                   <dd>
-                    {clip.verifiedViews === null ? "Belum" : formatNumber(clip.verifiedViews)}
+                    {clip.verifiedViews === null ? "Belum dicek" : formatNumber(clip.verifiedViews)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Honor klip</dt>
+                  <dt className="text-muted-foreground">Honor klip ini</dt>
                   <dd className="font-medium">{formatRupiah(clip.earnedAmount)}</dd>
                 </div>
               </dl>
@@ -112,7 +112,7 @@ export function ClipList({
                 <Alert className="mt-3">
                   <CircleAlert />
                   <AlertDescription>
-                    <span className="font-medium">Perlu perbaikan: </span>
+                    <span className="font-medium">Yang perlu diperbaiki: </span>
                     {decisionNote}
                   </AlertDescription>
                 </Alert>
@@ -120,7 +120,7 @@ export function ClipList({
 
               {clip.liveStatus === "dihapus" ? (
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Tim mencatat klip ini dihapus
+                  Klip ini tercatat sudah dihapus
                   {clip.removedAt ? ` pada ${formatDateTime(clip.removedAt, timezone)}` : ""}.
                 </p>
               ) : null}
@@ -131,14 +131,14 @@ export function ClipList({
                     <li key={submission.id} className="flex flex-wrap items-center gap-2">
                       <SubmissionStatusBadge status={submission.status} />
                       <span>
-                        {formatNumber(submission.views)} views dikirim ·{" "}
+                        {formatNumber(submission.views)} views kamu kirim ·{" "}
                         {formatDateTime(submission.createdAt, timezone)}
                       </span>
                       {submission.status === "diterima" ? (
                         <span className="text-muted-foreground">
-                          — {formatNumber(submission.verifiedViews ?? 0)} terverifikasi, +
+                          — {formatNumber(submission.verifiedViews ?? 0)} dihitung, +
                           {formatRupiah(submission.creditedAmount ?? 0)}
-                          {submission.creditLimited ? " (dibatasi batas kampanye)" : ""}
+                          {submission.creditLimited ? " (mentok batas honor kampanye)" : ""}
                         </span>
                       ) : null}
                       {submission.status === "ditolak" && submission.reviewNotes ? (

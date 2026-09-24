@@ -48,7 +48,7 @@ export function BriefCards({
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm whitespace-pre-line">
-            {brief || <span className="text-muted-foreground">Belum ada deskripsi brief.</span>}
+            {brief || <span className="text-muted-foreground">Brief-nya belum ditulis.</span>}
           </p>
           <div className="flex flex-wrap gap-2">
             {hashtags.map((tag) => (
@@ -57,7 +57,7 @@ export function BriefCards({
               </Badge>
             ))}
             <Badge variant={paidLabelRequired ? "default" : "outline"}>
-              {paidLabelRequired ? "Label berbayar wajib" : "Label berbayar tidak wajib"}
+              {paidLabelRequired ? "Wajib label berbayar" : "Label berbayar nggak wajib"}
             </Badge>
           </div>
         </CardContent>
@@ -66,22 +66,22 @@ export function BriefCards({
       <Card>
         <CardHeader>
           <CardTitle>
-            <h2>Yang wajib</h2>
+            <h2>Wajib dilakukan</h2>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <List items={mustDo} empty="Belum ada poin wajib." />
+          <List items={mustDo} empty="Nggak ada poin wajib." />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
           <CardTitle>
-            <h2>Larangan</h2>
+            <h2>Jangan dilakukan</h2>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <List items={mustNot} empty="Belum ada larangan." />
+          <List items={mustNot} empty="Nggak ada larangan khusus." />
         </CardContent>
       </Card>
     </>
@@ -90,7 +90,7 @@ export function BriefCards({
 
 export function AssetListCard({
   assets,
-  emptyMessage = "Belum ada materi untuk kampanye ini.",
+  emptyMessage = "Kampanye ini belum punya materi.",
 }: {
   assets: (PortalAsset & { signed_url: string | null })[];
   emptyMessage?: string;
@@ -99,7 +99,7 @@ export function AssetListCard({
     <Card className="lg:col-span-2">
       <CardHeader>
         <CardTitle>
-          <h2>Materi kampanye</h2>
+          <h2>Materi buat klipmu</h2>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -132,7 +132,7 @@ export function AssetListCard({
                       {asset.file_path ? "Unduh" : "Buka"}
                     </a>
                   ) : (
-                    <span className="text-xs text-muted-foreground">Berkas tidak tersedia</span>
+                    <span className="text-xs text-muted-foreground">Berkasnya belum tersedia</span>
                   )}
                 </li>
               );
@@ -174,10 +174,10 @@ export function PerViewsTermsCard({
     <Card className={className}>
       <CardHeader>
         <CardTitle>
-          <h2>Honor per views</h2>
+          <h2>Cara honormu dihitung</h2>
         </CardTitle>
         <CardDescription>
-          Honor dihitung dari views yang diverifikasi tim, lalu masuk ke saldo Anda.
+          Tim cek views klipmu, lalu honornya langsung masuk ke saldomu.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -185,34 +185,40 @@ export function PerViewsTermsCard({
           items={[
             { label: "Tarif per 1.000 views", value: formatRupiah(terms.rate_per_1000_views) },
             {
-              label: "Minimum views berhonor",
+              label: "Views minimal biar dapat honor",
               value: terms.min_views_to_earn
                 ? `${formatNumber(terms.min_views_to_earn)} views`
                 : "Tanpa minimum",
             },
             {
-              label: "Batas honor per klip",
+              label: "Honor maks. per klip",
               value:
                 terms.max_payout_per_clip === null
                   ? "Tanpa batas"
                   : formatRupiah(terms.max_payout_per_clip),
             },
             {
-              label: "Batas honor per klipper",
+              label: "Honor maks. per klipper",
               value:
                 terms.max_payout_per_creator === null
                   ? "Tanpa batas"
                   : formatRupiah(terms.max_payout_per_creator),
             },
-            { label: "Klip maksimal", value: `${terms.max_clips_per_creator} klip` },
+            { label: "Kuota klip", value: `${terms.max_clips_per_creator} klip` },
             { label: "Platform", value: platformList(terms.allowed_platforms) },
-            { label: "Minimal tayang", value: `${terms.min_live_days} hari` },
+            { label: "Klip wajib tayang", value: `minimal ${terms.min_live_days} hari` },
             {
-              label: "Masa klaim views",
-              value: `${terms.claim_grace_days} hari setelah kampanye selesai`,
+              label: "Batas update views",
+              value: `sampai ${terms.claim_grace_days} hari setelah kampanye selesai`,
             },
             ...(terms.local_only
-              ? [{ label: "Peserta", value: "Khusus lencana Klipper Lokal", wide: true }]
+              ? [
+                  {
+                    label: "Siapa yang bisa ikut",
+                    value: "Khusus pemegang lencana Klipper Lokal",
+                    wide: true,
+                  },
+                ]
               : []),
           ]}
         />

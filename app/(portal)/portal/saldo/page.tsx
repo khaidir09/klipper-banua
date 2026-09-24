@@ -57,31 +57,31 @@ export default async function PortalBalancePage() {
     now,
   });
   const blockerMessages: Record<WithdrawalBlocker, string> = {
-    creator_blocked: "Akun Anda diblokir; saldo dibekukan sampai owner memutuskan.",
-    no_bank_account: "Isi rekening atau e-wallet di bawah untuk mulai menarik saldo.",
+    creator_blocked: "Akunmu diblokir, jadi saldo dibekukan sampai owner memutuskan.",
+    no_bank_account: "Isi rekening atau e-wallet di bawah dulu, baru kamu bisa tarik saldo.",
     bank_recently_changed: holdUntil
-      ? `Rekening baru diubah. Penarikan dapat diajukan mulai ${formatDateTime(holdUntil, tz)}.`
+      ? `Rekeningmu baru diubah. Kamu bisa tarik saldo lagi mulai ${formatDateTime(holdUntil, tz)}.`
       : "Rekening baru diubah.",
-    withdrawal_in_progress: "Penarikan Anda sedang diproses; tunggu sampai selesai.",
-    below_minimum: `Saldo belum mencapai minimum penarikan ${formatRupiah(minWithdrawal)}.`,
-    above_balance: `Saldo belum mencapai minimum penarikan ${formatRupiah(minWithdrawal)}.`,
+    withdrawal_in_progress: "Penarikanmu lagi diproses. Tunggu sampai selesai, ya.",
+    below_minimum: `Saldomu belum sampai minimum penarikan ${formatRupiah(minWithdrawal)}. Kirim klip lagi, yuk!`,
+    above_balance: `Saldomu belum sampai minimum penarikan ${formatRupiah(minWithdrawal)}. Kirim klip lagi, yuk!`,
   };
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Saldo"
-        description="Honor dari klip yang disetujui masuk ke sini. Tarik ke rekening Anda setelah mencapai minimum."
+        description="Honor dari klip yang disetujui masuk ke sini. Sudah sampai minimum? Tarik ke rekeningmu."
       />
 
       {session.blocked ? (
         <Alert variant="destructive">
           <Ban />
-          <AlertTitle>Akun Anda diblokir</AlertTitle>
+          <AlertTitle>Akunmu diblokir</AlertTitle>
           <AlertDescription>
             {session.blockedReason ? `Alasan: ${session.blockedReason}. ` : ""}
-            Anda tidak dapat bergabung, mengirim klip, atau menarik saldo. Saldo dibekukan sampai
-            owner memutuskan. Hubungi tim bila ada pertanyaan.
+            Untuk sementara kamu nggak bisa gabung kampanye, kirim klip, atau tarik saldo. Saldomu
+            dibekukan sampai owner memutuskan. Ada pertanyaan? Hubungi tim.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -90,7 +90,7 @@ export default async function PortalBalancePage() {
         {[
           { label: "Saldo tersedia", value: available, strong: true },
           { label: "Total diterima", value: balance?.total_earned ?? 0 },
-          { label: "Sedang ditarik", value: inProgress },
+          { label: "Lagi ditarik", value: inProgress },
         ].map((item) => (
           <Card key={item.label}>
             <CardContent>
@@ -109,8 +109,8 @@ export default async function PortalBalancePage() {
       </div>
       {available < 0 ? (
         <p className="text-sm text-muted-foreground">
-          Saldo negatif karena ada honor yang dibatalkan setelah ditarik. Honor berikutnya menutup
-          kekurangan ini lebih dahulu.
+          Saldomu minus karena ada honor yang dibatalkan setelah sempat ditarik. Honor berikutnya
+          dipakai untuk menutup kekurangan ini dulu.
         </p>
       ) : null}
 
@@ -143,11 +143,13 @@ export default async function PortalBalancePage() {
           <CardTitle>
             <h2>Penarikan</h2>
           </CardTitle>
-          <CardDescription>Status setiap penarikan dan tanggal transfernya.</CardDescription>
+          <CardDescription>
+            Pantau status setiap penarikan dan kapan uangnya ditransfer.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {withdrawals.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Belum ada penarikan.</p>
+            <p className="text-sm text-muted-foreground">Kamu belum pernah tarik saldo.</p>
           ) : (
             <ul className="divide-y text-sm">
               {withdrawals.map((row) => (
@@ -167,7 +169,7 @@ export default async function PortalBalancePage() {
                     ) : null}
                     {row.rejection_reason ? (
                       <span className="block text-destructive">
-                        Ditolak: {row.rejection_reason}. Saldo sudah dikembalikan.
+                        Ditolak: {row.rejection_reason}. Tenang, saldonya sudah dikembalikan.
                       </span>
                     ) : null}
                   </span>
@@ -188,7 +190,7 @@ export default async function PortalBalancePage() {
         <CardContent>
           {ledger.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Belum ada honor. Kirim klip dari{" "}
+              Belum ada honor. Kirim klip pertamamu dari{" "}
               <Link href="/portal/penugasan" className="font-medium underline">
                 Kampanye Saya
               </Link>

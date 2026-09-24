@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 export default function PortalNotFound() {
   return (
     <div className="flex min-h-[60svh] flex-col items-center justify-center gap-4 p-6 text-center">
-      <p className="text-3xl font-semibold tracking-tight">Data tidak ditemukan</p>
+      <p className="text-3xl font-semibold tracking-tight">Halaman ini nggak ketemu</p>
       <p className="max-w-md text-muted-foreground">
-        Penugasan yang Anda buka mungkin sudah berakhir atau tautannya keliru.
+        Mungkin kampanyenya sudah selesai, atau tautannya salah ketik.
       </p>
       <Button asChild>
         <Link href="/portal">Kembali ke beranda</Link>

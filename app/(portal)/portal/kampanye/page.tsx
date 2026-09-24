@@ -37,7 +37,7 @@ function CatalogCard({ campaign }: { campaign: PortalCatalogCampaign }) {
           <div className="flex flex-wrap items-center gap-2">
             {campaign.local_only ? <Badge>Khusus Klipper Lokal</Badge> : null}
             {campaign.budget_exhausted ? <Badge variant="destructive">Anggaran habis</Badge> : null}
-            {campaign.assignment_id ? <Badge variant="secondary">Sudah bergabung</Badge> : null}
+            {campaign.assignment_id ? <Badge variant="secondary">Kamu sudah ikut</Badge> : null}
           </div>
         ) : null}
         <CardTitle className="text-base">
@@ -62,7 +62,7 @@ function CatalogCard({ campaign }: { campaign: PortalCatalogCampaign }) {
             </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Batas per klip</dt>
+            <dt className="text-muted-foreground">Honor maks. per klip</dt>
             <dd className="tabular-nums">
               {campaign.max_payout_per_clip === null
                 ? "Tanpa batas"
@@ -70,11 +70,11 @@ function CatalogCard({ campaign }: { campaign: PortalCatalogCampaign }) {
             </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Tenggat</dt>
+            <dt className="text-muted-foreground">Berakhir</dt>
             <dd>{formatCalendarDate(campaign.end_date)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Klip maksimal</dt>
+            <dt className="text-muted-foreground">Kuota klip</dt>
             <dd>{campaign.max_clips_per_creator} klip</dd>
           </div>
           <div className="col-span-2">
@@ -120,7 +120,7 @@ export default async function PortalCatalogPage({ searchParams }: { searchParams
     <div className="space-y-6">
       <PageHeader
         title="Katalog kampanye"
-        description="Pilih kampanye, baca brief, lalu bergabung. Honor dihitung per 1.000 views yang diverifikasi."
+        description="Pilih kampanye yang cocok sama gayamu. Setiap 1.000 views yang lolos cek tim dibayar sesuai tarifnya."
       />
 
       {creator?.status === "prospek" ? (
@@ -128,9 +128,9 @@ export default async function PortalCatalogPage({ searchParams }: { searchParams
           <CircleAlert />
           <AlertDescription>
             <p>
-              Anda sudah bisa melihat katalog. Untuk bergabung,{" "}
+              Kamu sudah bisa lihat-lihat kampanye. Biar bisa gabung,{" "}
               <Link href="/portal/mulai" className="font-medium underline">
-                tambahkan minimal satu akun media sosial
+                tambahkan minimal satu akun medsos
               </Link>{" "}
               dulu.
             </p>
@@ -191,8 +191,8 @@ export default async function PortalCatalogPage({ searchParams }: { searchParams
       ) : (
         <p className="text-sm text-muted-foreground">
           {filtering
-            ? "Tidak ada kampanye yang cocok dengan filter ini."
-            : "Belum ada kampanye terbuka. Kampanye baru akan muncul di sini."}
+            ? "Belum ada kampanye yang cocok sama filter ini. Coba ubah filternya."
+            : "Belum ada kampanye yang buka. Cek lagi nanti, kampanye baru langsung muncul di sini."}
         </p>
       )}
     </div>

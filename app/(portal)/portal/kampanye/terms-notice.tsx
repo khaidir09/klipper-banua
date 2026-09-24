@@ -29,14 +29,14 @@ export function TermsNotice({ version }: { version: string }) {
   return (
     <Alert>
       <FileText />
-      <AlertTitle>Syarat Klipper diperbarui</AlertTitle>
+      <AlertTitle>Ada Syarat Klipper versi baru</AlertTitle>
       <AlertDescription className="space-y-3">
         <p>
-          Baca{" "}
+          Baca dulu{" "}
           <Link href="/syarat" target="_blank" className="font-medium underline">
             Syarat Klipper versi {version}
           </Link>{" "}
-          lalu setujui sebelum bergabung ke kampanye.
+          ya. Setelah kamu setujui, kamu bisa gabung kampanye dan kirim klip lagi.
         </p>
         <Field orientation="horizontal">
           <Checkbox

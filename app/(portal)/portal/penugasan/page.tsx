@@ -17,7 +17,7 @@ export default async function PortalAssignmentsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Kampanye Saya"
-        description="Kampanye yang Anda ikuti atau yang ditugaskan tim kepada Anda, yang berjalan lebih dulu."
+        description="Semua kampanye yang kamu ikuti. Yang lagi jalan ada di paling atas."
       />
 
       {assignments.length ? (
@@ -28,9 +28,9 @@ export default async function PortalAssignmentsPage() {
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Anda belum mengikuti kampanye apa pun.{" "}
+          Kamu belum ikut kampanye apa pun.{" "}
           <Link href="/portal/kampanye" className="font-medium underline">
-            Lihat katalog kampanye
+            Cari kampanye pertamamu
           </Link>
           .
         </p>

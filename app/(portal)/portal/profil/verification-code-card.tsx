@@ -10,10 +10,10 @@ export function VerificationCodeCard({ code }: { code: string }) {
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>Kode verifikasi</h2>
+          <h2>Kode verifikasimu</h2>
         </CardTitle>
         <CardDescription>
-          Tulis kode ini di caption atau deskripsi setiap klip. Klip tanpa kode tidak dapat
+          Tulis kode ini di caption atau deskripsi setiap klip. Tanpa kode ini, klipmu nggak bisa
           disetujui.
         </CardDescription>
       </CardHeader>

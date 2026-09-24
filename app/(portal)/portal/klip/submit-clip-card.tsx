@@ -43,11 +43,11 @@ export function SubmitClipCard({
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-2">
         <div>
           <CardTitle>
-            <h2>Klip saya</h2>
+            <h2>Klipmu di kampanye ini</h2>
           </CardTitle>
           <CardDescription>
-            {activeClipCount} dari maksimal {maxClips} klip. Posting di akun Anda yang terdaftar,
-            tulis kode verifikasi{" "}
+            {activeClipCount} dari {maxClips} klip terpakai. Posting dari akun yang sudah kamu
+            daftarkan, tulis kode{" "}
             <span className="font-mono font-semibold">{verificationCode}</span> di caption, lalu
             kirim tautannya di sini.
           </CardDescription>
@@ -63,14 +63,16 @@ export function SubmitClipCard({
         {blocker ? <p className="text-sm font-medium text-destructive">{blocker}</p> : null}
         {!blocker && noPlatform ? (
           <p className="text-sm font-medium text-destructive">
-            Tambahkan akun media sosial untuk salah satu platform kampanye ini di Profil sebelum
-            mengirim klip.
+            Daftarkan dulu akun medsos di Profil untuk salah satu platform kampanye ini, baru kamu
+            bisa kirim klip.
           </p>
         ) : null}
         {clips.length ? (
           <ClipList clips={clips} timezone={timezone} />
         ) : (
-          <p className="text-sm text-muted-foreground">Belum ada klip untuk kampanye ini.</p>
+          <p className="text-sm text-muted-foreground">
+            Belum ada klip. Kirim klip pertamamu sekarang.
+          </p>
         )}
       </CardContent>
 

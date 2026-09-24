@@ -42,26 +42,26 @@ export function JoinCard({
     <Card className="border-primary lg:col-span-2">
       <CardHeader>
         <CardTitle>
-          <h2>Gabung ke kampanye</h2>
+          <h2>Gabung kampanye ini</h2>
         </CardTitle>
         <CardDescription>
-          Setelah bergabung Anda mendapat kode referal dan tautan pelacakan, lalu dapat mengirim
+          Begitu gabung, kamu langsung dapat kode referal dan tautan khusus, dan bisa mulai kirim
           klip.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <ul className="list-disc space-y-1 pl-5 text-sm">
           <li>
-            Maksimal <strong>{maxClips} klip</strong> dari Anda untuk kampanye ini.
+            Kamu bisa kirim maksimal <strong>{maxClips} klip</strong>.
           </li>
           <li>
-            Klip harus tetap tayang minimal <strong>{minLiveDays} hari</strong>.
+            Klip jangan dihapus sebelum <strong>{minLiveDays} hari</strong>.
           </li>
-          <li>Tulis kode verifikasi Anda di caption setiap klip.</li>
+          <li>Tulis kode verifikasimu di caption setiap klip.</li>
           <li>
             {paidLabelRequired
-              ? "Label konten berbayar wajib dicantumkan."
-              : "Label konten berbayar tidak diwajibkan."}
+              ? "Wajib pasang label konten berbayar."
+              : "Label konten berbayar nggak wajib."}
           </li>
         </ul>
 

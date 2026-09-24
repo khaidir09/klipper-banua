@@ -54,12 +54,13 @@ export type ClipBlocker =
   | "limit_reached";
 
 export const CLIP_BLOCKER_MESSAGES: Record<ClipBlocker, string> = {
-  creator_not_active: "Akun klipper Anda belum aktif.",
-  terms_outdated: "Syarat Klipper sudah diperbarui. Setujui versi terbaru sebelum mengirim klip.",
-  not_joined: "Klip hanya dapat dikirim untuk kampanye yang sudah Anda ikuti.",
-  campaign_closed: "Kampanye ini sudah tidak menerima klip baru.",
-  budget_exhausted: "Anggaran kampanye ini sudah habis, jadi klip baru tidak diterima.",
-  limit_reached: "Anda sudah mengirim jumlah klip maksimal untuk kampanye ini.",
+  creator_not_active: "Akunmu belum aktif. Tambahkan akun medsos di Profil dulu.",
+  terms_outdated:
+    "Syarat Klipper sudah diperbarui. Setujui versi terbarunya dulu, baru kamu bisa kirim klip.",
+  not_joined: "Kamu cuma bisa kirim klip untuk kampanye yang kamu ikuti.",
+  campaign_closed: "Kampanye ini sudah nggak terima klip baru.",
+  budget_exhausted: "Anggaran kampanye ini sudah habis, jadi klip baru nggak diterima lagi.",
+  limit_reached: "Kuota klipmu untuk kampanye ini sudah penuh.",
 };
 
 export type ClipCheckInput = {
@@ -112,7 +113,7 @@ export function clipDetailProblems(input: {
   if (input.postedAt.getTime() > input.now.getTime() + skew) {
     problems.posted_at = "Waktu tayang tidak boleh di masa depan.";
   } else if (input.postedAt < input.period.start || input.postedAt >= input.period.end) {
-    problems.posted_at = "Waktu tayang harus di antara saat Anda bergabung dan akhir kampanye.";
+    problems.posted_at = "Waktu tayang harus setelah kamu gabung dan sebelum kampanye selesai.";
   }
   return problems;
 }

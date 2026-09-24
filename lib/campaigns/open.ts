@@ -27,14 +27,15 @@ export type JoinBlocker =
   | "local_only";
 
 export const JOIN_BLOCKER_MESSAGES: Record<JoinBlocker, string> = {
-  already_joined: "Anda sudah bergabung di kampanye ini.",
+  already_joined: "Kamu sudah ikut kampanye ini.",
   creator_not_active:
-    "Tambahkan minimal satu akun media sosial di Profil agar akun Anda aktif dan bisa bergabung.",
-  terms_outdated: "Syarat Klipper sudah diperbarui. Setujui versi terbaru sebelum bergabung.",
-  campaign_closed: "Kampanye ini tidak sedang membuka pendaftaran klipper.",
-  past_deadline: "Periode kampanye ini sudah berakhir.",
-  budget_exhausted: "Anggaran kampanye ini sudah habis.",
-  local_only: "Kampanye ini khusus pemegang lencana Klipper Lokal.",
+    "Tambahkan minimal satu akun medsos di Profil dulu supaya akunmu aktif dan bisa gabung.",
+  terms_outdated:
+    "Syarat Klipper sudah diperbarui. Setujui versi terbarunya dulu, baru kamu bisa gabung.",
+  campaign_closed: "Kampanye ini lagi nggak terima klipper baru.",
+  past_deadline: "Kampanye ini sudah selesai.",
+  budget_exhausted: "Anggaran kampanye ini sudah habis. Cari kampanye lain, yuk!",
+  local_only: "Kampanye ini khusus pemegang lencana Klipper Lokal. Ajukan lencananya di Profil.",
 };
 
 export type JoinCheckInput = {

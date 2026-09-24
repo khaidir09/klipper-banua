@@ -54,8 +54,8 @@ export function AssignmentCard({ assignment }: { assignment: PortalAssignment })
             <dd className="font-mono">{assignment.referral_code}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Minimal tayang</dt>
-            <dd>{assignment.min_live_days} hari</dd>
+            <dt className="text-muted-foreground">Klip wajib tayang</dt>
+            <dd>minimal {assignment.min_live_days} hari</dd>
           </div>
         </dl>
         {/* FR-M13-10: an unconfirmed assignment is the one thing the creator
@@ -63,13 +63,13 @@ export function AssignmentCard({ assignment }: { assignment: PortalAssignment })
         {needsConfirmation ? (
           <p className="inline-flex items-center gap-1 text-sm font-medium text-primary">
             <CircleAlert className="size-4" aria-hidden />
-            Menunggu konfirmasi brief Anda
+            Konfirmasi brief-nya dulu, ya
           </p>
         ) : (
           /* Affordance only. The card itself carries the link, so a screen
              reader announces one target per card instead of two. */
           <p className="inline-flex items-center gap-1 text-sm font-medium text-primary">
-            {assignment.status === "mundur" ? "Lihat riwayat" : "Lihat brief"}
+            {assignment.status === "mundur" ? "Lihat riwayat" : "Buka kampanye"}
             <ArrowRight className="size-4" aria-hidden />
           </p>
         )}

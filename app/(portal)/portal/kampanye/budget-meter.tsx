@@ -17,7 +17,7 @@ export function BudgetMeter({ pct, exhausted, total, used, remaining }: BudgetMe
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between text-sm">
-        <span className="text-muted-foreground">Sisa anggaran</span>
+        <span className="text-muted-foreground">Sisa anggaran honor</span>
         <span className="font-medium tabular-nums">
           {exhausted ? "Anggaran habis" : `${shown}%`}
         </span>

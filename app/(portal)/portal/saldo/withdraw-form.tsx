@@ -59,12 +59,12 @@ export function WithdrawForm({
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>Tarik saldo</h2>
+          <h2>Tarik saldomu</h2>
         </CardTitle>
         <CardDescription>
-          Minimum {formatRupiah(minWithdrawal)}. Ditransfer manual oleh tim ke rekening Anda,
-          biasanya paling lambat 1 hari kerja. Biaya transfer antarbank/e-wallet ditanggung klipper
-          dan dipotong dari nominal yang ditransfer.
+          Minimal {formatRupiah(minWithdrawal)}. Tim transfer ke rekeningmu paling lambat 1 hari
+          kerja. Kalau ada biaya transfer antarbank/e-wallet, biayanya dipotong dari nominal yang
+          kamu tarik.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -81,7 +81,7 @@ export function WithdrawForm({
               <Field>
                 <FieldLabel htmlFor="withdraw-amount">Nominal (Rp)</FieldLabel>
                 <Input id="withdraw-amount" inputMode="numeric" {...form.register("amount")} />
-                <FieldDescription>Saldo tersedia {formatRupiah(available)}.</FieldDescription>
+                <FieldDescription>Saldomu sekarang {formatRupiah(available)}.</FieldDescription>
                 <FieldError errors={[form.formState.errors.amount]} />
               </Field>
               <Button type="submit" className="h-11" disabled={isPending}>
