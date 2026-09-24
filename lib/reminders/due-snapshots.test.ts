@@ -33,6 +33,25 @@ describe("buildDueSnapshotReminder", () => {
     expect(reminder.text).toContain("Tidak ada snapshot yang jatuh tempo.");
   });
 
+  it("adds the v4.0 queues and counts them (FR-M10-05)", () => {
+    const queues = { overdueClips: 3, openWithdrawals: 2 };
+    const empty = buildDueSnapshotReminder([], { ...options, queues });
+    expect(empty.count).toBe(5);
+    expect(empty.text).toContain("3 klip menunggu verifikasi lebih dari 24 jam.");
+    expect(empty.text).toContain("2 penarikan saldo menunggu diproses.");
+    expect(empty.text).toContain("Buka dasbor");
+
+    const withItems = buildDueSnapshotReminder([item()], { ...options, queues });
+    expect(withItems.count).toBe(6);
+
+    const quiet = buildDueSnapshotReminder([], {
+      ...options,
+      queues: { overdueClips: 0, openWithdrawals: 0 },
+    });
+    expect(quiet.count).toBe(0);
+    expect(quiet.text).not.toContain("klip");
+  });
+
   it("groups lines by campaign in first-seen order", () => {
     const reminder = buildDueSnapshotReminder(
       [

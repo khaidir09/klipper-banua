@@ -8,11 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCreator } from "@/lib/auth/guards";
 import { CREATOR_TIER_LABELS } from "@/lib/constants/creators";
-import { getPortalProfile, listPortalSocialAccounts } from "@/lib/data/portal";
-import { formatDate } from "@/lib/format/date";
+import {
+  getPortalBankAccount,
+  getPortalProfile,
+  listPortalSocialAccounts,
+} from "@/lib/data/portal";
+import { formatDate, formatDateTime } from "@/lib/format/date";
 import { formatWhatsapp } from "@/lib/validation/phone";
 import { resolveTimezone } from "@/lib/format/timezone";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { BankAccountCard } from "../saldo/bank-account-card";
 import { DeleteAccountCard } from "./delete-account-card";
 import { SocialAccountsManager } from "./social-accounts-manager";
 import { VerificationCodeCard } from "./verification-code-card";
@@ -22,11 +27,13 @@ export const metadata: Metadata = { title: "Profil saya" };
 export default async function PortalProfilePage() {
   const { user, profile } = await requireCreator();
   const supabase = await createSupabaseServerClient();
-  const [creator, accounts] = await Promise.all([
+  const [creator, accounts, bank] = await Promise.all([
     getPortalProfile(supabase),
     listPortalSocialAccounts(supabase),
+    getPortalBankAccount(supabase),
   ]);
   const timezone = resolveTimezone(profile.timezone);
+  const holdUntil = bank?.hold_until ? new Date(bank.hold_until) : null;
 
   return (
     <div className="space-y-6">
@@ -50,6 +57,23 @@ export default async function PortalProfilePage() {
           <SocialAccountsManager accounts={accounts} hasBadge={Boolean(creator?.local_badge_at)} />
         </CardContent>
       </Card>
+
+      {/* FR-M19-04: the account withdrawals are paid to. */}
+      <BankAccountCard
+        fullName={creator?.full_name ?? profile.full_name}
+        account={
+          bank
+            ? {
+                bankName: bank.bank_name,
+                numberMasked: bank.account_number_masked,
+                holder: bank.account_holder,
+                holderMatchesName: bank.holder_matches_name,
+                holdUntilLabel:
+                  holdUntil && holdUntil > new Date() ? formatDateTime(holdUntil, timezone) : null,
+              }
+            : null
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

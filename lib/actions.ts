@@ -129,6 +129,26 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   BUDGET_EXCEEDED: "Anggaran kampanye tidak cukup untuk honor ini.",
   LEDGER_IMMUTABLE: "Entri saldo tidak dapat diubah atau dihapus.",
   LEDGER_FUNCTION_ONLY: "Entri saldo hanya dicatat lewat verifikasi klip.",
+  WITHDRAW_CREATOR_BLOCKED: "Akun Anda diblokir, jadi saldo belum dapat ditarik.",
+  WITHDRAW_NEEDS_BANK: "Isi rekening atau e-wallet di Profil sebelum menarik saldo.",
+  WITHDRAW_BANK_RECENT:
+    "Rekening baru saja diubah. Demi keamanan, penarikan dapat diajukan 24 jam setelah perubahan.",
+  WITHDRAW_PENDING_EXISTS: "Masih ada penarikan yang sedang diproses.",
+  WITHDRAW_BELOW_MIN: "Nominal di bawah minimum penarikan.",
+  WITHDRAW_ABOVE_BALANCE: "Nominal melebihi saldo tersedia.",
+  WITHDRAWAL_FUNCTION_ONLY: "Penarikan hanya diubah lewat halaman Penarikan.",
+  WITHDRAWAL_IMMUTABLE: "Penarikan tetap tercatat dan tidak dapat dihapus.",
+  WITHDRAWAL_NOT_FOUND: "Penarikan tidak ditemukan.",
+  INVALID_WITHDRAWAL_TRANSITION: "Perubahan status penarikan tersebut tidak diizinkan.",
+  WITHDRAWAL_PAID_NEEDS_PROOF: "Isi tanggal transfer dan unggah bukti transfer.",
+  WITHDRAWAL_REJECT_NEEDS_REASON: "Tulis alasan penolakan untuk klipper.",
+  WITHDRAWAL_FEE_INVALID: "Biaya transfer tidak boleh negatif atau sebesar nominal penarikan.",
+  ADJUSTMENT_INVALID: "Nominal penyesuaian tidak boleh nol.",
+  ADJUSTMENT_NEEDS_REASON: "Alasan penyesuaian wajib diisi.",
+  BANK_ACCOUNT_INCOMPLETE: "Lengkapi bank dan nama pemilik rekening.",
+  ANONYMIZE_BALANCE_NOT_ZERO:
+    "Saldo klipper masih ada. Selesaikan saldonya (bayar atau sesuaikan) sebelum menghapus akun.",
+  ANONYMIZE_WITHDRAWAL_OPEN: "Selesaikan penarikan yang berjalan sebelum menghapus akun.",
 };
 
 /** Check constraints whose violation deserves a specific message. */
@@ -153,6 +173,11 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
   campaigns_per_views_money_check:
     "Periksa tarif, anggaran, dan batas honor; nilainya tidak boleh negatif.",
   campaign_creators_campaign_creator_key: "Klipper ini sudah tercatat di kampanye tersebut.",
+  withdrawals_transfer_fee_check:
+    "Biaya transfer tidak boleh negatif atau sebesar nominal penarikan.",
+  withdrawals_one_open_idx: "Masih ada penarikan yang sedang diproses.",
+  platform_settings_min_withdrawal_check: "Minimum penarikan antara Rp 10.000 dan Rp 100.000.000.",
+  creator_bank_accounts_number_check: "Nomor rekening harus angka, minimal 4 digit.",
   contents_posted_url_normalized_key:
     "Klip dengan tautan ini sudah pernah dikirim, oleh Anda atau klipper lain.",
   metric_submissions_pending_idx:

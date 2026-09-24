@@ -1,3 +1,4 @@
+import type { WithdrawalStatus } from "@/lib/constants/withdrawals";
 import type { AssignmentStatus, CampaignStatus } from "@/lib/constants/campaigns";
 import type { LiveStatus, ReviewStatus } from "@/lib/constants/contents";
 import type { CreatorStatus } from "@/lib/constants/creators";
@@ -56,6 +57,14 @@ export const PAYOUT_TONES: Record<PayoutStatus, StatusTone> = {
   draf: "neutral",
   disetujui: "info",
   dibayar: "success",
+};
+
+/** FR-M19-06: a withdrawal on its way is info, paid is success. */
+export const WITHDRAWAL_TONES: Record<WithdrawalStatus, StatusTone> = {
+  diajukan: "warning",
+  diproses: "info",
+  dibayar: "success",
+  ditolak: "destructive",
 };
 
 export const CLIENT_PAYMENT_TONES: Record<ClientPaymentStatus, StatusTone> = {

@@ -443,3 +443,69 @@ export async function listPortalClips(
     };
   });
 }
+
+/* ------------------------------------------------------------------ */
+/* Balance, bank account and withdrawals (PRD M19)                     */
+/* ------------------------------------------------------------------ */
+
+type LedgerView = Database["public"]["Views"]["creator_portal_ledger"]["Row"];
+type BalanceView = Database["public"]["Views"]["creator_portal_balance"]["Row"];
+type WithdrawalView = Database["public"]["Views"]["creator_portal_withdrawals"]["Row"];
+type BankAccountView = Database["public"]["Views"]["creator_portal_bank_account"]["Row"];
+
+export type PortalLedgerEntry = NonNullableExcept<
+  LedgerView,
+  "campaign_id" | "campaign_name" | "content_id" | "withdrawal_id"
+>;
+export type PortalBalance = NonNullableExcept<BalanceView, never>;
+export type PortalWithdrawal = NonNullableExcept<
+  WithdrawalView,
+  "processed_at" | "paid_at" | "rejection_reason"
+>;
+export type PortalBankAccount = NonNullableExcept<BankAccountView, "changed_at" | "hold_until">;
+
+/**
+ * FR-M19-03. These views read through `current_creator_account_id()`, so a
+ * blocked klipper still sees their frozen balance (FR-M3-09).
+ */
+export async function getPortalBalance(
+  supabase: SupabaseClient<Database>,
+): Promise<PortalBalance | null> {
+  const { data, error } = await supabase.from("creator_portal_balance").select("*").maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? (data as PortalBalance) : null;
+}
+
+export async function listPortalLedger(
+  supabase: SupabaseClient<Database>,
+): Promise<PortalLedgerEntry[]> {
+  const { data, error } = await supabase
+    .from("creator_portal_ledger")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data as PortalLedgerEntry[];
+}
+
+export async function listPortalWithdrawals(
+  supabase: SupabaseClient<Database>,
+): Promise<PortalWithdrawal[]> {
+  const { data, error } = await supabase
+    .from("creator_portal_withdrawals")
+    .select("*")
+    .order("requested_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data as PortalWithdrawal[];
+}
+
+/** FR-M19-04: the klipper's own account, number masked. */
+export async function getPortalBankAccount(
+  supabase: SupabaseClient<Database>,
+): Promise<PortalBankAccount | null> {
+  const { data, error } = await supabase
+    .from("creator_portal_bank_account")
+    .select("*")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? (data as PortalBankAccount) : null;
+}

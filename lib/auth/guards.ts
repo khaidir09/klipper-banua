@@ -23,6 +23,19 @@ export function isInternalRole(role: UserRole): role is InternalRole {
 /** A signed-in creator, together with the creator record behind the account. */
 export type CreatorSession = Session & { creatorId: string };
 
+/**
+ * A creator account that may be blocked (FR-M3-09): it can still open the
+ * portal to read its status and frozen balance, and nothing else.
+ */
+export type CreatorAccountSession = Session & {
+  creatorId: string;
+  blocked: boolean;
+  blockedReason: string | null;
+};
+
+/** The only portal page a blocked klipper can open. */
+export const BLOCKED_CREATOR_HOME = "/portal/saldo";
+
 /** A signed-in client contact, together with the institution behind them. */
 export type ClientSession = Session & { clientId: string };
 
@@ -110,10 +123,46 @@ export async function requireCreator(): Promise<CreatorSession> {
   const { data } = await supabase.from("creator_portal_profile").select("id").maybeSingle();
 
   if (!data?.id) {
+    // A blocked klipper keeps read access to their balance (FR-M3-09).
+    const { data: account } = await supabase
+      .from("creator_portal_account")
+      .select("status")
+      .maybeSingle();
+    if (account?.status === "diblokir") redirect(BLOCKED_CREATOR_HOME);
     redirect("/keluar?alasan=portal");
   }
 
   return { ...session, creatorId: data.id };
+}
+
+/**
+ * Guard for the portal shell and the balance page: lets a blocked klipper in
+ * (FR-M3-09). Every other portal page keeps `requireCreator`, and every write
+ * path in the database still refuses a blocked account.
+ */
+export async function requireCreatorAccount(): Promise<CreatorAccountSession> {
+  const session = await requireSession();
+
+  if (session.profile.role !== "creator") {
+    redirect(homePathFor(session.profile.role));
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("creator_portal_account")
+    .select("id, status, blocked_reason")
+    .maybeSingle();
+
+  if (!data?.id) {
+    redirect("/keluar?alasan=portal");
+  }
+
+  return {
+    ...session,
+    creatorId: data.id,
+    blocked: data.status === "diblokir",
+    blockedReason: data.blocked_reason,
+  };
 }
 
 /**

@@ -217,6 +217,29 @@ describe("campaignFinance (PRD 8.4) and division by zero", () => {
     expect(finance.costPerRegistrant).toBe(300_000);
   });
 
+  it("uses the ledger for per_views campaigns (PRD 8.4, FR-M8-06)", () => {
+    const finance = campaignFinance({
+      ...base,
+      // Legacy payouts never count for a per_views campaign.
+      perViews: { creatorBudget: 5_000_000, creatorCost: 1_234_500 },
+    });
+    expect(finance.totalPayouts).toBe(1_234_500);
+    expect(finance.grossMargin).toBe(13_765_500);
+    expect(finance.perViews).toEqual({
+      creatorBudget: 5_000_000,
+      creatorCost: 1_234_500,
+      budgetRemaining: 3_765_500,
+      budgetUsedPct: 24.69,
+      // 1.234.500 × 1000 / 200.000, rounded down
+      creatorCostPer1000Views: 6_172,
+    });
+    expect(campaignFinance(base).perViews).toBeNull();
+    expect(
+      campaignFinance({ ...base, totalViews: 0, perViews: { creatorBudget: 0, creatorCost: 0 } })
+        .perViews,
+    ).toMatchObject({ budgetUsedPct: 0, creatorCostPer1000Views: null });
+  });
+
   it("rounds CPM and cost per registrant down to whole Rupiah", () => {
     const finance = campaignFinance({ ...base, totalViews: 3, totalRegistrants: 7 });
     expect(finance.cpm).toBe(5_000_000_000);

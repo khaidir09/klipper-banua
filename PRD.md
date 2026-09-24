@@ -2,9 +2,9 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi dokumen      | 1.0 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
-| Tanggal            | 23 September 2026                                                                           |
-| Status             | Fase 0–11, 13, 14, 15, 16, dan **17** selesai (fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri, kampanye terbuka dan katalog, kiriman klip dan verifikasi views). **Fase 18 (saldo dan penarikan) dirancang, belum dikerjakan.** Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
+| Versi dokumen      | 1.1 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
+| Tanggal            | 24 September 2026                                                                           |
+| Status             | Fase 0–11 dan 13–18 selesai: **Tahap A (klipper mandiri) lengkap** — fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri, kampanye terbuka dan katalog, kiriman klip dan verifikasi views, saldo dan penarikan. Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
 | Acuan model        | ayoklip.com (klipper daftar sendiri → pilih kampanye → posting → kirim tautan + bukti views → diverifikasi → saldo → tarik) dengan pembeda lokal Kalimantan |
 | Pengguna versi ini | Tim internal (`owner`, `manager`); **klipper mendaftar sendiri** (peran `creator`); klien lewat undangan (Tahap A) dan mendaftar sendiri (Tahap B); pengunjung anonim membaca situs publik |
@@ -355,8 +355,8 @@ FR-M15-01 sampai FR-M15-08 tetap berlaku, dengan perubahan berikut:
 - **FR-M19-02** Honor dikreditkan **pada saat tim menyetujui** klip atau pembaruan views, dihitung di `lib/calculations/` (8.6). Fungsi database yang mencatat kredit **mengunci baris kampanye** dan menolak bila total honor kampanye akan melebihi `creator_budget` atau batas per klipper, sehingga dua verifikasi bersamaan tidak dapat membobol anggaran.
 - **FR-M19-03** Saldo tersedia = Σ `creator_ledger_entries.amount`. Portal menampilkan saldo tersedia, total pernah diterima, riwayat entri (tanggal, kampanye, klip, jenis, nominal), dan penarikan berjalan.
 - **FR-M19-04** **Rekening**: klipper mengisi sendiri nama bank/e-wallet (daftar tetap: bank umum + DANA, OVO, GoPay, ShopeePay), nomor, dan nama pemilik. Nama pemilik wajib sama dengan nama lengkap akun; perbedaan ditandai untuk diperiksa `owner`. Perubahan rekening tercatat di log dan menahan pengajuan penarikan baru selama 24 jam.
-- **FR-M19-05** **Pengajuan penarikan**: nominal ≥ `MIN_WITHDRAWAL` (default Rp 50.000, konstanta aplikasi) dan ≤ saldo tersedia; hanya satu penarikan `diajukan`/`diproses` per klipper; klipper tidak `diblokir`; rekening terisi. Pengajuan membuat `withdrawals` dengan salinan data rekening saat itu dan entri `penarikan` di buku besar **dalam satu transaksi yang mengunci baris klipper**, sehingga saldo tidak dapat ditarik dua kali.
-- **FR-M19-06** **Pemrosesan** (hanya `owner`): `diajukan` → `diproses` → `dibayar` (tanggal transfer + bukti wajib, bucket `finance-proofs`), atau `ditolak` (alasan wajib) yang otomatis membuat entri `pengembalian_penarikan`. Target: diproses ≤ 1 hari kerja. `owner` juga membuat penyesuaian saldo dengan alasan.
+- **FR-M19-05** **Pengajuan penarikan**: nominal ≥ minimum penarikan (`platform_settings.min_withdrawal`, default **Rp 100.000** = 10.000 views pada tarif Rp 10.000; diubah `owner` di Pengaturan → Penarikan dan tercatat di log) dan ≤ saldo tersedia; hanya satu penarikan `diajukan`/`diproses` per klipper; klipper tidak `diblokir`; rekening terisi. Pengajuan membuat `withdrawals` dengan salinan data rekening saat itu dan entri `penarikan` di buku besar **dalam satu transaksi yang mengunci baris klipper**, sehingga saldo tidak dapat ditarik dua kali.
+- **FR-M19-06** **Pemrosesan** (hanya `owner`): `diajukan` → `diproses` → `dibayar` (tanggal transfer + bukti wajib, bucket `finance-proofs`; `owner` mencatat **biaya transfer** yang ditanggung klipper, sehingga yang diterima = nominal − biaya; buku besar tetap mendebit nominal penuh), atau `ditolak` (alasan wajib) yang otomatis membuat entri `pengembalian_penarikan`. Target: diproses ≤ 1 hari kerja. `owner` juga membuat penyesuaian saldo dengan alasan.
 - **FR-M19-07** Klipper melihat status penarikannya beserta tanggal bayar, tanpa bukti transfer. Nomor rekening di portal dan untuk `manager` hanya tampil 4 digit terakhir.
 - **FR-M19-08** Halaman `owner` "Penarikan": antrean, filter status, ekspor CSV (untuk transfer massal manual), dan total per periode.
 
@@ -487,7 +487,7 @@ credit           = min(delta, creator_room, budget_room)     → entri honor_kli
 ```
 saldo_tersedia = Σ creator_ledger_entries.amount (klipper)
 boleh_tarik    = status ≠ diblokir ∧ rekening terisi ∧ rekening tidak diubah < 24 jam
-                 ∧ tidak ada penarikan diajukan/diproses ∧ MIN_WITHDRAWAL ≤ nominal ≤ saldo_tersedia
+                 ∧ tidak ada penarikan diajukan/diproses ∧ min_withdrawal ≤ nominal ≤ saldo_tersedia
 ```
 
 Saldo boleh negatif hanya akibat `pembatalan` setelah penarikan; selama negatif, klipper tidak dapat menarik dan kredit berikutnya menutup kekurangan lebih dahulu.
@@ -551,7 +551,7 @@ supabase/
 
 ### 10.3 Variabel lingkungan
 
-Tetap: `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, `DEFAULT_TIMEZONE`, `REMINDER_API_TOKEN`, `NEXT_PUBLIC_CONTACT_WA`. Konstanta v4.0 (`MIN_WITHDRAWAL`, `CREATOR_TERMS_VERSION`, ambang lencana lokal, ambang penanda kecurangan) disimpan di kode (`lib/config/`), bukan env, agar teruji.
+Tetap: `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLICK_IP_HASH_SALT`, `DEFAULT_TIMEZONE`, `REMINDER_API_TOKEN`, `NEXT_PUBLIC_CONTACT_WA`. Konstanta v4.0 (`CREATOR_TERMS_VERSION`, ambang lencana lokal, ambang penanda kecurangan) disimpan di kode (`lib/constants/`), bukan env, agar teruji. Minimum penarikan disimpan di tabel `platform_settings` agar `owner` dapat mengubahnya tanpa rilis.
 
 ---
 
@@ -633,13 +633,15 @@ _Catatan implementasi:_ selama menunggu verifikasi, URL dan waktu tayang klip di
 **Cakupan:** M19 (FR-M19-01 s.d. FR-M19-08), FR-M3-06, FR-M3-08, FR-M8-06, FR-M11-01, FR-M12-01. Tabel `withdrawals`; fungsi `request_withdrawal()`, `process_withdrawal()`, `adjust_balance()`; rekening oleh klipper; view `creator_portal_ledger`, `_balance`, `_withdrawals`, `_bank_account`; halaman Saldo di portal; halaman `(app)/penarikan` untuk `owner` dengan ekspor CSV; kartu dasbor dan isi pengingat Telegram; tab Keuangan kampanye `per_views`; `lib/calculations/balance.ts`.
 **Kriteria penerimaan:**
 
-- [ ] Saldo portal = Σ buku besar; entri tidak dapat diubah atau dihapus oleh peran mana pun.
-- [ ] Penarikan di bawah minimum, melebihi saldo, saat ada penarikan berjalan, tanpa rekening, < 24 jam setelah ganti rekening, atau oleh klipper `diblokir` ditolak.
-- [ ] Dua pengajuan bersamaan tidak dapat menarik melebihi saldo (diuji di `guards-check.sql`).
-- [ ] Hanya `owner` yang membaca `withdrawals` dan nomor rekening lengkap; `manager` dan klipper melihat 4 digit terakhir.
-- [ ] Penarikan `ditolak` otomatis mengembalikan saldo; `dibayar` wajib tanggal dan bukti transfer.
-- [ ] Tab Keuangan kampanye `per_views` menampilkan anggaran, terpakai, sisa, dan margin sesuai 8.4.
-- [ ] Uji E2E alur penuh: daftar → konfirmasi → tambah akun sosial → gabung → kirim klip → disetujui → saldo bertambah → isi rekening → tarik → `owner` menandai dibayar.
+- [x] Saldo portal = Σ buku besar; entri tidak dapat diubah atau dihapus oleh peran mana pun.
+- [x] Penarikan di bawah minimum, melebihi saldo, saat ada penarikan berjalan, tanpa rekening, < 24 jam setelah ganti rekening, atau oleh klipper `diblokir` ditolak.
+- [x] Dua pengajuan bersamaan tidak dapat menarik melebihi saldo (diuji di `guards-check.sql`).
+- [x] Hanya `owner` yang membaca `withdrawals` dan nomor rekening lengkap; `manager` dan klipper melihat 4 digit terakhir.
+- [x] Penarikan `ditolak` otomatis mengembalikan saldo; `dibayar` wajib tanggal dan bukti transfer.
+- [x] Tab Keuangan kampanye `per_views` menampilkan anggaran, terpakai, sisa, dan margin sesuai 8.4.
+- [x] Uji E2E alur penuh: daftar → konfirmasi → tambah akun sosial → gabung → kirim klip → disetujui → saldo bertambah → isi rekening → tarik → `owner` menandai dibayar.
+
+_Catatan implementasi:_ minimum penarikan disimpan di `platform_settings` (satu baris; RLS: tim membaca, `owner` mengubah; klipper membaca lewat `current_min_withdrawal()`), bukan konstanta kode, atas keputusan owner. Rekening klipper disimpan lewat `save_creator_bank_account()` sehingga nomor lengkap tidak pernah terbaca dari portal; trigger `track_bank_account_change` menandai nama pemilik yang berbeda dari nama lengkap dan mencatat `changed_at` (penahanan 24 jam hanya untuk perubahan, bukan pengisian pertama). Klipper `diblokir` masuk portal hanya untuk halaman Saldo lewat `current_creator_account_id()` dan `requireCreatorAccount()`; semua jalur tulis tetap memakai `current_creator_id()`. Penghapusan akun (FR-M16-09) kini ditolak database bila saldo ≠ 0 atau ada penarikan berjalan. Akses `owner` ke nomor rekening lengkap di halaman Penarikan dan ekspor CSV dicatat di log (FR-M11-01). Awal periode klip dibulatkan ke menit bergabung (perbaikan Fase 17: waktu tayang diisi dengan presisi menit). Biaya transfer ditanggung klipper (keputusan owner): `withdrawals.transfer_fee` diisi `owner` saat menandai dibayar (< nominal), klipper melihat biaya dan jumlah diterima, dan ekspor CSV memuat keduanya.
 
 ---
 
@@ -648,7 +650,7 @@ _Catatan implementasi:_ selama menunggu verifikasi, URL dan waktu tayang klip di
 | Versi | Fitur |
 | ----- | ----- |
 | 1.1–3.2 | Tautan laporan, pengingat Telegram, portal kreator, portal klien, situs publik, konfirmasi penugasan — **selesai** (kecuali Fase 12) |
-| **4.0** | **Tahap A — klipper mandiri** (Fase 15–18) — Fase 15–17 **selesai** |
+| **4.0** | **Tahap A — klipper mandiri** (Fase 15–18) — **selesai** |
 | 4.0.x | Fase 12 yang direvisi: laporan dan usulan pendaftar dari portal klien |
 | **4.1** | **Tahap B — klien mandiri** (garis besar, PRD dirinci sebelum dikerjakan): pendaftaran klien/instansi dengan verifikasi tim; dompet klien dengan **deposit manual** (transfer + bukti, dikonfirmasi `owner`); klien membuat kampanye `per_views` sendiri (anggaran, tarif, brief, materi) yang ditinjau tim sebelum tayang di katalog; biaya platform (acuan 5%) dan add-on (khusus Klipper Lokal); anggaran terkunci saat kampanye aktif dan sisa dikembalikan ke dompet saat selesai; klien menandai klip bermasalah; invoice/kuitansi otomatis |
 | 4.2 | Penarikan terjadwal (batch) dan pengingat penarikan; papan peringkat di portal (nama panggung) |
@@ -673,8 +675,8 @@ _Catatan implementasi:_ selama menunggu verifikasi, URL dan waktu tayang klip di
 | --- | ---------- | ------------- |
 | 1   | Nama produk dan domain | Founder |
 | 2   | Tarif per 1.000 views yang wajar untuk pasar Kalimantan, dan apakah kampanye "khusus lokal" dibayar lebih tinggi | Founder + uji coba |
-| 3   | Nominal `MIN_WITHDRAWAL` (usulan Rp 50.000) dan siapa yang menanggung biaya transfer antarbank/e-wallet | Founder |
-| 4   | Kewajiban PPh 21/23 atas honor klipper di model terbuka (klipper tanpa NPWP, pemotongan saat penarikan?) — **penghalang rilis Fase 18** | Konsultan pajak |
+| 3   | ~~Nominal minimum penarikan~~ — **terjawab 24 Sep 2026:** Rp 100.000 (setara 10.000 views pada tarif Rp 10.000), dapat diubah `owner` dari aplikasi. Biaya transfer antarbank/e-wallet **ditanggung klipper** (diputuskan 24 Sep 2026): dipotong dari nominal yang ditransfer | Founder |
+| 4   | Kewajiban PPh 21/23 atas honor klipper di model terbuka (klipper tanpa NPWP, pemotongan saat penarikan?) — **diputuskan 24 Sep 2026:** belum dihitung selama uji coba rilis; PPh mulai diterapkan setelah platform diterima baik dan legalitas usaha berdiri (PRD diperbarui saat itu). Bukan lagi penghalang rilis | Founder, lalu konsultan pajak |
 | 5   | ~~Isi Syarat Klipper: hak pakai materi, larangan bot/engagement palsu, sanksi, masa tayang minimum, penanganan saldo saat diblokir~~ — **terjawab 23 Sep 2026:** isi `/syarat` (Syarat Klipper versi `2026-10`) disetujui owner | Founder + konsultasi hukum |
 | 6   | ~~Pembaruan Kebijakan Privasi untuk pendaftaran mandiri dan penyimpanan rekening oleh klipper~~ — **terjawab 23 Sep 2026:** isi `/privasi` disetujui owner | Founder + konsultasi hukum |
 | 7   | Ambang persentase audiens Kalimantan untuk lencana lokal (usulan 50%) | Pilot |
@@ -699,4 +701,5 @@ _Catatan implementasi:_ selama menunggu verifikasi, URL dan waktu tayang klip di
 | 0.5   | 20 Sep 2026 | v3.0: portal klien (M14), peran `client`, Fase 11–12 |
 | 0.6   | 22 Sep 2026 | v3.1: situs publik (M15), Fase 13 |
 | 0.7   | 23 Sep 2026 | v3.2: konfirmasi penugasan oleh kreator (FR-M13-10), Fase 14 |
-| **1.0** | 23 Sep 2026 | **v4.0 — perubahan arah ke marketplace klipper terbuka (acuan ayoklip.com).** Pendaftaran klipper mandiri (M16), kampanye terbuka dan katalog (M17), kiriman klip dengan verifikasi pasca-tayang (M18), saldo dan penarikan manual (M19). Honor kampanye baru = tarif per 1.000 views terverifikasi dengan batas per klip/klipper/anggaran (8.6); skema honor dasar + bonus dipertahankan hanya untuk kampanye `paket` lama. Peran hanya dari `app_metadata`. Lencana Klipper Lokal menggantikan verifikasi wajib. Persetujuan konten oleh klien (FR-M14-04) ditunda. Klien mandiri dijadwalkan sebagai Tahap B (v4.1). Kriteria fase 0–14 diringkas menjadi tabel |
+| 1.0 | 23 Sep 2026 | **v4.0 — perubahan arah ke marketplace klipper terbuka (acuan ayoklip.com).** Pendaftaran klipper mandiri (M16), kampanye terbuka dan katalog (M17), kiriman klip dengan verifikasi pasca-tayang (M18), saldo dan penarikan manual (M19). Honor kampanye baru = tarif per 1.000 views terverifikasi dengan batas per klip/klipper/anggaran (8.6); skema honor dasar + bonus dipertahankan hanya untuk kampanye `paket` lama. Peran hanya dari `app_metadata`. Lencana Klipper Lokal menggantikan verifikasi wajib. Persetujuan konten oleh klien (FR-M14-04) ditunda. Klien mandiri dijadwalkan sebagai Tahap B (v4.1). Kriteria fase 0–14 diringkas menjadi tabel |
+| **1.1** | 24 Sep 2026 | Tahap A selesai (Fase 17–18). Minimum penarikan Rp 100.000 dan dapat diubah `owner` (`platform_settings`); PPh atas honor klipper ditunda sampai uji coba rilis berhasil dan legalitas usaha berdiri; biaya transfer ditanggung klipper (13.2 no. 3–4) |

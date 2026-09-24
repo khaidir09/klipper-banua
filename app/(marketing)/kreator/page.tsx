@@ -87,7 +87,7 @@ const FAQ: FaqItem[] = [
   {
     question: "Kapan honor bisa ditarik?",
     answer:
-      "Begitu klip disetujui, honornya langsung masuk saldo. Kamu bisa mengajukan penarikan kapan saja setelah saldo mencapai batas minimum, lalu owner mentransfer ke rekeningmu.",
+      "Begitu klip disetujui, honornya langsung masuk saldo. Kamu bisa mengajukan penarikan kapan saja setelah saldo mencapai batas minimum, lalu owner mentransfer ke rekeningmu. Biaya transfer antarbank atau e-wallet ditanggung klipper dan dipotong dari nominal yang ditransfer.",
   },
   {
     question: "Kenapa klip saya ditolak?",

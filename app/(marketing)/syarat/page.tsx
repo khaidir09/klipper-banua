@@ -81,6 +81,7 @@ const SECTIONS: LegalSection[] = [
       "Honor klip dihitung dari views terverifikasi dikali tarif per 1.000 views kampanye, dengan batas per klip dan per klipper yang tertulis di kampanye, dan tidak melebihi anggaran kampanye.",
       "Honor masuk ke saldo saat klip atau pembaruan views disetujui. Honor dapat dibatalkan bila klip dihapus sebelum masa tayang minimum atau terbukti curang.",
       "Penarikan diajukan dari portal ke rekening bank atau e-wallet atas nama Anda sendiri, dengan batas minimum yang tertera di portal, lalu ditransfer manual oleh owner.",
+      "Biaya transfer antarbank atau e-wallet ditanggung klipper dan dipotong dari nominal yang ditransfer.",
       "Kewajiban perpajakan atas honor mengikuti ketentuan yang berlaku dan disampaikan sebelum pembayaran.",
     ],
   },
@@ -133,7 +134,7 @@ export default function TermsPage() {
   return (
     <LegalArticle
       title="Syarat Layanan"
-      updatedAt="23 Sep 2026"
+      updatedAt="24 Sep 2026"
       intro={[
         `Ketentuan umum pemakaian layanan dan aplikasi ${publicEnv.NEXT_PUBLIC_APP_NAME}, termasuk Syarat Klipper versi ${CREATOR_TERMS_VERSION} yang disetujui saat mendaftar. Ketentuan yang lebih rinci untuk satu kampanye tertulis di kampanye masing-masing.`,
       ]}

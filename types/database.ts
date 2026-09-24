@@ -234,6 +234,13 @@ export type Database = {
             foreignKeyName: "campaign_creators_creator_id_fkey"
             columns: ["creator_id"]
             isOneToOne: false
+            referencedRelation: "creator_portal_account"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
             referencedRelation: "creator_portal_profile"
             referencedColumns: ["id"]
           },
@@ -756,8 +763,10 @@ export type Database = {
           account_holder: string
           account_number: string
           bank_name: string
+          changed_at: string | null
           created_at: string
           creator_id: string
+          holder_matches_name: boolean
           id: string
           updated_at: string
         }
@@ -765,8 +774,10 @@ export type Database = {
           account_holder: string
           account_number: string
           bank_name: string
+          changed_at?: string | null
           created_at?: string
           creator_id: string
+          holder_matches_name?: boolean
           id?: string
           updated_at?: string
         }
@@ -774,12 +785,21 @@ export type Database = {
           account_holder?: string
           account_number?: string
           bank_name?: string
+          changed_at?: string | null
           created_at?: string
           creator_id?: string
+          holder_matches_name?: boolean
           id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "creator_bank_accounts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "creator_portal_account"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "creator_bank_accounts_creator_id_fkey"
             columns: ["creator_id"]
@@ -890,6 +910,13 @@ export type Database = {
             foreignKeyName: "creator_ledger_entries_creator_id_fkey"
             columns: ["creator_id"]
             isOneToOne: false
+            referencedRelation: "creator_portal_account"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
             referencedRelation: "creator_portal_profile"
             referencedColumns: ["id"]
           },
@@ -912,6 +939,20 @@ export type Database = {
             columns: ["metric_submission_id"]
             isOneToOne: false
             referencedRelation: "metric_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_withdrawal_id_fkey"
+            columns: ["withdrawal_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_withdrawals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_withdrawal_id_fkey"
+            columns: ["withdrawal_id"]
+            isOneToOne: false
+            referencedRelation: "withdrawals"
             referencedColumns: ["id"]
           },
         ]
@@ -966,6 +1007,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "creator_social_accounts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_account"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "creator_social_accounts_creator_id_fkey"
             columns: ["creator_id"]
@@ -1547,6 +1595,38 @@ export type Database = {
           },
         ]
       }
+      platform_settings: {
+        Row: {
+          created_at: string
+          id: boolean
+          min_withdrawal: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: boolean
+          min_withdrawal?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: boolean
+          min_withdrawal?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1764,6 +1844,92 @@ export type Database = {
           },
         ]
       }
+      withdrawals: {
+        Row: {
+          account_holder: string
+          account_number: string
+          amount: number
+          bank_name: string
+          created_at: string
+          creator_id: string
+          id: string
+          paid_at: string | null
+          processed_at: string | null
+          processed_by: string | null
+          rejection_reason: string | null
+          requested_at: string
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          transfer_fee: number
+          transfer_proof_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_holder: string
+          account_number: string
+          amount: number
+          bank_name: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          paid_at?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          transfer_fee?: number
+          transfer_proof_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_holder?: string
+          account_number?: string
+          amount?: number
+          bank_name?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          paid_at?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          transfer_fee?: number
+          transfer_proof_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_account"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawals_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawals_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawals_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       client_portal_campaigns: {
@@ -1943,6 +2109,33 @@ export type Database = {
           },
         ]
       }
+      creator_portal_account: {
+        Row: {
+          blocked_at: string | null
+          blocked_reason: string | null
+          full_name: string | null
+          id: string | null
+          stage_name: string | null
+          status: Database["public"]["Enums"]["creator_status"] | null
+        }
+        Insert: {
+          blocked_at?: string | null
+          blocked_reason?: string | null
+          full_name?: string | null
+          id?: string | null
+          stage_name?: string | null
+          status?: Database["public"]["Enums"]["creator_status"] | null
+        }
+        Update: {
+          blocked_at?: string | null
+          blocked_reason?: string | null
+          full_name?: string | null
+          id?: string | null
+          stage_name?: string | null
+          status?: Database["public"]["Enums"]["creator_status"] | null
+        }
+        Relationships: []
+      }
       creator_portal_assets: {
         Row: {
           campaign_id: string | null
@@ -2069,6 +2262,46 @@ export type Database = {
           },
         ]
       }
+      creator_portal_balance: {
+        Row: {
+          available: number | null
+          creator_id: string | null
+          min_withdrawal: number | null
+          total_earned: number | null
+          total_withdrawn: number | null
+        }
+        Relationships: []
+      }
+      creator_portal_bank_account: {
+        Row: {
+          account_holder: string | null
+          account_number_masked: string | null
+          bank_name: string | null
+          changed_at: string | null
+          hold_until: string | null
+          holder_matches_name: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_holder?: string | null
+          account_number_masked?: never
+          bank_name?: string | null
+          changed_at?: string | null
+          hold_until?: never
+          holder_matches_name?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_holder?: string | null
+          account_number_masked?: never
+          bank_name?: string | null
+          changed_at?: string | null
+          hold_until?: never
+          holder_matches_name?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       creator_portal_catalog: {
         Row: {
           allowed_platforms:
@@ -2187,6 +2420,77 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "creator_portal_catalog"
             referencedColumns: ["assignment_id"]
+          },
+        ]
+      }
+      creator_portal_ledger: {
+        Row: {
+          amount: number | null
+          campaign_id: string | null
+          campaign_name: string | null
+          content_id: string | null
+          created_at: string | null
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"] | null
+          id: string | null
+          notes: string | null
+          withdrawal_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_ledger_entries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "client_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_withdrawal_id_fkey"
+            columns: ["withdrawal_id"]
+            isOneToOne: false
+            referencedRelation: "creator_portal_withdrawals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ledger_entries_withdrawal_id_fkey"
+            columns: ["withdrawal_id"]
+            isOneToOne: false
+            referencedRelation: "withdrawals"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2479,9 +2783,58 @@ export type Database = {
           },
         ]
       }
+      creator_portal_withdrawals: {
+        Row: {
+          account_holder: string | null
+          account_number_masked: string | null
+          amount: number | null
+          bank_name: string | null
+          id: string | null
+          net_amount: number | null
+          paid_at: string | null
+          processed_at: string | null
+          rejection_reason: string | null
+          requested_at: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"] | null
+          transfer_fee: number | null
+        }
+        Insert: {
+          account_holder?: string | null
+          account_number_masked?: never
+          amount?: number | null
+          bank_name?: string | null
+          id?: string | null
+          net_amount?: never
+          paid_at?: string | null
+          processed_at?: string | null
+          rejection_reason?: string | null
+          requested_at?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"] | null
+          transfer_fee?: number | null
+        }
+        Update: {
+          account_holder?: string | null
+          account_number_masked?: never
+          amount?: number | null
+          bank_name?: string | null
+          id?: string | null
+          net_amount?: never
+          paid_at?: string | null
+          processed_at?: string | null
+          rejection_reason?: string | null
+          requested_at?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"] | null
+          transfer_fee?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_creator_terms: { Args: never; Returns: string }
+      adjust_balance: {
+        Args: { p_amount: number; p_creator_id: string; p_reason: string }
+        Returns: string
+      }
       anonymize_creator: { Args: { target_id: string }; Returns: string[] }
       assert_campaign_editable: {
         Args: { p_campaign_id: string }
@@ -2530,6 +2883,7 @@ export type Database = {
         Args: { target_campaign_id: string }
         Returns: boolean
       }
+      creator_balance: { Args: { target_creator_id: string }; Returns: number }
       creator_can_view_campaign_assets: {
         Args: { target_campaign_id: string }
         Returns: boolean
@@ -2551,8 +2905,10 @@ export type Database = {
         Returns: boolean
       }
       current_client_id: { Args: never; Returns: string }
+      current_creator_account_id: { Args: never; Returns: string }
       current_creator_id: { Args: never; Returns: string }
       current_creator_terms_version: { Args: never; Returns: string }
+      current_min_withdrawal: { Args: never; Returns: number }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
@@ -2565,14 +2921,27 @@ export type Database = {
         Returns: {
           account_number_masked: string
           bank_name: string
+          holder_matches_name: boolean
         }[]
       }
       is_active_member: { Args: never; Returns: boolean }
       is_owner: { Args: never; Returns: boolean }
       normalize_clip_url: { Args: { url: string }; Returns: string }
+      normalize_person_name: { Args: { value: string }; Returns: string }
       open_report_share_link: {
         Args: { p_token_hash: string }
         Returns: string
+      }
+      process_withdrawal: {
+        Args: {
+          p_id: string
+          p_paid_at?: string
+          p_proof_path?: string
+          p_reason?: string
+          p_status: Database["public"]["Enums"]["withdrawal_status"]
+          p_transfer_fee?: number
+        }
+        Returns: undefined
       }
       record_clip_cancellation: {
         Args: {
@@ -2595,9 +2964,18 @@ export type Database = {
         Returns: undefined
       }
       request_creator_account_deletion: { Args: never; Returns: undefined }
+      request_withdrawal: { Args: { p_amount: number }; Returns: string }
       review_metric_submission: {
         Args: { p_accept: boolean; p_id: string; p_notes?: string }
         Returns: string
+      }
+      save_creator_bank_account: {
+        Args: {
+          p_account_holder: string
+          p_account_number: string
+          p_bank_name: string
+        }
+        Returns: undefined
       }
       submit_clip: {
         Args: {
@@ -2685,6 +3063,8 @@ export type Database = {
         | "pembayaran"
         | "laporan"
         | "lainnya"
+        | "verifikasi_klip"
+        | "penarikan"
       payout_model: "per_views" | "paket"
       payout_status: "draf" | "disetujui" | "dibayar"
       review_decision: "disetujui" | "revisi" | "ditolak"
@@ -2693,6 +3073,7 @@ export type Database = {
       social_platform: "tiktok" | "instagram" | "youtube" | "facebook"
       submission_status: "menunggu" | "diterima" | "ditolak"
       user_role: "owner" | "manager" | "creator" | "client"
+      withdrawal_status: "diajukan" | "diproses" | "dibayar" | "ditolak"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2873,6 +3254,8 @@ export const Constants = {
         "pembayaran",
         "laporan",
         "lainnya",
+        "verifikasi_klip",
+        "penarikan",
       ],
       payout_model: ["per_views", "paket"],
       payout_status: ["draf", "disetujui", "dibayar"],
@@ -2882,6 +3265,7 @@ export const Constants = {
       social_platform: ["tiktok", "instagram", "youtube", "facebook"],
       submission_status: ["menunggu", "diterima", "ditolak"],
       user_role: ["owner", "manager", "creator", "client"],
+      withdrawal_status: ["diajukan", "diproses", "dibayar", "ditolak"],
     },
   },
 } as const

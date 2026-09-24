@@ -42,7 +42,7 @@ export default defineConfig({
       // Klipper self-registration (PRD M16, Fase 15). Needs Mailpit from the
       // local stack and the owner session to grant the local badge.
       name: "klipper",
-      testMatch: /daftar\.spec\.ts/,
+      testMatch: /(daftar|saldo)\.spec\.ts/,
       dependencies: ["setup"],
     },
     {

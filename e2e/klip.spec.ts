@@ -64,11 +64,19 @@ test("a klipper sends a clip, the team verifies it and the honor is credited", a
     const context = await browser.newContext({ storageState: "e2e/.auth/manager.json" });
     const team = await context.newPage();
     await team.goto("/verifikasi");
-    await team.getByRole("link", { name: /rina\.kuliner/ }).first().click();
+    await team
+      .getByRole("link", { name: /rina\.kuliner/ })
+      .first()
+      .click();
     await expect(team.getByRole("heading", { name: /Klip rina\.kuliner/ })).toBeVisible();
     await expect(team.getByText(clipUrl)).toBeVisible();
 
-    for (const box of await team.getByRole("checkbox").all()) await box.check();
+    // Wait for hydration: a tick before it is lost when React takes over.
+    await team.waitForLoadState("networkidle");
+    for (const box of await team.getByRole("checkbox").all()) {
+      await box.check();
+      await expect(box).toBeChecked();
+    }
     await team.getByLabel("Views terverifikasi").fill("23450");
     await expect(team.getByText("Kredit sekarang: Rp 234.500")).toBeVisible();
     await team.getByRole("button", { name: "Setujui" }).click();

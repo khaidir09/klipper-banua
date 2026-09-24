@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildCampaignReport, type ReportInput } from "@/lib/calculations/campaign-report";
 import { formatMinutes, opsTimeRecap } from "@/lib/calculations/ops-time";
+import { OPS_ACTIVITIES } from "@/lib/constants/ops";
 import { CSV_BOM, csvCell, csvFileName, toCsv } from "@/lib/export/csv";
 import { contentsCsv, creatorsCsv } from "@/lib/export/report-csv";
 
@@ -178,7 +179,8 @@ describe("operational time recap (FR-M12-02)", () => {
       sharePct: 60,
     });
     expect(recap.rows[1]).toEqual({ activity: "review", minutes: 60, entries: 2, sharePct: 40 });
-    expect(recap.rows).toHaveLength(7);
+    // Every activity gets a row, including the v4.0 ones (FR-M12-01).
+    expect(recap.rows).toHaveLength(OPS_ACTIVITIES.length);
     expect(recap.rows.at(-1)!.minutes).toBe(0);
   });
 

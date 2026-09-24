@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCreator } from "@/lib/auth/guards";
 import {
+  getPortalBalance,
   getPortalProfile,
   listPortalAssignments,
   listPortalCatalog,
@@ -22,11 +23,12 @@ export const metadata: Metadata = { title: "Beranda" };
 export default async function PortalHomePage() {
   const { profile } = await requireCreator();
   const supabase = await createSupabaseServerClient();
-  const [creator, assignments, catalog, clips] = await Promise.all([
+  const [creator, assignments, catalog, clips, balance] = await Promise.all([
     getPortalProfile(supabase),
     listPortalAssignments(supabase),
     listPortalCatalog(supabase),
     listPortalClips(supabase, { timezone: profile.timezone }),
+    getPortalBalance(supabase),
   ]);
   // FR-M16-05: a new klipper finishes their account before anything else.
   if (creator?.status === "prospek") redirect("/portal/mulai");
@@ -39,7 +41,6 @@ export default async function PortalHomePage() {
   const greeting = profile.full_name ? `Halo, ${profile.full_name}` : "Halo";
   // FR-M13-03: clips waiting for the team and the latest decisions.
   const waitingClips = clips.filter((clip) => clip.reviewStatus === "menunggu_review").length;
-  const earned = clips.reduce((sum, clip) => sum + clip.earnedAmount, 0);
   const decisions = clips
     .filter((clip) => clip.lastReview)
     .sort((a, b) => b.lastReview!.createdAt.localeCompare(a.lastReview!.createdAt))
@@ -88,16 +89,18 @@ export default async function PortalHomePage() {
             <p className="text-2xl font-semibold">{waitingClips}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Honor dari klip
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold">{formatRupiah(earned)}</p>
-          </CardContent>
-        </Card>
+        <Link href="/portal/saldo" className="block rounded-xl hover:bg-accent/40">
+          <Card className="h-full bg-transparent">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Saldo tersedia
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-semibold">{formatRupiah(balance?.available ?? 0)}</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {decisions.length ? (

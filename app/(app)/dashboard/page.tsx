@@ -10,6 +10,7 @@ import {
   Inbox,
   Timer,
   TrendingUp,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -20,6 +21,7 @@ import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/constants/cre
 import { CHECKPOINT_LABELS } from "@/lib/constants/metrics";
 import { listClipQueue, listLowBudgetCampaigns } from "@/lib/data/clips";
 import { countKlipperQueues } from "@/lib/data/creators";
+import { countOpenWithdrawals } from "@/lib/data/withdrawals";
 import { getDashboard } from "@/lib/data/dashboard";
 import { formatRupiah } from "@/lib/format/currency";
 import { formatDate, formatDateTime } from "@/lib/format/date";
@@ -215,11 +217,13 @@ export default async function DashboardPage() {
   const { profile } = await requireInternal();
   const tz = profile.timezone;
   const supabase = await createSupabaseServerClient();
-  const [data, klipper, clipQueue, lowBudget] = await Promise.all([
+  const isOwner = profile.role === "owner";
+  const [data, klipper, clipQueue, lowBudget, openWithdrawals] = await Promise.all([
     getDashboard(supabase, new Date(), tz),
     countKlipperQueues(supabase),
     listClipQueue(supabase),
     listLowBudgetCampaigns(supabase),
+    isOwner ? countOpenWithdrawals(supabase) : Promise.resolve(0),
   ]);
   const overdueClips = clipQueue.clips.filter((item) => item.overdue).length;
   const platform = (value: string) => SOCIAL_PLATFORM_LABELS[value as SocialPlatform] ?? value;
@@ -284,6 +288,16 @@ export default async function DashboardPage() {
             icon={BadgeCheck}
             waiting="Bukti audiens menunggu diperiksa"
           />
+          {/* FR-M10-01 (v4.0): withdrawals are the owner's alone. */}
+          {isOwner ? (
+            <ActionCard
+              label="Penarikan menunggu"
+              count={openWithdrawals}
+              href="/penarikan?status=diajukan"
+              icon={Wallet}
+              waiting="Transfer ke klipper belum selesai"
+            />
+          ) : null}
           <ActionCard
             label="Anggaran klipper < 10%"
             count={lowBudget.length}

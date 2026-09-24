@@ -59,6 +59,15 @@ describe("clipPeriod", () => {
     expect(period.end.toISOString()).toBe("2026-10-31T16:00:00.000Z");
   });
 
+  it("starts at the minute of joining, as precise as the posting-time input", () => {
+    const period = clipPeriod({
+      joinedAt: "2026-10-05T03:00:42Z",
+      startDate: "2026-10-01",
+      endDate: "2026-10-31",
+    });
+    expect(period.start.toISOString()).toBe("2026-10-05T03:00:00.000Z");
+  });
+
   it("never starts before the campaign does", () => {
     const period = clipPeriod({
       joinedAt: "2026-09-20T00:00:00Z",

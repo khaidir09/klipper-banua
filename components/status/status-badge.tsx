@@ -20,6 +20,7 @@ import {
   type PayoutStatus,
 } from "@/lib/constants/finance";
 import { SUBMISSION_STATUS_LABELS, type SubmissionStatus } from "@/lib/constants/metrics";
+import { WITHDRAWAL_STATUS_LABELS, type WithdrawalStatus } from "@/lib/constants/withdrawals";
 import {
   ASSIGNMENT_TONES,
   CAMPAIGN_TONES,
@@ -29,6 +30,7 @@ import {
   PAYOUT_TONES,
   REVIEW_TONES,
   SUBMISSION_TONES,
+  WITHDRAWAL_TONES,
   type StatusTone,
 } from "./status-tone";
 
@@ -108,6 +110,16 @@ export function SubmissionStatusBadge({ status }: { status: SubmissionStatus }) 
       status={status}
       tone={SUBMISSION_TONES[status]}
       label={SUBMISSION_STATUS_LABELS[status]}
+    />
+  );
+}
+
+export function WithdrawalStatusBadge({ status }: { status: WithdrawalStatus }) {
+  return (
+    <Status
+      status={status}
+      tone={WITHDRAWAL_TONES[status]}
+      label={WITHDRAWAL_STATUS_LABELS[status]}
     />
   );
 }

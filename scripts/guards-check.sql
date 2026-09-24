@@ -1254,3 +1254,164 @@ savepoint y; delete from public.creator_ledger_entries where campaign_id = '1717
 select public.normalize_clip_url('https://m.YouTube.com/watch?v=AbC&si=zz&list=L&t=30#x') as normalised;
 -- Fixtures were created inside this transaction; the rollback removes them.
 rollback;
+
+-- ---------------------------------------------------------------------------
+-- Phase 18 (v4.0): balance, bank accounts and withdrawals (PRD M19, 8.7)
+-- ---------------------------------------------------------------------------
+begin;
+create temporary table p18_roles on commit drop as
+select
+  (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id,
+  (select id from public.profiles where role = 'owner' and is_active limit 1) as owner_id;
+grant select on p18_roles to authenticated;
+
+insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+select id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', email,
+       jsonb_build_object('role', 'creator'), '{}'::jsonb, now(), now()
+from (values
+  ('18181818-0000-0000-0000-0000000000f1'::uuid, 'guard.p18.a@example.test'),
+  ('18181818-0000-0000-0000-0000000000f2'::uuid, 'guard.p18.b@example.test')
+) as u(id, email);
+
+insert into public.creators (id, full_name, stage_name, birth_date, province, status, terms_version, terms_agreed_at, profile_id) values
+ ('18181818-0000-0000-0000-0000000000a1','Klipper Saldo A','saldo.a','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'18181818-0000-0000-0000-0000000000f1'),
+ ('18181818-0000-0000-0000-0000000000a2','Klipper Saldo B','saldo.b','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'18181818-0000-0000-0000-0000000000f2');
+
+-- The owner credits both klippers (stands in for approved clips).
+select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p18_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+\echo 'P18-1. an adjustment without a reason (expect ADJUSTMENT_NEEDS_REASON)'
+savepoint a; select public.adjust_balance('18181818-0000-0000-0000-0000000000a1', 300000, ' '); rollback to savepoint a;
+select public.adjust_balance('18181818-0000-0000-0000-0000000000a1', 300000, 'Uji saldo') is not null as credited_a;
+select public.adjust_balance('18181818-0000-0000-0000-0000000000a2', 200000, 'Uji saldo') is not null as credited_b;
+\echo 'P18-2. the minimum can be changed by the owner, within bounds (expect check violation, then UPDATE 1)'
+savepoint b; update public.platform_settings set min_withdrawal = 5000; rollback to savepoint b;
+update public.platform_settings set min_withdrawal = 100000;
+reset role;
+
+-- Klipper A.
+select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+set local role authenticated;
+\echo 'P18-3. A reads the balance (expect 300000 / 300000 / 0 / 100000)'
+select available, total_earned, total_withdrawn, min_withdrawal from public.creator_portal_balance;
+\echo 'P18-4. a withdrawal without a bank account (expect WITHDRAW_NEEDS_BANK)'
+savepoint c; select public.request_withdrawal(150000); rollback to savepoint c;
+\echo 'P18-5. A saves a first account; case and spacing of the name do not matter (expect ******5678 / t / no hold)'
+select public.save_creator_bank_account('Bank Kalsel', '0012-3456 78', 'klipper  saldo a') is not null as saved;
+select bank_name, account_number_masked, holder_matches_name, hold_until is null as no_hold from public.creator_portal_bank_account;
+\echo 'P18-6. A cannot read the base table (expect 0)'
+select count(*) as rows from public.creator_bank_accounts;
+\echo 'P18-7. below the minimum, above the balance (expect WITHDRAW_BELOW_MIN, WITHDRAW_ABOVE_BALANCE)'
+savepoint d; select public.request_withdrawal(50000); rollback to savepoint d;
+savepoint e; select public.request_withdrawal(400000); rollback to savepoint e;
+\echo 'P18-8. a valid request (expect sent, then 100000 available, diajukan, masked number)'
+select public.request_withdrawal(200000) is not null as sent;
+select available from public.creator_portal_balance;
+select status, amount, account_number_masked from public.creator_portal_withdrawals;
+\echo 'P18-9. a second request while one is open (expect WITHDRAW_PENDING_EXISTS)'
+-- request_withdrawal locks the klipper row, so a second call at the same time
+-- waits for the first and then sees it.
+savepoint f; select public.request_withdrawal(100000); rollback to savepoint f;
+\echo 'P18-10. the portal never shows the transfer proof (expect column does not exist)'
+savepoint g; select transfer_proof_path from public.creator_portal_withdrawals; rollback to savepoint g;
+\echo 'P18-11. A changes the account to another holder name (expect f / 24-hour hold)'
+select public.save_creator_bank_account('BRI', '998877665', 'Orang Lain') is not null as saved;
+select holder_matches_name, hold_until > now() + interval '23 hours' as held from public.creator_portal_bank_account;
+reset role;
+
+-- Manager.
+select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from p18_roles), 'role', 'authenticated')::text, true) is not null as manager_claims;
+set local role authenticated;
+\echo 'P18-12. the manager reads withdrawals, processes one, adjusts a balance (expect 0, OWNER_ONLY, OWNER_ONLY)'
+select count(*) as rows from public.withdrawals;
+savepoint h; select public.process_withdrawal((select id from public.creator_ledger_entries where entry_type = 'penarikan' and creator_id = '18181818-0000-0000-0000-0000000000a1' limit 1), 'diproses'); rollback to savepoint h;
+savepoint i; select public.adjust_balance('18181818-0000-0000-0000-0000000000a1', 1000, 'x'); rollback to savepoint i;
+\echo 'P18-13. the manager sees the account masked, with the name check (expect *****7665 / f)'
+select account_number_masked, holder_matches_name from public.get_masked_bank_account('18181818-0000-0000-0000-0000000000a1');
+reset role;
+
+-- Owner processes.
+select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p18_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+create temporary table p18_w on commit drop as
+select id from public.withdrawals where creator_id = '18181818-0000-0000-0000-0000000000a1';
+\echo 'P18-14. paid straight from diajukan (expect INVALID_WITHDRAWAL_TRANSITION)'
+savepoint j; select public.process_withdrawal((select id from p18_w), 'dibayar', current_date, 'x/proof.png'); rollback to savepoint j;
+\echo 'P18-15. the owner edits a withdrawal directly (expect UPDATE 0: no update policy)'
+update public.withdrawals set amount = 1 where id = (select id from p18_w);
+\echo 'P18-16. diproses, then paid without proof (expect ok, WITHDRAWAL_PAID_NEEDS_PROOF)'
+select public.process_withdrawal((select id from p18_w), 'diproses');
+savepoint k; select public.process_withdrawal((select id from p18_w), 'dibayar', current_date, ''); rollback to savepoint k;
+\echo 'P18-17. rejected without a reason, then with one (expect WITHDRAWAL_REJECT_NEEDS_REASON, then refund 300000)'
+savepoint l; select public.process_withdrawal((select id from p18_w), 'ditolak', null, null, ''); rollback to savepoint l;
+select public.process_withdrawal((select id from p18_w), 'ditolak', null, null, 'Nama pemilik rekening tidak cocok');
+\echo '       creator_balance() is not callable through the API (expect permission denied)'
+savepoint l2; select public.creator_balance('18181818-0000-0000-0000-0000000000a1'); rollback to savepoint l2;
+reset role;
+select public.creator_balance('18181818-0000-0000-0000-0000000000a1') as balance_after_refund;
+
+select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+set local role authenticated;
+\echo 'P18-18. A reads the rejection, then requests within the 24-hour hold (expect reason, then WITHDRAW_BANK_RECENT)'
+select status, rejection_reason from public.creator_portal_withdrawals;
+savepoint m; select public.request_withdrawal(300000); rollback to savepoint m;
+reset role;
+select set_config('request.jwt.claims', '', true) is not null as no_claims;
+\echo 'P18-19. withdrawals change only through the functions, even as superuser (expect WITHDRAWAL_FUNCTION_ONLY)'
+savepoint n; update public.withdrawals set amount = 1 where id = (select id from p18_w); rollback to savepoint n;
+update public.creator_bank_accounts set changed_at = now() - interval '2 days' where creator_id = '18181818-0000-0000-0000-0000000000a1';
+
+select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+set local role authenticated;
+\echo 'P18-20. after the hold, the whole balance (expect sent, 0 available)'
+select public.request_withdrawal(300000) is not null as sent;
+select available from public.creator_portal_balance;
+reset role;
+select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p18_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+\echo 'P18-21. processed and paid with date, proof and a Rp 2.500 fee borne by the klipper (expect dibayar / t / 2500)'
+select public.process_withdrawal((select id from public.withdrawals where creator_id = '18181818-0000-0000-0000-0000000000a1' and status = 'diajukan'), 'diproses');
+\echo '       a transfer fee as large as the amount (expect WITHDRAWAL_FEE_INVALID)'
+savepoint n2; select public.process_withdrawal((select id from public.withdrawals where creator_id = '18181818-0000-0000-0000-0000000000a1' and status = 'diproses'), 'dibayar', current_date, 'withdrawals/p18.png', null, 300000); rollback to savepoint n2;
+select public.process_withdrawal((select id from public.withdrawals where creator_id = '18181818-0000-0000-0000-0000000000a1' and status = 'diproses'), 'dibayar', current_date, 'withdrawals/p18.png', null, 2500);
+select status, paid_at is not null as paid, transfer_fee from public.withdrawals where creator_id = '18181818-0000-0000-0000-0000000000a1' order by requested_at desc limit 1;
+\echo 'P18-22. a negative balance after a correction blocks withdrawals (expect -50000, then WITHDRAW_BELOW_MIN or ABOVE_BALANCE)'
+select public.adjust_balance('18181818-0000-0000-0000-0000000000a1', -50000, 'Pembatalan setelah penarikan');
+reset role;
+select public.creator_balance('18181818-0000-0000-0000-0000000000a1') as balance;
+select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+set local role authenticated;
+savepoint o; select public.request_withdrawal(100000); rollback to savepoint o;
+select total_withdrawn from public.creator_portal_balance;
+\echo '       the klipper sees the fee and what reached the account (expect 300000 / 2500 / 297500)'
+select amount, transfer_fee, net_amount from public.creator_portal_withdrawals where status = 'dibayar';
+reset role;
+
+-- Blocked klipper B (FR-M3-09).
+select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p18_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+update public.creators set status = 'diblokir', blocked_reason = 'Uji blokir saldo', blocked_at = now() where id = '18181818-0000-0000-0000-0000000000a2';
+reset role;
+select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as klipper_b;
+set local role authenticated;
+\echo 'P18-23. a blocked klipper still reads their frozen balance (expect diblokir / reason / 200000)'
+select a.status, a.blocked_reason, b.available from public.creator_portal_account a, public.creator_portal_balance b;
+\echo 'P18-24. but cannot withdraw or change the account (expect WITHDRAW_CREATOR_BLOCKED, CREATOR_NOT_FOUND)'
+savepoint p; select public.request_withdrawal(100000); rollback to savepoint p;
+savepoint q; select public.save_creator_bank_account('BRI', '12345678', 'Klipper Saldo B'); rollback to savepoint q;
+\echo 'P18-25. only their own entries, nothing of klipper A (expect 1 / 0 / 0)'
+select (select count(*) from public.creator_portal_ledger) as own_entries,
+       (select count(*) from public.creator_portal_withdrawals) as withdrawals,
+       (select count(*) from public.creator_ledger_entries) as base_table;
+reset role;
+
+select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p18_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
+set local role authenticated;
+\echo 'P18-26. deleting an account with a balance (expect ANONYMIZE_BALANCE_NOT_ZERO)'
+savepoint r; select public.anonymize_creator('18181818-0000-0000-0000-0000000000a2'); rollback to savepoint r;
+\echo 'P18-27. the ledger stays append-only for the owner too (expect UPDATE 0, DELETE 0)'
+update public.creator_ledger_entries set amount = 1 where creator_id = '18181818-0000-0000-0000-0000000000a1';
+delete from public.creator_ledger_entries where creator_id = '18181818-0000-0000-0000-0000000000a1';
+reset role;
+-- Fixtures were created inside this transaction; the rollback removes them.
+rollback;

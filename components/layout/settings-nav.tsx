@@ -8,7 +8,12 @@ export function SettingsNav({ isOwner }: { isOwner: boolean }) {
   const pathname = usePathname();
   const items = [
     { href: "/settings/profile", label: "Profil saya" },
-    ...(isOwner ? [{ href: "/settings/users", label: "Pengguna" }] : []),
+    ...(isOwner
+      ? [
+          { href: "/settings/users", label: "Pengguna" },
+          { href: "/settings/penarikan", label: "Penarikan" },
+        ]
+      : []),
   ];
 
   return (

@@ -3,6 +3,7 @@ import {
   Building2,
   ClipboardList,
   Clapperboard,
+  Wallet,
   Compass,
   Home,
   LayoutDashboard,
@@ -30,6 +31,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Kreator", href: "/creators", icon: Users },
   { label: "Kampanye", href: "/campaigns", icon: Megaphone },
   { label: "Verifikasi", href: "/verifikasi", icon: BadgeCheck },
+  { label: "Penarikan", href: "/penarikan", icon: Wallet, roles: ["owner"] },
   { label: "Aktivitas", href: "/activity", icon: ScrollText, roles: ["owner"] },
   { label: "Pengaturan", href: "/settings", icon: Settings },
 ];
@@ -40,7 +42,13 @@ export const PORTAL_NAV_ITEMS: NavItem[] = [
   { label: "Kampanye", href: "/portal/kampanye", icon: Compass },
   { label: "Kampanye Saya", href: "/portal/penugasan", icon: ClipboardList },
   { label: "Klip Saya", href: "/portal/klip", icon: Clapperboard },
+  { label: "Saldo", href: "/portal/saldo", icon: Wallet },
   { label: "Profil", href: "/portal/profil", icon: User },
+];
+
+/** FR-M3-09: a blocked klipper only reads their status and frozen balance. */
+export const BLOCKED_PORTAL_NAV_ITEMS: NavItem[] = [
+  { label: "Saldo", href: "/portal/saldo", icon: Wallet },
 ];
 
 /**
@@ -57,8 +65,11 @@ export function visibleNavItems(role: InternalRole): NavItem[] {
   return NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role));
 }
 
-/** The three signed-in areas, each with its own shell chrome. */
-export type ShellArea = "app" | "portal" | "client";
+/**
+ * The signed-in areas, each with its own shell chrome. `portal-blocked` is
+ * the creator portal of a blocked klipper (FR-M3-09): same chrome, one entry.
+ */
+export type ShellArea = "app" | "portal" | "portal-blocked" | "client";
 
 export type AreaChrome = {
   /** Shown under the app name. Null for the internal app, which needs no qualifier. */
@@ -75,7 +86,7 @@ export type AreaChrome = {
   sidebarVars: React.CSSProperties;
 };
 
-export const AREA_CHROME: Record<ShellArea, AreaChrome> = {
+const AREA_CHROME_BASE: Record<Exclude<ShellArea, "portal-blocked">, AreaChrome> = {
   app: {
     label: null,
     icon: Megaphone,
@@ -104,8 +115,14 @@ export const AREA_CHROME: Record<ShellArea, AreaChrome> = {
   },
 };
 
+export const AREA_CHROME: Record<ShellArea, AreaChrome> = {
+  ...AREA_CHROME_BASE,
+  "portal-blocked": AREA_CHROME_BASE.portal,
+};
+
 export function navItemsFor(area: ShellArea, role: UserRole): NavItem[] {
   if (area === "portal") return PORTAL_NAV_ITEMS;
+  if (area === "portal-blocked") return BLOCKED_PORTAL_NAV_ITEMS;
   if (area === "client") return CLIENT_NAV_ITEMS;
   return visibleNavItems(role as InternalRole);
 }

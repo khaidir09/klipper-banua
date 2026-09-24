@@ -22,7 +22,12 @@ import {
   type BankAccountData,
 } from "../actions";
 
-type MaskedAccount = { bank_name: string; account_number_masked: string } | null;
+type MaskedAccount = {
+  bank_name: string;
+  account_number_masked: string;
+  /** FR-M19-04: the holder name differs from the klipper's full name. */
+  holder_matches_name?: boolean;
+} | null;
 
 type BankAccountPanelProps = {
   creatorId: string;
@@ -67,6 +72,12 @@ export function BankAccountPanel({ creatorId, isOwner, masked }: BankAccountPane
               <dt className="text-muted-foreground">Nomor rekening</dt>
               <dd className="font-mono">{masked.account_number_masked}</dd>
             </div>
+            {masked.holder_matches_name === false ? (
+              <p className="text-sm font-medium text-warning-soft-foreground sm:col-span-2">
+                Nama pemilik rekening berbeda dengan nama lengkap klipper; periksa sebelum
+                mentransfer.
+              </p>
+            ) : null}
           </dl>
         ) : (
           <p className="text-sm text-muted-foreground">Belum ada data rekening.</p>

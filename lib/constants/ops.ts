@@ -10,6 +10,8 @@ export const OPS_ACTIVITY_LABELS: Record<OpsActivity, string> = {
   koordinasi_klien: "Koordinasi klien",
   pembayaran: "Pembayaran",
   laporan: "Laporan",
+  verifikasi_klip: "Verifikasi klip",
+  penarikan: "Penarikan saldo",
   lainnya: "Lainnya",
 };
 

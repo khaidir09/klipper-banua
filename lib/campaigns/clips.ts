@@ -22,8 +22,9 @@ function addCalendarDays(date: string, days: number): string {
 }
 
 /**
- * The window a clip may be posted in: from joining (or the campaign start,
- * whichever is later) to the end of `end_date` in the business timezone.
+ * The window a clip may be posted in: from the minute of joining (or the
+ * campaign start, whichever is later) to the end of `end_date` in the
+ * business timezone.
  * Mirrors `v_period_start` / `v_period_end` in `guard_clip_change`.
  */
 export function clipPeriod(input: {
@@ -32,7 +33,10 @@ export function clipPeriod(input: {
   endDate: string;
 }): { start: Date; end: Date } {
   const campaignStart = fromZonedTime(`${input.startDate}T00:00:00`, CAMPAIGN_BUSINESS_TIMEZONE);
-  const joined = input.joinedAt ? new Date(input.joinedAt) : null;
+  // Minute precision, like the posting-time input (date_trunc in the guard).
+  const joined = input.joinedAt
+    ? new Date(Math.floor(new Date(input.joinedAt).getTime() / 60_000) * 60_000)
+    : null;
   const start = joined && joined > campaignStart ? joined : campaignStart;
   const end = fromZonedTime(
     `${addCalendarDays(input.endDate, 1)}T00:00:00`,

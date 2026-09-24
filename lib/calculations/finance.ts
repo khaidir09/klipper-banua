@@ -30,6 +30,16 @@ export type CampaignFinance = {
   cpm: number | null;
   /** null (shown as "–") when there are no registrants. */
   costPerRegistrant: number | null;
+  /** `per_views` campaigns only (PRD 8.4, FR-M8-06); null for `paket`. */
+  perViews: {
+    creatorBudget: number;
+    /** Σ ledger honor_klip + pembatalan. */
+    creatorCost: number;
+    budgetRemaining: number;
+    budgetUsedPct: number;
+    /** Honor paid per 1.000 verified views; null without views. */
+    creatorCostPer1000Views: number | null;
+  } | null;
 };
 
 export function campaignFinance(input: {
@@ -38,9 +48,14 @@ export function campaignFinance(input: {
   payouts: { total_amount: number }[];
   totalViews: number;
   totalRegistrants: number;
+  /** Set for `per_views`: honor comes from the ledger, not from `payouts`. */
+  perViews?: { creatorBudget: number; creatorCost: number };
 }): CampaignFinance {
   const clientPaid = input.clientPayments.reduce((sum, p) => sum + p.paid_amount, 0);
-  const totalPayouts = input.payouts.reduce((sum, p) => sum + p.total_amount, 0);
+  // creator_cost (PRD 8.4): Σ payouts for paket, Σ ledger for per_views.
+  const totalPayouts = input.perViews
+    ? input.perViews.creatorCost
+    : input.payouts.reduce((sum, p) => sum + p.total_amount, 0);
   const grossMargin = input.packagePrice - totalPayouts;
 
   return {
@@ -52,5 +67,20 @@ export function campaignFinance(input: {
     grossMarginPct: input.packagePrice > 0 ? (grossMargin / input.packagePrice) * 100 : null,
     cpm: input.totalViews > 0 ? floorDiv(input.packagePrice * 1000, input.totalViews) : null,
     costPerRegistrant: floorDiv(input.packagePrice, input.totalRegistrants),
+    perViews: input.perViews
+      ? {
+          creatorBudget: input.perViews.creatorBudget,
+          creatorCost: input.perViews.creatorCost,
+          budgetRemaining: Math.max(input.perViews.creatorBudget - input.perViews.creatorCost, 0),
+          budgetUsedPct:
+            input.perViews.creatorBudget > 0
+              ? (Math.max(input.perViews.creatorCost, 0) / input.perViews.creatorBudget) * 100
+              : 0,
+          creatorCostPer1000Views:
+            input.totalViews > 0
+              ? floorDiv(Math.max(input.perViews.creatorCost, 0) * 1000, input.totalViews)
+              : null,
+        }
+      : null,
   };
 }

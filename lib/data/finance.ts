@@ -255,12 +255,23 @@ export async function getCampaignFinance(
     posted: c.posted,
     snapshots: c.snapshots,
   }));
+  // PRD 8.4: a per_views campaign pays from the ledger, within its budget.
+  let perViews: { creatorBudget: number; creatorCost: number } | undefined;
+  if (campaign.payout_model === "per_views") {
+    const { data: cost, error } = await supabase.rpc("campaign_creator_cost", {
+      target_campaign_id: campaign.id,
+    });
+    if (error) throw new Error(error.message);
+    perViews = { creatorBudget: Number(campaign.creator_budget), creatorCost: Number(cost ?? 0) };
+  }
+
   const summary = campaignFinance({
     packagePrice: campaign.package_price,
     clientPayments: payments,
     payouts,
     totalViews: totalViews(contentsForTotals),
     totalRegistrants: totalRegistrants(inputs.reports),
+    perViews,
   });
 
   const contentInfo = Object.fromEntries(

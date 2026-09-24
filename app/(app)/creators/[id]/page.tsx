@@ -30,6 +30,12 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { verificationBlockers } from "@/lib/validation/creators";
 import { formatWhatsapp, whatsappLink } from "@/lib/validation/phone";
 import { AnonymizeCreatorButton } from "./anonymize-creator-button";
+import {
+  getCreatorBalance,
+  getCreatorClipStats,
+  listCreatorWithdrawals,
+} from "@/lib/data/withdrawals";
+import { BalancePanel } from "./balance-panel";
 import { BankAccountPanel } from "./bank-account-panel";
 import { BlockPanel } from "./block-panel";
 import { DeleteCreatorButton } from "./delete-creator-button";
@@ -50,12 +56,18 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
   const anonymized = creator.anonymized_at !== null;
   const tz = profile.timezone;
 
-  const [proofUrls, maskedBank, history, portalAccount] = await Promise.all([
-    Promise.all(creator.social_accounts.map((a) => signProofUrl(supabase, a.audience_proof_path))),
-    getMaskedBankAccount(supabase, id),
-    listCreatorAssignments(supabase, id),
-    getPortalAccount(supabase, creator.profile_id),
-  ]);
+  const [proofUrls, maskedBank, history, portalAccount, balance, clipStats, withdrawals] =
+    await Promise.all([
+      Promise.all(
+        creator.social_accounts.map((a) => signProofUrl(supabase, a.audience_proof_path)),
+      ),
+      getMaskedBankAccount(supabase, id),
+      listCreatorAssignments(supabase, id),
+      getPortalAccount(supabase, creator.profile_id),
+      getCreatorBalance(supabase, id),
+      getCreatorClipStats(supabase, id),
+      isOwner ? listCreatorWithdrawals(supabase, id) : Promise.resolve([]),
+    ]);
 
   const blockers = verificationBlockers({
     hasProofAccount: creator.social_accounts.some((a) => Boolean(a.audience_proof_path)),
@@ -145,6 +157,7 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
               </TabsTrigger>
               <TabsTrigger value="verifikasi">Lencana & status</TabsTrigger>
               <TabsTrigger value="rekening">Rekening</TabsTrigger>
+              <TabsTrigger value="saldo">Saldo</TabsTrigger>
               <TabsTrigger value="portal">Portal</TabsTrigger>
             </>
           )}
@@ -223,6 +236,18 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
 
         <TabsContent value="rekening">
           <BankAccountPanel creatorId={id} isOwner={isOwner} masked={maskedBank} />
+        </TabsContent>
+
+        <TabsContent value="saldo">
+          <BalancePanel
+            creatorId={id}
+            isOwner={isOwner}
+            stats={clipStats}
+            summary={balance.summary}
+            lines={balance.lines}
+            withdrawals={withdrawals}
+            timezone={tz}
+          />
         </TabsContent>
 
         <TabsContent value="portal">

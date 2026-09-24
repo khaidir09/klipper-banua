@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { appUrl } from "@/lib/app-url";
+import { listClipQueue } from "@/lib/data/clips";
 import { getDueSnapshotItems } from "@/lib/data/dashboard";
+import { countOpenWithdrawals } from "@/lib/data/withdrawals";
 import { serverEnv } from "@/lib/env.server";
 import { buildDueSnapshotReminder } from "@/lib/reminders/due-snapshots";
 import { secretsEqual } from "@/lib/share/token";
@@ -37,7 +39,17 @@ export async function GET(request: NextRequest) {
 
   const now = new Date();
   const timezone = env.DEFAULT_TIMEZONE;
-  const due = await getDueSnapshotItems(createSupabaseAdminClient(), now, timezone);
+  const admin = createSupabaseAdminClient();
+  // FR-M10-05 (v4.0): clips waiting > 24 hours and open withdrawals, as counts only.
+  const [due, clipQueue, openWithdrawals] = await Promise.all([
+    getDueSnapshotItems(admin, now, timezone),
+    listClipQueue(admin, now),
+    countOpenWithdrawals(admin),
+  ]);
+  const queues = {
+    overdueClips: clipQueue.clips.filter((item) => item.overdue).length,
+    openWithdrawals,
+  };
 
   const items = due.map((item) => ({
     campaignCode: item.campaign.code,
@@ -52,10 +64,18 @@ export async function GET(request: NextRequest) {
     now,
     timezone,
     dashboardUrl: appUrl("/dashboard").toString(),
+    queues,
   });
 
   return NextResponse.json(
-    { generatedAt: now.toISOString(), timezone, count: reminder.count, text: reminder.text, items },
+    {
+      generatedAt: now.toISOString(),
+      timezone,
+      count: reminder.count,
+      text: reminder.text,
+      items,
+      queues,
+    },
     { headers: NO_STORE },
   );
 }

@@ -82,6 +82,11 @@ values ('f1000000-0000-4000-8000-000000000017', 'f1000000-0000-4000-8000-0000000
 -- fixture can go in directly; the guard is tested in guards-check.sql.
 insert into public.creator_ledger_entries (id, creator_id, entry_type, amount, campaign_id, content_id)
 values ('f1000000-0000-4000-8000-000000000070', 'f1000000-0000-4000-8000-000000000003', 'honor_klip', 10000, 'f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000011');
+-- Phase 18 (M19): one withdrawal of the portal creator, and one of another
+-- klipper the portal creator must never see.
+insert into public.withdrawals (id, creator_id, amount, bank_name, account_number, account_holder) values
+  ('f1000000-0000-4000-8000-000000000071', 'f1000000-0000-4000-8000-000000000003', 50000, 'Bank Kalsel', '1234567890', 'RLS Creator'),
+  ('f1000000-0000-4000-8000-000000000072', 'f1000000-0000-4000-8000-000000000004', 50000, 'BRI', '9876543210', 'RLS Creator Two');
 insert into public.ops_time_logs (id, campaign_id, user_id, activity, minutes, log_date)
 values ('f1000000-0000-4000-8000-000000000018', 'f1000000-0000-4000-8000-000000000007', (select owner_id from rls_ids), 'review', 30, '2026-10-02');
 insert into public.report_share_links (id, campaign_id, token_hash, created_by)
@@ -381,6 +386,25 @@ insert into rls_cases values
   ('creator_ledger_entries', 'update', $q$update public.creator_ledger_entries set notes = notes where id = 'f1000000-0000-4000-8000-000000000070'$q$),
   ('creator_ledger_entries', 'delete', $q$delete from public.creator_ledger_entries where id = 'f1000000-0000-4000-8000-000000000070'$q$);
 
+-- Phase 18 (M19): withdrawals are owner-only and change through functions;
+-- the minimum withdrawal is read by the team and set by the owner; the
+-- klipper reads their own balance, ledger, withdrawals and masked account.
+insert into rls_cases values
+  ('withdrawals', 'select', $q$select count(*) from public.withdrawals where id = 'f1000000-0000-4000-8000-000000000071'$q$),
+  ('withdrawals', 'insert', $q$insert into public.withdrawals (creator_id, amount, bank_name, account_number, account_holder) values ('f1000000-0000-4000-8000-000000000003', 60000, 'BRI', '11112222', 'x')$q$),
+  ('withdrawals', 'update', $q$update public.withdrawals set amount = amount where id = 'f1000000-0000-4000-8000-000000000071'$q$),
+  ('withdrawals', 'delete', $q$delete from public.withdrawals where id = 'f1000000-0000-4000-8000-000000000071'$q$),
+  ('platform_settings', 'select', $q$select count(*) from public.platform_settings$q$),
+  ('platform_settings', 'insert', $q$insert into public.platform_settings (id) values (true)$q$),
+  ('platform_settings', 'update', $q$update public.platform_settings set min_withdrawal = min_withdrawal$q$),
+  ('platform_settings', 'delete', $q$delete from public.platform_settings$q$),
+  ('creator_portal_account', 'select', $q$select count(*) from public.creator_portal_account$q$),
+  ('creator_portal_ledger', 'select', $q$select count(*) from public.creator_portal_ledger$q$),
+  ('creator_portal_balance', 'select', $q$select count(*) from public.creator_portal_balance$q$),
+  ('creator_portal_withdrawals', 'select', $q$select count(*) from public.creator_portal_withdrawals where id = 'f1000000-0000-4000-8000-000000000071'$q$),
+  ('creator_portal_withdrawals_other', 'select', $q$select count(*) from public.creator_portal_withdrawals where id = 'f1000000-0000-4000-8000-000000000072'$q$),
+  ('creator_portal_bank_account', 'select', $q$select count(*) from public.creator_portal_bank_account$q$);
+
 -- Client portal (M14): the portal reads through views, and the contact row
 -- that carries the account must stay out of the client's own reach.
 insert into rls_cases values
@@ -626,6 +650,23 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) valu
   ('creator_ledger_entries', 'update', 'd', 'd', 'd', 'd', 'd'),
   ('creator_ledger_entries', 'delete', 'd', 'd', 'd', 'd', 'd');
 
+-- Phase 18 (M19).
+insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) values
+  ('withdrawals', 'select', 'a', 'd', 'd', 'd', 'd'),
+  ('withdrawals', 'insert', 'd', 'd', 'd', 'd', 'd'),
+  ('withdrawals', 'update', 'd', 'd', 'd', 'd', 'd'),
+  ('withdrawals', 'delete', 'd', 'd', 'd', 'd', 'd'),
+  ('platform_settings', 'select', 'a', 'a', 'd', 'd', 'd'),
+  ('platform_settings', 'insert', 'd', 'd', 'd', 'd', 'd'),
+  ('platform_settings', 'update', 'a', 'd', 'd', 'd', 'd'),
+  ('platform_settings', 'delete', 'd', 'd', 'd', 'd', 'd'),
+  ('creator_portal_account', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_ledger', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_balance', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_withdrawals', 'select', 'd', 'd', 'd', 'd', 'a'),
+  ('creator_portal_withdrawals_other', 'select', 'd', 'd', 'd', 'd', 'd'),
+  ('creator_portal_bank_account', 'select', 'd', 'd', 'd', 'd', 'a');
+
 -- ---------------------------------------------------------------------------
 -- Run every case for every role.
 -- ---------------------------------------------------------------------------
@@ -721,7 +762,14 @@ select table_name::text || '.' || column_name::text
 from information_schema.columns
 where table_schema = 'public' and table_name = 'creator_portal_contents'
   and column_name in ('caption_code_checked', 'posted_url_normalized', 'created_by');
-\echo '--- Forbidden columns in creator_portal_catalog / creator_portal_contents (expect 0 rows) ---'
+-- FR-M19-07: the portal never carries the full number or the transfer proof.
+insert into catalog_forbidden
+select table_name::text || '.' || column_name::text
+from information_schema.columns
+where table_schema = 'public'
+  and table_name in ('creator_portal_withdrawals', 'creator_portal_bank_account')
+  and column_name in ('account_number', 'transfer_proof_path', 'processed_by');
+\echo '--- Forbidden columns in portal views (expect 0 rows) ---'
 select column_name from catalog_forbidden;
 
 \echo '--- Manager reads bank details only masked (expect bank + ******7890) ---'

@@ -135,11 +135,26 @@ export function FinancePanel(props: Props) {
           value={formatRupiah(summary.clientPaid)}
           detail={`Sisa tagihan ${formatRupiah(summary.clientOutstanding)}`}
         />
-        <Tile
-          label="Total honor kreator"
-          value={formatRupiah(summary.totalPayouts)}
-          detail="Semua honor tercatat (draf, disetujui, dibayar)"
-        />
+        {summary.perViews ? (
+          <>
+            <Tile
+              label="Anggaran klipper"
+              value={formatRupiah(summary.perViews.creatorBudget)}
+              detail={`Sisa ${formatRupiah(summary.perViews.budgetRemaining)}`}
+            />
+            <Tile
+              label="Honor terpakai"
+              value={formatRupiah(summary.perViews.creatorCost)}
+              detail={`${formatPercent(summary.perViews.budgetUsedPct)} dari anggaran · dari buku besar saldo`}
+            />
+          </>
+        ) : (
+          <Tile
+            label="Total honor kreator"
+            value={formatRupiah(summary.totalPayouts)}
+            detail="Semua honor tercatat (draf, disetujui, dibayar)"
+          />
+        )}
         <Tile
           label="Margin kotor"
           value={formatRupiah(summary.grossMargin)}
@@ -157,207 +172,233 @@ export function FinancePanel(props: Props) {
           value={dash(summary.cpm, formatRupiah)}
           detail={summary.cpm === null ? "Belum ada views" : "Biaya per 1.000 views"}
         />
+        {summary.perViews ? (
+          <Tile
+            label="Biaya efektif per 1.000 views"
+            value={dash(summary.perViews.creatorCostPer1000Views, formatRupiah)}
+            detail={
+              summary.perViews.creatorCostPer1000Views === null
+                ? "Belum ada views"
+                : "Honor terpakai ÷ views terverifikasi × 1.000"
+            }
+          />
+        ) : null}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Honor kreator</CardTitle>
-          <CardDescription>
-            Honor dasar per konten layak + bonus per 1.000 views + bonus per pendaftar ± penyesuaian
-            (PRD 8.3). Hanya owner yang dapat menyetujui dan menandai dibayar.
-          </CardDescription>
-          {closed ? (
-            <CardAction>
-              <Button
-                size="sm"
-                onClick={() => run(() => calculateAllPayoutsAction(campaignId))}
-                disabled={isPending || props.rows.length === 0}
-              >
-                <Calculator aria-hidden />
-                Hitung semua honor
-              </Button>
-            </CardAction>
-          ) : null}
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {!closed ? (
-            <Alert>
-              <AlertDescription>
-                Honor baru dapat dihitung dan disimpan setelah kampanye berstatus Selesai. Angka di
-                bawah adalah perkiraan dari data saat ini.
-              </AlertDescription>
-            </Alert>
-          ) : null}
+      {/* per_views: honor lives in the ledger (M19), not in payouts. */}
+      {summary.perViews ? null : (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Honor kreator</CardTitle>
+              <CardDescription>
+                Honor dasar per konten layak + bonus per 1.000 views + bonus per pendaftar ±
+                penyesuaian (PRD 8.3). Hanya owner yang dapat menyetujui dan menandai dibayar.
+              </CardDescription>
+              {closed ? (
+                <CardAction>
+                  <Button
+                    size="sm"
+                    onClick={() => run(() => calculateAllPayoutsAction(campaignId))}
+                    disabled={isPending || props.rows.length === 0}
+                  >
+                    <Calculator aria-hidden />
+                    Hitung semua honor
+                  </Button>
+                </CardAction>
+              ) : null}
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {!closed ? (
+                <Alert>
+                  <AlertDescription>
+                    Honor baru dapat dihitung dan disimpan setelah kampanye berstatus Selesai. Angka
+                    di bawah adalah perkiraan dari data saat ini.
+                  </AlertDescription>
+                </Alert>
+              ) : null}
 
-          {props.rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Belum ada kreator ditugaskan.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Kreator</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="hidden text-right md:table-cell">Dasar</TableHead>
-                    <TableHead className="hidden text-right md:table-cell">Bonus views</TableHead>
-                    <TableHead className="hidden text-right md:table-cell">
-                      Bonus pendaftar
-                    </TableHead>
-                    <TableHead className="hidden text-right lg:table-cell">Penyesuaian</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {props.rows.map((row) => {
-                    const payout = row.payout;
-                    const shown = payout
-                      ? {
-                          base: payout.base_amount,
-                          views: payout.views_bonus,
-                          registrants: payout.registrant_bonus,
-                          adjustment: payout.adjustment_amount,
-                          total: payout.total_amount,
-                        }
-                      : {
-                          base: row.preview.baseAmount,
-                          views: row.preview.viewsBonus,
-                          registrants: row.preview.registrantBonus,
-                          adjustment: 0,
-                          total: row.preview.totalAmount,
-                        };
-                    const isOpen = expanded === row.assignment.id;
-                    return (
-                      <Fragment key={row.assignment.id}>
-                        <TableRow>
-                          <TableCell className="font-medium">
-                            {row.assignment.name}
-                            <span className="block font-mono text-xs text-muted-foreground">
-                              {row.assignment.referralCode}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            {payout ? (
-                              <PayoutStatusBadge status={payout.status} />
-                            ) : (
-                              <Badge variant="outline" className="text-muted-foreground">
-                                {closed ? "Belum dihitung" : "Perkiraan"}
-                              </Badge>
-                            )}
-                            {payout?.outdated ? (
-                              <span className="mt-1 block text-xs text-amber-600">
-                                Data berubah; hitung ulang
-                              </span>
-                            ) : null}
-                          </TableCell>
-                          <TableCell className="hidden text-right tabular-nums md:table-cell">
-                            {formatRupiah(shown.base)}
-                          </TableCell>
-                          <TableCell className="hidden text-right tabular-nums md:table-cell">
-                            {formatRupiah(shown.views)}
-                          </TableCell>
-                          <TableCell className="hidden text-right tabular-nums md:table-cell">
-                            {formatRupiah(shown.registrants)}
-                          </TableCell>
-                          <TableCell className="hidden text-right tabular-nums lg:table-cell">
-                            {shown.adjustment === 0 ? "–" : formatRupiah(shown.adjustment)}
-                          </TableCell>
-                          <TableCell className="text-right font-semibold tabular-nums">
-                            {formatRupiah(shown.total)}
-                          </TableCell>
-                        </TableRow>
-                        <TableRow className="border-b-2 hover:bg-transparent">
-                          <TableCell colSpan={7} className="pt-0">
-                            <div className="flex flex-wrap gap-2">
-                              {closed && (!payout || payout.status === "draf") ? (
-                                <Button
-                                  size="sm"
-                                  variant={payout?.outdated || !payout ? "default" : "outline"}
-                                  disabled={isPending}
-                                  onClick={() =>
-                                    run(() => calculatePayoutAction(campaignId, row.assignment.id))
-                                  }
-                                >
-                                  <Calculator aria-hidden />
-                                  {payout ? "Hitung ulang" : "Hitung"}
-                                </Button>
-                              ) : null}
-                              {payout?.status === "draf" ? (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setDialog({ kind: "adjust", row })}
-                                >
-                                  Penyesuaian
-                                </Button>
-                              ) : null}
-                              {isOwner && payout?.status === "draf" ? (
-                                <Button
-                                  size="sm"
-                                  disabled={isPending || payout.outdated}
-                                  title={payout.outdated ? "Hitung ulang dulu" : undefined}
-                                  onClick={() =>
-                                    run(() => approvePayoutAction(campaignId, payout.id))
-                                  }
-                                >
-                                  Setujui
-                                </Button>
-                              ) : null}
-                              {isOwner && payout?.status === "disetujui" ? (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => setDialog({ kind: "paid", row })}
-                                  >
-                                    Tandai dibayar
-                                  </Button>
+              {props.rows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Belum ada kreator ditugaskan.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Kreator</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="hidden text-right md:table-cell">Dasar</TableHead>
+                        <TableHead className="hidden text-right md:table-cell">
+                          Bonus views
+                        </TableHead>
+                        <TableHead className="hidden text-right md:table-cell">
+                          Bonus pendaftar
+                        </TableHead>
+                        <TableHead className="hidden text-right lg:table-cell">
+                          Penyesuaian
+                        </TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {props.rows.map((row) => {
+                        const payout = row.payout;
+                        const shown = payout
+                          ? {
+                              base: payout.base_amount,
+                              views: payout.views_bonus,
+                              registrants: payout.registrant_bonus,
+                              adjustment: payout.adjustment_amount,
+                              total: payout.total_amount,
+                            }
+                          : {
+                              base: row.preview.baseAmount,
+                              views: row.preview.viewsBonus,
+                              registrants: row.preview.registrantBonus,
+                              adjustment: 0,
+                              total: row.preview.totalAmount,
+                            };
+                        const isOpen = expanded === row.assignment.id;
+                        return (
+                          <Fragment key={row.assignment.id}>
+                            <TableRow>
+                              <TableCell className="font-medium">
+                                {row.assignment.name}
+                                <span className="block font-mono text-xs text-muted-foreground">
+                                  {row.assignment.referralCode}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                {payout ? (
+                                  <PayoutStatusBadge status={payout.status} />
+                                ) : (
+                                  <Badge variant="outline" className="text-muted-foreground">
+                                    {closed ? "Belum dihitung" : "Perkiraan"}
+                                  </Badge>
+                                )}
+                                {payout?.outdated ? (
+                                  <span className="mt-1 block text-xs text-amber-600">
+                                    Data berubah; hitung ulang
+                                  </span>
+                                ) : null}
+                              </TableCell>
+                              <TableCell className="hidden text-right tabular-nums md:table-cell">
+                                {formatRupiah(shown.base)}
+                              </TableCell>
+                              <TableCell className="hidden text-right tabular-nums md:table-cell">
+                                {formatRupiah(shown.views)}
+                              </TableCell>
+                              <TableCell className="hidden text-right tabular-nums md:table-cell">
+                                {formatRupiah(shown.registrants)}
+                              </TableCell>
+                              <TableCell className="hidden text-right tabular-nums lg:table-cell">
+                                {shown.adjustment === 0 ? "–" : formatRupiah(shown.adjustment)}
+                              </TableCell>
+                              <TableCell className="text-right font-semibold tabular-nums">
+                                {formatRupiah(shown.total)}
+                              </TableCell>
+                            </TableRow>
+                            <TableRow className="border-b-2 hover:bg-transparent">
+                              <TableCell colSpan={7} className="pt-0">
+                                <div className="flex flex-wrap gap-2">
+                                  {closed && (!payout || payout.status === "draf") ? (
+                                    <Button
+                                      size="sm"
+                                      variant={payout?.outdated || !payout ? "default" : "outline"}
+                                      disabled={isPending}
+                                      onClick={() =>
+                                        run(() =>
+                                          calculatePayoutAction(campaignId, row.assignment.id),
+                                        )
+                                      }
+                                    >
+                                      <Calculator aria-hidden />
+                                      {payout ? "Hitung ulang" : "Hitung"}
+                                    </Button>
+                                  ) : null}
+                                  {payout?.status === "draf" ? (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setDialog({ kind: "adjust", row })}
+                                    >
+                                      Penyesuaian
+                                    </Button>
+                                  ) : null}
+                                  {isOwner && payout?.status === "draf" ? (
+                                    <Button
+                                      size="sm"
+                                      disabled={isPending || payout.outdated}
+                                      title={payout.outdated ? "Hitung ulang dulu" : undefined}
+                                      onClick={() =>
+                                        run(() => approvePayoutAction(campaignId, payout.id))
+                                      }
+                                    >
+                                      Setujui
+                                    </Button>
+                                  ) : null}
+                                  {isOwner && payout?.status === "disetujui" ? (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => setDialog({ kind: "paid", row })}
+                                      >
+                                        Tandai dibayar
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        disabled={isPending}
+                                        onClick={() => {
+                                          if (window.confirm("Batalkan persetujuan honor ini?")) {
+                                            run(() =>
+                                              revokePayoutApprovalAction(campaignId, payout.id),
+                                            );
+                                          }
+                                        }}
+                                      >
+                                        Batalkan persetujuan
+                                      </Button>
+                                    </>
+                                  ) : null}
+                                  {payout?.status === "dibayar" && payout.proofUrl ? (
+                                    <Button size="sm" variant="ghost" asChild>
+                                      <a href={payout.proofUrl} target="_blank" rel="noreferrer">
+                                        <FileText aria-hidden />
+                                        Bukti transfer
+                                      </a>
+                                    </Button>
+                                  ) : null}
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    disabled={isPending}
-                                    onClick={() => {
-                                      if (window.confirm("Batalkan persetujuan honor ini?")) {
-                                        run(() =>
-                                          revokePayoutApprovalAction(campaignId, payout.id),
-                                        );
-                                      }
-                                    }}
+                                    aria-expanded={isOpen}
+                                    onClick={() => setExpanded(isOpen ? null : row.assignment.id)}
                                   >
-                                    Batalkan persetujuan
+                                    {isOpen ? (
+                                      <ChevronUp aria-hidden />
+                                    ) : (
+                                      <ChevronDown aria-hidden />
+                                    )}
+                                    Rincian
                                   </Button>
-                                </>
-                              ) : null}
-                              {payout?.status === "dibayar" && payout.proofUrl ? (
-                                <Button size="sm" variant="ghost" asChild>
-                                  <a href={payout.proofUrl} target="_blank" rel="noreferrer">
-                                    <FileText aria-hidden />
-                                    Bukti transfer
-                                  </a>
-                                </Button>
-                              ) : null}
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                aria-expanded={isOpen}
-                                onClick={() => setExpanded(isOpen ? null : row.assignment.id)}
-                              >
-                                {isOpen ? <ChevronUp aria-hidden /> : <ChevronDown aria-hidden />}
-                                Rincian
-                              </Button>
-                            </div>
-                            {isOpen ? (
-                              <Breakdown row={row} contentInfo={props.contentInfo} />
-                            ) : null}
-                          </TableCell>
-                        </TableRow>
-                      </Fragment>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                                </div>
+                                {isOpen ? (
+                                  <Breakdown row={row} contentInfo={props.contentInfo} />
+                                ) : null}
+                              </TableCell>
+                            </TableRow>
+                          </Fragment>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       <Card>
         <CardHeader>
