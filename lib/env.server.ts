@@ -41,3 +41,56 @@ export function serverEnv() {
   cached = parsed.data;
   return cached;
 }
+
+/*
+ * SMTP for klipper notification emails (FR-M18-09, FR-M19-09). Optional:
+ * without SMTP_HOST and EMAIL_FROM no email is sent. Kept apart from
+ * `serverEnv()` so a half-filled SMTP block never breaks the rest of the app.
+ */
+const blankToUndefined = (value: unknown) =>
+  typeof value === "string" && value.trim() === "" ? undefined : value;
+
+const smtpEnvSchema = z.object({
+  SMTP_HOST: z.preprocess(blankToUndefined, z.string().optional()),
+  SMTP_PORT: z.preprocess(blankToUndefined, z.coerce.number().int().positive().default(587)),
+  SMTP_USER: z.preprocess(blankToUndefined, z.string().optional()),
+  SMTP_PASS: z.preprocess(blankToUndefined, z.string().optional()),
+  EMAIL_FROM: z.preprocess(blankToUndefined, z.string().optional()),
+});
+
+export type SmtpConfig = {
+  host: string;
+  port: number;
+  auth: { user: string; pass: string } | undefined;
+  from: string;
+};
+
+let smtpCached: SmtpConfig | null | undefined;
+
+/** The SMTP settings, or `null` when notification emails are turned off. */
+export function smtpConfig(): SmtpConfig | null {
+  if (smtpCached !== undefined) return smtpCached;
+
+  const parsed = smtpEnvSchema.safeParse({
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    EMAIL_FROM: process.env.EMAIL_FROM,
+  });
+  if (!parsed.success) {
+    throw new Error(`Invalid SMTP environment variables:\n${z.prettifyError(parsed.error)}`);
+  }
+
+  const env = parsed.data;
+  smtpCached =
+    env.SMTP_HOST && env.EMAIL_FROM
+      ? {
+          host: env.SMTP_HOST,
+          port: env.SMTP_PORT,
+          auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS ?? "" } : undefined,
+          from: env.EMAIL_FROM,
+        }
+      : null;
+  return smtpCached;
+}

@@ -11,6 +11,7 @@ import {
   withdrawalProcessSchema,
 } from "@/lib/validation/withdrawals";
 import { logActivity } from "@/lib/activity/log";
+import { notifyWithdrawalPaid } from "@/lib/email/notify";
 
 /*
  * Owner-only money actions (PRD M19: FR-M19-06, FR-M19-08). The role is
@@ -47,6 +48,7 @@ export async function processWithdrawalAction(values: unknown): Promise<ActionRe
 
   revalidatePath("/penarikan");
   revalidatePath("/dashboard");
+  if (input.status === "dibayar") notifyWithdrawalPaid(supabase, input.withdrawal_id);
   const messages = {
     diproses: "Penarikan ditandai diproses.",
     dibayar:

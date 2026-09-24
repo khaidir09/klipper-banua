@@ -6,6 +6,7 @@ import { logActivity } from "@/lib/activity/log";
 import { requireInternal } from "@/lib/auth/guards";
 import { isClipChecklistComplete } from "@/lib/constants/clips";
 import { computeClipCredit, getClipForVerification, type ClipDetail } from "@/lib/data/clips";
+import { notifyClipDecision, notifyViewsUpdate } from "@/lib/email/notify";
 import { formatRupiah } from "@/lib/format/currency";
 import { zonedInputToUtc } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -110,6 +111,15 @@ export async function verifyClipAction(values: unknown): Promise<ActionResult> {
   });
 
   revalidateClip(clip);
+  notifyClipDecision(supabase, clip.creator.id, {
+    campaignName: clip.campaign.name,
+    decision: input.decision,
+    verifiedViews: input.verified_views,
+    credit,
+    creditLimited: Boolean(result.earning?.limitedBy),
+    rejectionReason: input.rejection_reason as ClipRejectionReason | null,
+    notes: input.notes,
+  });
   if (input.decision === "disetujui") {
     return ok(`Klip disetujui. ${creditMessage(credit, Boolean(result.earning?.limitedBy))}`);
   }
@@ -167,6 +177,14 @@ export async function verifyViewsUpdateAction(values: unknown): Promise<ActionRe
   });
 
   revalidateClip(clip);
+  notifyViewsUpdate(supabase, clip.creator.id, {
+    campaignName: clip.campaign.name,
+    accepted: input.accept,
+    verifiedViews: input.verified_views,
+    credit,
+    creditLimited: Boolean(result.earning?.limitedBy),
+    notes: input.notes,
+  });
   return input.accept
     ? ok(`Pembaruan views diterima. ${creditMessage(credit, Boolean(result.earning?.limitedBy))}`)
     : ok("Pembaruan views ditolak.");

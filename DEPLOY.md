@@ -105,6 +105,12 @@ Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan me
    APP_DOMAIN="app.contoh.id"
    # Opsional (v1.1): token untuk pengingat Telegram via n8n, lihat bagian 10
    REMINDER_API_TOKEN="<hasil: openssl rand -hex 32>"
+   # Opsional (v4.1): email pemberitahuan ke klipper (klip diverifikasi, penarikan dibayar)
+   SMTP_HOST="smtp-relay.brevo.com"
+   SMTP_PORT="587"
+   SMTP_USER="<login SMTP>"
+   SMTP_PASS="<kata sandi/kunci SMTP>"
+   EMAIL_FROM="Klipper Banua <no-reply@contoh.id>"
    ```
 
    - Isi URL persis satu kali `https://`, tanpa `/` di akhir. Salah ketik seperti
@@ -115,6 +121,10 @@ Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan me
      tidak ditampilkan.
    - `SUPABASE_SERVICE_ROLE_KEY` dan `CLICK_IP_HASH_SALT` hanya dibaca server saat runtime dan
      tidak masuk ke image.
+   - `SMTP_*` dan `EMAIL_FROM` boleh memakai kredensial SMTP yang sama dengan langkah 2.7.
+     Bila `SMTP_HOST` atau `EMAIL_FROM` kosong, email pemberitahuan klipper (FR-M18-09,
+     FR-M19-09) tidak dikirim; aplikasi tetap berjalan. Port `465` memakai TLS langsung,
+     port lain STARTTLS. Kegagalan kirim hanya tercatat di log container `app`.
    - **Jangan ganti `CLICK_IP_HASH_SALT`** setelah kampanye berjalan; hash IP klik lama tidak
      akan cocok lagi.
 

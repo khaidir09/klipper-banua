@@ -132,7 +132,7 @@ Peluncuran bertahap:
 - Integrasi API TikTok, Instagram, YouTube, atau Facebook untuk metrik otomatis.
 - Katalog kampanye yang bisa dibaca tanpa login, papan peringkat (_leaderboard_), forum, blog, atau CMS.
 - Program referal klipper-mengajak-klipper, tingkatan/level klipper, dan kampanye eksklusif berbasis pengajuan (selain `undangan` oleh tim).
-- Notifikasi WhatsApp/email otomatis, kecuali email bawaan Supabase Auth (konfirmasi, pemulihan) dan pengingat Telegram untuk owner (FR-M10-05).
+- Notifikasi WhatsApp/email otomatis, kecuali email bawaan Supabase Auth (konfirmasi, pemulihan), pengingat Telegram untuk owner (FR-M10-05), dan email pemberitahuan ke klipper (FR-M18-09, FR-M19-09).
 - Penyimpanan data pribadi calon mahasiswa/pendaftar.
 - Aplikasi mobile native, multi-bahasa, multi-tenant, fitur AI.
 - Skrip, pelacak, atau captcha pihak ketiga (lihat pertanyaan terbuka 13.2 no. 14).
@@ -348,6 +348,7 @@ FR-M15-01 sampai FR-M15-08 tetap berlaku, dengan perubahan berikut:
 - **FR-M18-06** **Klip dihapus atau diprivat**: bila tim menemukan klip `dihapus` sebelum `min_live_days`, tim menandainya `dihapus` dan sistem membuat entri `pembatalan` sebesar seluruh honor klip itu. Setelah `min_live_days`, honor tetap milik klipper.
 - **FR-M18-07** **Anti-kecurangan**: `lib/calculations/` menyediakan penanda risiko murni (lonjakan views antar kiriman, rasio interaksi/views di bawah ambang, views menurun, klip diunggah jauh sebelum bergabung) yang ditampilkan sebagai peringatan di antrean, bukan keputusan otomatis. Kecurangan terbukti → tolak klip, batalkan honor terkait (entri `pembatalan`), dan pertimbangkan pemblokiran (FR-M3-09).
 - **FR-M18-08** Kampanye `paket` tetap memakai alur draf M6 dan M13; formulir kirim klip hanya muncul untuk kampanye `per_views`.
+- **FR-M18-09** _(v4.1)_ **Email hasil verifikasi**: setelah tim memutuskan klip (setujui, revisi, tolak) atau pembaruan views (terima, tolak), sistem mengirim email ke `creators.email` berisi nama kampanye, keputusan, views terverifikasi dan honor yang dikreditkan (bila disetujui/diterima), catatan atau alasan (bila revisi/ditolak), dan tautan ke portal. Email hanya pemberitahuan: dikirim lewat SMTP dari server setelah respons, gagal kirim tidak membatalkan keputusan dan hanya dicatat di log server, klipper teranonimkan tidak dikirimi, dan email tidak memuat data rekening. SMTP tidak dikonfigurasi = email tidak dikirim.
 
 ### M19 — Saldo, Rekening, dan Penarikan _(v4.0, Fase 18)_
 
@@ -359,6 +360,7 @@ FR-M15-01 sampai FR-M15-08 tetap berlaku, dengan perubahan berikut:
 - **FR-M19-06** **Pemrosesan** (hanya `owner`): `diajukan` → `diproses` → `dibayar` (tanggal transfer + bukti wajib, bucket `finance-proofs`; `owner` mencatat **biaya transfer** yang ditanggung klipper, sehingga yang diterima = nominal − biaya; buku besar tetap mendebit nominal penuh), atau `ditolak` (alasan wajib) yang otomatis membuat entri `pengembalian_penarikan`. Target: diproses ≤ 1 hari kerja. `owner` juga membuat penyesuaian saldo dengan alasan.
 - **FR-M19-07** Klipper melihat status penarikannya beserta tanggal bayar, tanpa bukti transfer. Nomor rekening di portal dan untuk `manager` hanya tampil 4 digit terakhir.
 - **FR-M19-08** Halaman `owner` "Penarikan": antrean, filter status, ekspor CSV (untuk transfer massal manual), dan total per periode.
+- **FR-M19-09** _(v4.1)_ **Email penarikan dibayar**: saat `owner` menandai penarikan `dibayar`, klipper menerima email berisi nominal, biaya transfer, jumlah diterima, tanggal transfer, dan tautan ke halaman Saldo, tanpa nomor rekening dan tanpa bukti transfer. Aturan pengiriman sama dengan FR-M18-09.
 
 ---
 
