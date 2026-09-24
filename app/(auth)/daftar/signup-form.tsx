@@ -34,7 +34,7 @@ const CONSENTS = [
         <Link href="/syarat" target="_blank" className="underline underline-offset-4">
           Syarat Klipper
         </Link>
-        , termasuk larangan views palsu dan kewajiban kode verifikasi di setiap klip.
+        : nggak pakai views palsu dan selalu tulis kode verifikasi di setiap klip.
       </>
     ),
   },
@@ -100,18 +100,19 @@ export function SignupForm() {
     return (
       <Alert>
         <MailCheck className="text-success" aria-hidden />
-        <AlertTitle>Cek email Anda</AlertTitle>
+        <AlertTitle>Cek emailmu</AlertTitle>
         <AlertDescription>
           <p>
-            Kami mengirim tautan konfirmasi ke <strong>{sentTo}</strong>. Buka tautan itu untuk
-            mengaktifkan akun, lalu tambahkan akun media sosial Anda.
+            Tautan konfirmasi sudah kami kirim ke <strong>{sentTo}</strong>. Buka tautannya untuk
+            mengaktifkan akun, lalu tambahkan akun medsos kamu. Habis itu kamu langsung bisa pilih
+            kampanye.
           </p>
           <p className="mt-2">
-            Tidak ada email dalam beberapa menit? Periksa folder spam, atau{" "}
+            Emailnya belum masuk juga? Cek folder spam, atau{" "}
             <Link href="/login" className="underline underline-offset-4">
               masuk
             </Link>{" "}
-            bila akun Anda sudah aktif.
+            kalau akunmu sudah aktif.
           </p>
         </AlertDescription>
       </Alert>
@@ -185,20 +186,20 @@ export function SignupForm() {
           "full_name",
           "Nama lengkap",
           { autoComplete: "name" },
-          "Sesuai rekening bank atau e-wallet, agar honor bisa ditransfer.",
+          "Samakan dengan nama di rekening atau e-wallet, biar honormu lancar ditransfer.",
         )}
         {textField(
           "stage_name",
           "Nama panggung",
           { autoComplete: "nickname" },
-          "Nama yang dilihat klien di laporan kampanye.",
+          "Nama yang dilihat klien di laporan kampanye, misalnya nama akunmu.",
         )}
         {textField("birth_date", "Tanggal lahir", { type: "date", autoComplete: "bday" })}
         {textField(
           "phone_wa",
           "Nomor WhatsApp",
           { type: "tel", inputMode: "tel", autoComplete: "tel", placeholder: "0812-3456-7890" },
-          "Untuk koordinasi kampanye. Satu nomor hanya untuk satu akun.",
+          "Buat info kampanye dari tim. Satu nomor cuma bisa untuk satu akun.",
         )}
         {textField("city", "Kota/kabupaten", { autoComplete: "address-level2" })}
 

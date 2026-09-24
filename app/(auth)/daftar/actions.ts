@@ -14,7 +14,7 @@ import { signupSchema } from "@/lib/validation/signup";
 const signupLimiter = new FixedWindowRateLimiter(5, 60 * 60 * 1000);
 
 const GENERIC_FAILURE =
-  "Pendaftaran belum berhasil. Jika nomor WhatsApp ini pernah terdaftar, masuk dengan akun lama atau hubungi tim.";
+  "Pendaftaran belum berhasil. Kalau nomor WhatsApp ini pernah dipakai daftar, masuk pakai akun lamamu atau hubungi tim.";
 
 /**
  * FR-M16-01, FR-M16-02. Creates the account through Supabase Auth; the
@@ -31,7 +31,7 @@ export async function signUpCreatorAction(
   const requestHeaders = await headers();
   const ipHash = await hashIp(clientIpFromHeaders(requestHeaders), serverEnv().CLICK_IP_HASH_SALT);
   if (ipHash && !signupLimiter.check(ipHash).allowed) {
-    return fail("Terlalu banyak percobaan pendaftaran. Coba lagi dalam satu jam.");
+    return fail("Kebanyakan percobaan daftar. Coba lagi sejam lagi, ya.");
   }
 
   const supabase = await createSupabaseServerClient();
@@ -55,10 +55,10 @@ export async function signUpCreatorAction(
 
   if (error) {
     if (error.status === 429) {
-      return fail("Terlalu banyak percobaan pendaftaran. Coba lagi beberapa saat lagi.");
+      return fail("Kebanyakan percobaan daftar. Tunggu sebentar, lalu coba lagi.");
     }
     if (error.code === "weak_password") {
-      return fail("Kata sandi terlalu lemah. Gunakan huruf besar, huruf kecil, dan angka.");
+      return fail("Kata sandinya kurang kuat. Pakai campuran huruf besar, huruf kecil, dan angka.");
     }
     // An email that already has an account is answered like a success
     // (Supabase does the same once confirmations are on), so the form cannot

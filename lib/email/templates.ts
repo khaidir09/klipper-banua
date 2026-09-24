@@ -63,7 +63,7 @@ function escapeHtml(value: string): string {
 
 function render(common: Common, body: Body): EmailMessage {
   const greeting = `Halo ${common.recipientName},`;
-  const footer = `Email ini dikirim otomatis oleh ${common.appName}. Jangan membalas email ini.`;
+  const footer = `Email ini dikirim otomatis oleh ${common.appName}, jadi nggak perlu dibalas. Ada pertanyaan? Hubungi tim lewat WhatsApp.`;
 
   const text = [
     greeting,
@@ -113,7 +113,7 @@ function creditFacts(
   }
   facts.push([
     "Honor masuk saldo",
-    `${formatRupiah(credit ?? 0)}${creditLimited ? " (dibatasi batas kampanye)" : ""}`,
+    `${formatRupiah(credit ?? 0)}${creditLimited ? " (mentok batas honor kampanye)" : ""}`,
   ]);
   return facts;
 }
@@ -128,32 +128,43 @@ export function clipDecisionEmail(input: ClipDecisionEmail): EmailMessage {
   const campaign = `"${input.campaignName}"`;
 
   if (input.decision === "disetujui") {
+    // The honor is the news, so it goes in the subject line when there is one.
+    const credited = input.credit ? `: +${formatRupiah(input.credit)} masuk saldo` : "";
     return render(input, {
-      subject: "Klip Anda disetujui",
-      paragraphs: [`Klip Anda untuk kampanye ${campaign} sudah diverifikasi dan disetujui tim.`],
+      subject: `Klipmu disetujui${credited}`,
+      paragraphs: [
+        `Mantap! Klipmu untuk kampanye ${campaign} sudah dicek dan disetujui tim.`,
+        "Views-nya masih bisa naik. Kirim update views dari portal biar honormu ikut nambah.",
+      ],
       facts: creditFacts(input.verifiedViews, input.credit, input.creditLimited),
-      actionLabel: "Lihat klip saya",
+      actionLabel: "Lihat klipku",
     });
   }
 
   if (input.decision === "revisi") {
     return render(input, {
-      subject: "Klip Anda perlu diperbaiki",
+      subject: "Klipmu perlu sedikit diperbaiki",
       paragraphs: [
-        `Tim meminta perbaikan untuk klip Anda di kampanye ${campaign}.`,
-        "Perbaiki sesuai catatan di bawah, lalu kirim ulang klip dari portal tanpa mengubah tautannya.",
+        `Klipmu di kampanye ${campaign} hampir lolos, tinggal diperbaiki sedikit.`,
+        "Perbaiki sesuai catatan tim di bawah, lalu kirim ulang dari portal. Tautannya nggak perlu diganti.",
       ],
       facts: notesFact(input.notes),
-      actionLabel: "Perbaiki klip",
+      actionLabel: "Perbaiki klipku",
     });
   }
 
   const reason = input.rejectionReason ? CLIP_REJECTION_REASON_LABELS[input.rejectionReason] : null;
   return render(input, {
-    subject: "Klip Anda ditolak",
-    paragraphs: [`Klip Anda untuk kampanye ${campaign} tidak disetujui tim.`],
-    facts: [...(reason ? ([["Alasan", reason]] as [string, string][]) : []), ...notesFact(input.notes)],
-    actionLabel: "Lihat klip saya",
+    subject: "Klipmu belum bisa disetujui",
+    paragraphs: [
+      `Maaf, klipmu untuk kampanye ${campaign} nggak disetujui tim. Alasannya ada di bawah.`,
+      "Jangan patah semangat. Masih banyak kampanye lain yang bisa kamu ikuti di portal.",
+    ],
+    facts: [
+      ...(reason ? ([["Alasan", reason]] as [string, string][]) : []),
+      ...notesFact(input.notes),
+    ],
+    actionLabel: "Lihat klipku",
   });
 }
 
@@ -163,20 +174,23 @@ export function viewsUpdateEmail(input: ViewsUpdateEmail): EmailMessage {
 
   if (input.accepted) {
     return render(input, {
-      subject: "Pembaruan views diterima",
-      paragraphs: [`Pembaruan views klip Anda di kampanye ${campaign} sudah diverifikasi tim.`],
+      subject: input.credit
+        ? `Update views diterima: +${formatRupiah(input.credit)} masuk saldo`
+        : "Update views diterima",
+      paragraphs: [`Update views klipmu di kampanye ${campaign} sudah dicek tim.`],
       facts: creditFacts(input.verifiedViews, input.credit, input.creditLimited),
-      actionLabel: "Lihat klip saya",
+      actionLabel: "Lihat klipku",
     });
   }
 
   return render(input, {
-    subject: "Pembaruan views ditolak",
+    subject: "Update views belum diterima",
     paragraphs: [
-      `Pembaruan views klip Anda di kampanye ${campaign} tidak diterima tim. Views terverifikasi sebelumnya tetap berlaku.`,
+      `Update views klipmu di kampanye ${campaign} belum diterima tim. Tenang, views terverifikasi sebelumnya tetap berlaku.`,
+      "Cek catatan di bawah. Kamu bisa kirim update lagi dengan screenshot yang lebih jelas.",
     ],
     facts: notesFact(input.notes),
-    actionLabel: "Lihat klip saya",
+    actionLabel: "Lihat klipku",
   });
 }
 
@@ -192,12 +206,12 @@ export function withdrawalPaidEmail(input: WithdrawalPaidEmail): EmailMessage {
   );
 
   return render(input, {
-    subject: "Penarikan Anda sudah dibayar",
+    subject: `Honor ${formatRupiah(input.amount - input.transferFee)} sudah ditransfer`,
     paragraphs: [
-      "Penarikan saldo Anda sudah ditransfer ke rekening yang Anda daftarkan saat mengajukan.",
-      "Bila dana belum masuk dalam 1×24 jam, hubungi tim kami.",
+      "Cuan! Penarikan saldomu sudah kami transfer ke rekening yang kamu daftarkan waktu mengajukan.",
+      "Kalau dananya belum masuk dalam 1×24 jam, hubungi tim, ya.",
     ],
     facts,
-    actionLabel: "Lihat saldo",
+    actionLabel: "Lihat saldoku",
   });
 }

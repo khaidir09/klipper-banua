@@ -16,7 +16,7 @@ describe("clipDecisionEmail", () => {
       verifiedViews: 12500,
       credit: 125000,
     });
-    expect(email.subject).toBe("Klip Anda disetujui · Klipper Banua");
+    expect(email.subject).toBe("Klipmu disetujui: +Rp 125.000 masuk saldo · Klipper Banua");
     expect(email.text).toContain("Halo Budi,");
     expect(email.text).toContain('kampanye "PMB 2026"');
     expect(email.text).toContain("Views terverifikasi: 12.500");
@@ -34,7 +34,7 @@ describe("clipDecisionEmail", () => {
       credit: 500000,
       creditLimited: true,
     });
-    expect(email.text).toContain("Rp 500.000 (dibatasi batas kampanye)");
+    expect(email.text).toContain("Rp 500.000 (mentok batas honor kampanye)");
   });
 
   it("carries the team notes on a revision request", () => {
@@ -44,7 +44,7 @@ describe("clipDecisionEmail", () => {
       decision: "revisi",
       notes: "Tambahkan kode KB-ABC234 di caption.",
     });
-    expect(email.subject).toBe("Klip Anda perlu diperbaiki · Klipper Banua");
+    expect(email.subject).toBe("Klipmu perlu sedikit diperbaiki · Klipper Banua");
     expect(email.text).toContain("Catatan tim: Tambahkan kode KB-ABC234 di caption.");
     expect(email.text).not.toContain("Honor");
   });
@@ -57,7 +57,7 @@ describe("clipDecisionEmail", () => {
       rejectionReason: "bukan_pemilik",
       notes: "Akun tidak terdaftar.",
     });
-    expect(email.subject).toBe("Klip Anda ditolak · Klipper Banua");
+    expect(email.subject).toBe("Klipmu belum bisa disetujui · Klipper Banua");
     expect(email.text).toContain("Alasan: Bukan pemilik akun");
     expect(email.text).toContain("Catatan tim: Akun tidak terdaftar.");
   });
@@ -86,7 +86,7 @@ describe("viewsUpdateEmail", () => {
       verifiedViews: 30000,
       credit: 0,
     });
-    expect(email.subject).toBe("Pembaruan views diterima · Klipper Banua");
+    expect(email.subject).toBe("Update views diterima · Klipper Banua");
     expect(email.text).toContain("Views terverifikasi: 30.000");
     expect(email.text).toContain("Honor masuk saldo: Rp 0");
   });
@@ -98,8 +98,8 @@ describe("viewsUpdateEmail", () => {
       accepted: false,
       notes: "Tangkapan layar buram.",
     });
-    expect(email.subject).toBe("Pembaruan views ditolak · Klipper Banua");
-    expect(email.text).toContain("Views terverifikasi sebelumnya tetap berlaku.");
+    expect(email.subject).toBe("Update views belum diterima · Klipper Banua");
+    expect(email.text).toContain("views terverifikasi sebelumnya tetap berlaku.");
     expect(email.text).toContain("Catatan tim: Tangkapan layar buram.");
   });
 });
@@ -114,7 +114,7 @@ describe("withdrawalPaidEmail", () => {
 
   it("shows the fee and the amount received", () => {
     const email = withdrawalPaidEmail({ ...paid, transferFee: 2500 });
-    expect(email.subject).toBe("Penarikan Anda sudah dibayar · Klipper Banua");
+    expect(email.subject).toBe("Honor Rp 147.500 sudah ditransfer · Klipper Banua");
     expect(email.text).toContain("Nominal penarikan: Rp 150.000");
     expect(email.text).toContain("Biaya transfer: Rp 2.500");
     expect(email.text).toContain("Jumlah diterima: Rp 147.500");

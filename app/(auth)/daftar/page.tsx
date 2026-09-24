@@ -19,7 +19,8 @@ export default function SignupPage() {
           <h1>Daftar jadi Klipper</h1>
         </CardTitle>
         <CardDescription>
-          Gratis. Setelah email dikonfirmasi, tambahkan akun media sosial Anda lalu pilih kampanye.
+          Gratis, cuma 2 menit. Posting klip di akunmu sendiri, dapat honor dari setiap 1.000 views
+          yang lolos cek tim, lalu tarik ke rekening atau e-wallet.
         </CardDescription>
       </CardHeader>
       <CardContent>

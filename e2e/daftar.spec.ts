@@ -62,14 +62,14 @@ test.describe.serial("pendaftaran klipper mandiri", () => {
     await page.getByRole("button", { name: "Daftar jadi Klipper" }).click();
 
     await expect(page.getByText(/minimal 18 tahun/).first()).toBeVisible();
-    await expect(page.getByText("Cek email Anda")).toHaveCount(0);
+    await expect(page.getByText("Cek emailmu")).toHaveCount(0);
   });
 
   test("daftar, konfirmasi email, dan aktifkan akun", async ({ page }) => {
     await page.goto("/daftar");
     await fillSignup(page);
     await page.getByRole("button", { name: "Daftar jadi Klipper" }).click();
-    await expect(page.getByText("Cek email Anda")).toBeVisible();
+    await expect(page.getByText("Cek emailmu")).toBeVisible();
 
     // The email link lands on /portal/mulai with a session.
     await page.goto(await confirmationLink(email));

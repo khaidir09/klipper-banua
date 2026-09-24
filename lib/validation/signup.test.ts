@@ -71,7 +71,7 @@ describe("signupSchema", () => {
       errorsOf({ ...valid, password: "lemah", passwordConfirmation: "lemah" }).password,
     ).toBeDefined();
     expect(errorsOf({ ...valid, passwordConfirmation: "Rahasia124" }).passwordConfirmation).toBe(
-      "Konfirmasi kata sandi tidak sama.",
+      "Kata sandinya belum sama. Coba ketik ulang.",
     );
   });
 

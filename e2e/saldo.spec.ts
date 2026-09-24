@@ -53,7 +53,7 @@ test("a new klipper earns honor and withdraws it", async ({ page, browser }) => 
       await page.locator(`#${id}`).check();
     }
     await page.getByRole("button", { name: "Daftar jadi Klipper" }).click();
-    await expect(page.getByText("Cek email Anda")).toBeVisible();
+    await expect(page.getByText("Cek emailmu")).toBeVisible();
 
     await page.goto(await confirmationLink(email));
     await expect(page).toHaveURL(/\/portal\/mulai/);

@@ -24,7 +24,7 @@ export const signupSchema = z
       .max(255)
       .transform((value) => value.toLowerCase())
       .refine((value) => !isDisposableEmail(value), {
-        message: "Gunakan email pribadi yang aktif, bukan email sementara.",
+        message: "Pakai email pribadi yang aktif, jangan email sementara.",
       }),
     password: passwordSchema,
     passwordConfirmation: z.string().min(1, { message: "Ulangi kata sandi." }),
@@ -62,7 +62,7 @@ export const signupSchema = z
   })
   .refine((values) => values.password === values.passwordConfirmation, {
     path: ["passwordConfirmation"],
-    message: "Konfirmasi kata sandi tidak sama.",
+    message: "Kata sandinya belum sama. Coba ketik ulang.",
   });
 
 export type SignupFormInput = z.input<typeof signupSchema>;
