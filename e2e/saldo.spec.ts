@@ -44,12 +44,11 @@ test("a new klipper earns honor and withdraws it", async ({ page, browser }) => 
       passwordConfirmation: "Rahasia123",
       full_name: fullName,
       stage_name: handle,
-      birth_date: "1999-05-06",
       phone_wa: phone,
       city: "Banjarmasin",
     };
     for (const [id, value] of Object.entries(values)) await page.locator(`#${id}`).fill(value);
-    for (const id of ["agree_terms", "agree_privacy", "confirm_adult"]) {
+    for (const id of ["agree_terms", "agree_privacy"]) {
       await page.locator(`#${id}`).check();
     }
     await page.getByRole("button", { name: "Daftar jadi Klipper" }).click();
@@ -78,7 +77,7 @@ test("a new klipper earns honor and withdraws it", async ({ page, browser }) => 
     await form.getByLabel("Tangkapan layar views").setInputFiles(PROOF_FILE);
     await form.getByLabel(/Kode verifikasi .* sudah ada di caption/).check();
     await form.getByRole("button", { name: "Kirim klip" }).click();
-    await expectToast(page, "Klip terkirim dan menunggu verifikasi tim.");
+    await expectToast(page, /Klip terkirim!/);
   });
 
   await test.step("the manager approves it", async () => {
@@ -104,6 +103,14 @@ test("a new klipper earns honor and withdraws it", async ({ page, browser }) => 
   await test.step("the balance grows; the klipper adds a bank account and withdraws", async () => {
     await page.goto("/portal/saldo");
     await expect(page.getByText("Rp 234.500").first()).toBeVisible();
+
+    // FR-M3-02: no birth date at sign-up, so it is asked before the first withdrawal.
+    await expect(page.getByText(/Lengkapi tanggal lahirmu dulu/)).toBeVisible();
+    // Wait for hydration: a value typed before it is lost when React takes over.
+    await page.waitForLoadState("networkidle");
+    await page.getByLabel("Tanggal lahir").fill("2012-05-06");
+    await page.getByRole("button", { name: "Simpan tanggal lahir" }).click();
+    await expectToast(page, "Tanggal lahir tersimpan.");
     await expect(page.getByText(/Isi rekening atau e-wallet/)).toBeVisible();
 
     await page.getByLabel("Bank / e-wallet").selectOption("Bank Kalsel");

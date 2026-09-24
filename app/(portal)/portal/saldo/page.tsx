@@ -11,6 +11,7 @@ import { LEDGER_ENTRY_TYPE_LABELS } from "@/lib/constants/withdrawals";
 import {
   getPortalBalance,
   getPortalBankAccount,
+  getPortalProfile,
   listPortalLedger,
   listPortalWithdrawals,
 } from "@/lib/data/portal";
@@ -19,6 +20,7 @@ import { formatCalendarDate, formatDateTime } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { BankAccountCard } from "./bank-account-card";
+import { BirthDateCard } from "./birth-date-card";
 import { WithdrawForm } from "./withdraw-form";
 
 export const metadata: Metadata = { title: "Saldo" };
@@ -31,12 +33,15 @@ export default async function PortalBalancePage() {
   const session = await requireCreatorAccount();
   const tz = session.profile.timezone;
   const supabase = await createSupabaseServerClient();
-  const [balance, bank, ledger, withdrawals] = await Promise.all([
+  const [balance, bank, ledger, withdrawals, profile] = await Promise.all([
     getPortalBalance(supabase),
     getPortalBankAccount(supabase),
     listPortalLedger(supabase),
     listPortalWithdrawals(supabase),
+    getPortalProfile(supabase),
   ]);
+  // A blocked klipper has no profile row here; their first blocker is the block.
+  const needsBirthDate = !session.blocked && profile !== null && !profile.birth_date;
 
   const available = balance?.available ?? 0;
   const minWithdrawal = balance?.min_withdrawal ?? 0;
@@ -48,6 +53,7 @@ export default async function PortalBalancePage() {
   // Explain the first thing in the way before any amount is typed.
   const [first] = withdrawalBlockers({
     creatorBlocked: session.blocked,
+    hasBirthDate: !needsBirthDate,
     hasBankAccount: bank !== null,
     bankHoldUntil: holdUntil,
     openWithdrawalStatuses: withdrawals.map((row) => row.status),
@@ -58,6 +64,7 @@ export default async function PortalBalancePage() {
   });
   const blockerMessages: Record<WithdrawalBlocker, string> = {
     creator_blocked: "Akunmu diblokir, jadi saldo dibekukan sampai owner memutuskan.",
+    no_birth_date: "Lengkapi tanggal lahirmu dulu, baru kamu bisa tarik saldo.",
     no_bank_account: "Isi rekening atau e-wallet di bawah dulu, baru kamu bisa tarik saldo.",
     bank_recently_changed: holdUntil
       ? `Rekeningmu baru diubah. Kamu bisa tarik saldo lagi mulai ${formatDateTime(holdUntil, tz)}.`
@@ -113,6 +120,8 @@ export default async function PortalBalancePage() {
           dipakai untuk menutup kekurangan ini dulu.
         </p>
       ) : null}
+
+      {needsBirthDate ? <BirthDateCard /> : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <WithdrawForm

@@ -18,12 +18,11 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { MINIMUM_CREATOR_AGE } from "@/lib/constants/creators";
 import { DEFAULT_PROVINCE } from "@/lib/constants/regions";
 import { signupSchema, type SignupFormInput, type SignupInput } from "@/lib/validation/signup";
 import { signUpCreatorAction } from "./actions";
 
-type TextFieldName = "email" | "full_name" | "stage_name" | "phone_wa" | "city" | "birth_date";
+type TextFieldName = "email" | "full_name" | "stage_name" | "phone_wa" | "city";
 
 const CONSENTS = [
   {
@@ -50,10 +49,6 @@ const CONSENTS = [
       </>
     ),
   },
-  {
-    name: "confirm_adult",
-    label: <>Saya berusia minimal {MINIMUM_CREATOR_AGE} tahun.</>,
-  },
 ] as const;
 
 /** FR-M16-01. The server repeats every check; this form only helps earlier. */
@@ -70,13 +65,11 @@ export function SignupForm() {
       passwordConfirmation: "",
       full_name: "",
       stage_name: "",
-      birth_date: "",
       phone_wa: "",
       city: "",
       province: DEFAULT_PROVINCE,
       agree_terms: false,
       agree_privacy: false,
-      confirm_adult: false,
     },
   });
   const { errors } = form.formState;
@@ -194,7 +187,6 @@ export function SignupForm() {
           { autoComplete: "nickname" },
           "Nama yang dilihat klien di laporan kampanye, misalnya nama akunmu.",
         )}
-        {textField("birth_date", "Tanggal lahir", { type: "date", autoComplete: "bday" })}
         {textField(
           "phone_wa",
           "Nomor WhatsApp",

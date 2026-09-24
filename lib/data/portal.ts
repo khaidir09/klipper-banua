@@ -45,6 +45,7 @@ export type PortalProfile = NonNullableExcept<
   | "portal_invited_at"
   | "local_badge_at"
   | "deletion_requested_at"
+  | "birth_date"
 >;
 export type PortalAssignment = NonNullableExcept<
   AssignmentView,

@@ -5,10 +5,16 @@ import { dbRuleMessage, fail, invalid, ok, type ActionResult } from "@/lib/actio
 import { logActivity } from "@/lib/activity/log";
 import { requireCreator } from "@/lib/auth/guards";
 import { withdrawalBlockers, type WithdrawalBlocker } from "@/lib/calculations/balance";
-import { getPortalBalance, getPortalBankAccount, listPortalWithdrawals } from "@/lib/data/portal";
+import {
+  getPortalBalance,
+  getPortalBankAccount,
+  getPortalProfile,
+  listPortalWithdrawals,
+} from "@/lib/data/portal";
 import { formatRupiah } from "@/lib/format/currency";
 import { formatDateTime } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ownBirthDateSchema } from "@/lib/validation/creators";
 import { portalBankAccountSchema, withdrawalRequestSchema } from "@/lib/validation/withdrawals";
 
 /*
@@ -53,6 +59,26 @@ export async function saveOwnBankAccountAction(values: unknown): Promise<ActionR
   );
 }
 
+/**
+ * FR-M3-02: age is not a requirement, but the birth date is filled in once
+ * before the first withdrawal. `set_own_birth_date()` refuses a second time
+ * and writes the audit entry.
+ */
+export async function saveOwnBirthDateAction(values: unknown): Promise<ActionResult> {
+  await requireCreator();
+  const parsed = ownBirthDateSchema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error);
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_own_birth_date", {
+    p_birth_date: parsed.data.birth_date,
+  });
+  if (error) return fail(dbRuleMessage(error, "Tanggal lahir gagal disimpan."));
+
+  revalidateBalance();
+  return ok("Tanggal lahir tersimpan.");
+}
+
 /** FR-M19-05: ask for a withdrawal of part or all of the balance. */
 export async function requestWithdrawalAction(values: unknown): Promise<ActionResult> {
   const session = await requireCreator();
@@ -61,15 +87,17 @@ export async function requestWithdrawalAction(values: unknown): Promise<ActionRe
   const { amount } = parsed.data;
 
   const supabase = await createSupabaseServerClient();
-  const [balance, bank, withdrawals] = await Promise.all([
+  const [balance, bank, withdrawals, profile] = await Promise.all([
     getPortalBalance(supabase),
     getPortalBankAccount(supabase),
     listPortalWithdrawals(supabase),
+    getPortalProfile(supabase),
   ]);
   if (!balance) return fail("Data saldo tidak ditemukan.");
 
   const blockers = withdrawalBlockers({
     creatorBlocked: false,
+    hasBirthDate: Boolean(profile?.birth_date),
     hasBankAccount: bank !== null,
     bankHoldUntil: bank?.hold_until ? new Date(bank.hold_until) : null,
     openWithdrawalStatuses: withdrawals.map((row) => row.status),
@@ -82,6 +110,7 @@ export async function requestWithdrawalAction(values: unknown): Promise<ActionRe
     const tz = session.profile.timezone;
     const messages: Record<WithdrawalBlocker, string> = {
       creator_blocked: "Akunmu diblokir, jadi saldo belum bisa ditarik.",
+      no_birth_date: "Lengkapi tanggal lahirmu dulu, ya.",
       no_bank_account: "Isi rekening atau e-wallet dulu, ya.",
       bank_recently_changed: bank?.hold_until
         ? `Rekeningmu baru diubah. Kamu bisa tarik saldo lagi mulai ${formatDateTime(bank.hold_until, tz)}.`

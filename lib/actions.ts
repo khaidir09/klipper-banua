@@ -130,6 +130,9 @@ const DB_RULE_MESSAGES: Record<string, string> = {
   LEDGER_IMMUTABLE: "Entri saldo tidak dapat diubah atau dihapus.",
   LEDGER_FUNCTION_ONLY: "Entri saldo hanya dicatat lewat verifikasi klip.",
   WITHDRAW_CREATOR_BLOCKED: "Akun Anda diblokir, jadi saldo belum dapat ditarik.",
+  WITHDRAW_NEEDS_BIRTH_DATE: "Lengkapi tanggal lahir di halaman Saldo sebelum menarik saldo.",
+  BIRTH_DATE_ALREADY_SET: "Tanggal lahir sudah terisi. Hubungi tim bila perlu mengubahnya.",
+  BIRTH_DATE_INVALID: "Tanggal lahir tidak valid.",
   WITHDRAW_NEEDS_BANK: "Isi rekening atau e-wallet di Profil sebelum menarik saldo.",
   WITHDRAW_BANK_RECENT:
     "Rekening baru saja diubah. Demi keamanan, penarikan dapat diajukan 24 jam setelah perubahan.",

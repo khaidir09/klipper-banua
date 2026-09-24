@@ -49,7 +49,7 @@ const SECTIONS: LegalSection[] = [
     bullets: [
       "Anggota tim internal: nama, alamat email, peran, dan zona waktu tampilan.",
       "Kontak klien: nama, jabatan, nomor WhatsApp, dan alamat email, untuk koordinasi kampanye dan akses portal klien.",
-      "Klipper: nama, nama panggung, nomor WhatsApp, email, kota dan provinsi, tanggal lahir (untuk memastikan usia minimal 18 tahun), versi syarat yang disetujui beserta waktunya, akun media sosial, serta tangkapan layar analitik audiens bila mengajukan lencana Klipper Lokal.",
+      "Klipper: nama, nama panggung, nomor WhatsApp, email, kota dan provinsi, tanggal lahir (diminta sebelum penarikan saldo pertama, untuk mencocokkan data penerima transfer), versi syarat yang disetujui beserta waktunya, akun media sosial, serta tangkapan layar analitik audiens bila mengajukan lencana Klipper Lokal.",
       "Klip yang dikirim klipper: tautan klip, waktu tayang, dan tangkapan layar views, untuk verifikasi dan perhitungan honor.",
       "Data rekening klipper: nama bank atau e-wallet, nomor rekening, dan nama pemilik rekening, semata-mata untuk pembayaran honor.",
       "Catatan aktivitas: siapa melakukan tindakan penting apa dan kapan, sebagai jejak audit internal.",

@@ -69,9 +69,6 @@ export function nicheLabel(value: string): string {
   return (NICHE_LABELS as Record<string, string>)[value] ?? value;
 }
 
-/** Minimum age at registration (FR-M3-02). */
-export const MINIMUM_CREATOR_AGE = 18;
-
 export type SignupSource = Database["public"]["Enums"]["signup_source"];
 
 export const SIGNUP_SOURCE_LABELS: Record<SignupSource, string> = {

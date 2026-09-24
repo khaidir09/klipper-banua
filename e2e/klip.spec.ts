@@ -43,7 +43,7 @@ test("a klipper sends a clip, the team verifies it and the honor is credited", a
     await expect(form.getByText(/kode verifikasimu ada di caption/)).toBeVisible();
     await form.getByLabel(/Kode verifikasi .* sudah ada di caption/).check();
     await form.getByRole("button", { name: "Kirim klip" }).click();
-    await expectToast(page, "Klip terkirim dan menunggu verifikasi tim.");
+    await expectToast(page, /Klip terkirim!/);
     await expect(page.getByText("Menunggu review").first()).toBeVisible();
   });
 

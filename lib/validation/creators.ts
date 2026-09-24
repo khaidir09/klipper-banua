@@ -3,7 +3,6 @@ import {
   CREATOR_STATUSES,
   CREATOR_TIERS,
   LOCAL_BADGE_MIN_PCT,
-  MINIMUM_CREATOR_AGE,
   NICHES,
   SIGNUP_SOURCES,
   SOCIAL_PLATFORMS,
@@ -18,24 +17,34 @@ import {
 } from "./common";
 import { whatsappField } from "./phone";
 
-/** True when the person turns `MINIMUM_CREATOR_AGE` on or before `today`. */
-export function isAdult(birthDate: Date, today: Date = new Date()): boolean {
-  const cutoff = new Date(
-    Date.UTC(today.getUTCFullYear() - MINIMUM_CREATOR_AGE, today.getUTCMonth(), today.getUTCDate()),
-  );
-  return birthDate.getTime() <= cutoff.getTime();
+/** Today as a UTC calendar date, `yyyy-MM-dd`. */
+function todayIso(today: Date = new Date()): string {
+  return today.toISOString().slice(0, 10);
 }
 
-export const UNDERAGE_MESSAGE = `Kreator harus berusia minimal ${MINIMUM_CREATOR_AGE} tahun saat didaftarkan.`;
-
-/** `yyyy-MM-dd` from a date input, parsed as a UTC calendar date. */
-const birthDateField = z
+/**
+ * `yyyy-MM-dd` from a date input, parsed as a UTC calendar date. Age is not a
+ * requirement (FR-M3-02); the date only has to be a real past date, the same
+ * range as `creators_birth_date_range_check`.
+ */
+export const birthDateField = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Tanggal lahir wajib diisi." })
   .refine((value) => !Number.isNaN(new Date(`${value}T00:00:00Z`).getTime()), {
     message: "Tanggal lahir tidak valid.",
   })
-  .refine((value) => isAdult(new Date(`${value}T00:00:00Z`)), { message: UNDERAGE_MESSAGE });
+  .refine((value) => value >= "1900-01-01" && value <= todayIso(), {
+    message: "Tanggal lahir tidak valid.",
+  });
+
+/** The team may leave the birth date empty; the klipper fills it in later. */
+const optionalBirthDateField = z
+  .union([z.literal(""), birthDateField])
+  .transform((value) => (value === "" ? null : value))
+  .default("");
+
+/** FR-M3-02: the klipper fills in their own birth date before withdrawing. */
+export const ownBirthDateSchema = z.object({ birth_date: birthDateField });
 
 export const creatorSchema = z.object({
   full_name: z.string().trim().min(1, { message: "Nama lengkap wajib diisi." }).max(200),
@@ -44,7 +53,7 @@ export const creatorSchema = z.object({
   email: optionalEmailField,
   city: shortTextField,
   province: z.enum(PROVINCES, { message: "Pilih provinsi." }),
-  birth_date: birthDateField,
+  birth_date: optionalBirthDateField,
   niches: z.array(z.enum(NICHES)).max(NICHES.length).default([]),
   tier: z.enum(CREATOR_TIERS, { message: "Pilih tier." }),
   status: z.enum(CREATOR_STATUSES, { message: "Pilih status." }),

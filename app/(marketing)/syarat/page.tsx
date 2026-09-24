@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { LegalArticle, type LegalSection } from "@/components/marketing/legal-article";
-import { CREATOR_TERMS_VERSION, MINIMUM_CREATOR_AGE } from "@/lib/constants/creators";
+import { CREATOR_TERMS_VERSION } from "@/lib/constants/creators";
 import { publicEnv } from "@/lib/env";
 import { whatsappDisplay } from "@/lib/marketing/contact";
 
@@ -41,7 +41,8 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Akses ke aplikasi",
     bullets: [
-      `Klipper mendaftar sendiri di halaman Daftar jadi Klipper, wajib berusia minimal ${MINIMUM_CREATOR_AGE} tahun, dan mengonfirmasi alamat emailnya. Satu orang hanya boleh memiliki satu akun.`,
+      "Klipper mendaftar sendiri di halaman Daftar jadi Klipper dan mengonfirmasi alamat emailnya. Pendaftaran terbuka untuk umum tanpa batas usia. Satu orang hanya boleh memiliki satu akun.",
+      "Sebelum menarik saldo pertama kali, klipper wajib melengkapi tanggal lahirnya di portal.",
       "Akun anggota tim dan kontak klien dibuat lewat undangan.",
       "Setiap orang memakai akunnya sendiri dan bertanggung jawab menjaga kerahasiaan kata sandinya.",
       "Akses dapat dicabut atau dinonaktifkan sewaktu-waktu, misalnya ketika kerja sama berakhir atau ada penyalahgunaan.",

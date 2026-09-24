@@ -35,6 +35,7 @@ export function balanceSummary(lines: readonly LedgerLine[]): BalanceSummary {
 
 export type WithdrawalBlocker =
   | "creator_blocked"
+  | "no_birth_date"
   | "no_bank_account"
   | "bank_recently_changed"
   | "withdrawal_in_progress"
@@ -43,6 +44,8 @@ export type WithdrawalBlocker =
 
 export type WithdrawalCheckInput = {
   creatorBlocked: boolean;
+  /** FR-M3-02: age is not a requirement, but the birth date must be filled in. */
+  hasBirthDate: boolean;
   hasBankAccount: boolean;
   /** When the 24-hour hold after a bank change ends; null without a hold. */
   bankHoldUntil: Date | null;
@@ -60,6 +63,7 @@ export type WithdrawalCheckInput = {
 export function withdrawalBlockers(input: WithdrawalCheckInput): WithdrawalBlocker[] {
   const blockers: WithdrawalBlocker[] = [];
   if (input.creatorBlocked) blockers.push("creator_blocked");
+  if (!input.hasBirthDate) blockers.push("no_birth_date");
   if (!input.hasBankAccount) blockers.push("no_bank_account");
   if (input.bankHoldUntil && input.bankHoldUntil > input.now)
     blockers.push("bank_recently_changed");

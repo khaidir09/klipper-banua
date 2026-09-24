@@ -44,7 +44,6 @@ export async function signUpCreatorAction(
         signup: "mandiri",
         full_name: input.full_name,
         stage_name: input.stage_name,
-        birth_date: input.birth_date,
         phone_wa: input.phone_wa,
         city: input.city,
         province: input.province,

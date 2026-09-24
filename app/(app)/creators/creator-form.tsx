@@ -26,7 +26,6 @@ import {
   CREATOR_STATUS_LABELS,
   CREATOR_TIERS,
   CREATOR_TIER_LABELS,
-  MINIMUM_CREATOR_AGE,
   NICHES,
   NICHE_LABELS,
 } from "@/lib/constants/creators";
@@ -101,7 +100,7 @@ export function CreatorForm({ creatorId, defaultValues }: CreatorFormProps) {
     <FormAsideCard title={creatorId ? "Yang perlu diingat" : "Sebelum menyimpan"}>
       <FormHints
         items={[
-          `Kreator wajib berusia minimal ${MINIMUM_CREATOR_AGE} tahun; tanggal lahir yang lebih muda akan ditolak.`,
+          "Tanggal lahir boleh dikosongkan. Kreator wajib melengkapinya sendiri dari portal sebelum menarik saldo.",
           "Nama panggung dipakai sebagai nama tampil di laporan, keuangan, dan dasbor. Bila kosong, nama lengkap yang dipakai.",
           "Nomor WhatsApp muncul di halaman kreator kampanye untuk koordinasi penugasan.",
           "Niche dan tier dipakai saat menyaring kandidat untuk sebuah kampanye.",
@@ -164,7 +163,7 @@ export function CreatorForm({ creatorId, defaultValues }: CreatorFormProps) {
             <FieldLabel htmlFor="birth_date">Tanggal lahir</FieldLabel>
             <Input {...field("birth_date")} type="date" className="sm:max-w-xs" />
             <FieldDescription>
-              Kreator wajib berusia minimal {MINIMUM_CREATOR_AGE} tahun.
+              Opsional. Usia bukan syarat; tanggal lahir baru wajib sebelum penarikan saldo.
             </FieldDescription>
             <FieldError errors={[errors.birth_date]} />
           </Field>

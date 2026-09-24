@@ -1,29 +1,26 @@
 import { describe, expect, it } from "vitest";
 import {
-  UNDERAGE_MESSAGE,
   bankAccountSchema,
   creatorSchema,
   invitePortalSchema,
-  isAdult,
+  ownBirthDateSchema,
   portalAccessSchema,
   socialAccountSchema,
   verificationBlockers,
 } from "@/lib/validation/creators";
 import { formatWhatsapp, normalizeWhatsapp } from "@/lib/validation/phone";
 
-const today = new Date("2026-09-18T00:00:00Z");
-
-describe("isAdult", () => {
-  it("accepts someone who turns 18 today", () => {
-    expect(isAdult(new Date("2008-09-18T00:00:00Z"), today)).toBe(true);
+describe("ownBirthDateSchema", () => {
+  it("accepts any past date: age is not a requirement", () => {
+    expect(ownBirthDateSchema.safeParse({ birth_date: "2015-01-01" }).success).toBe(true);
+    expect(ownBirthDateSchema.safeParse({ birth_date: "1990-01-01" }).success).toBe(true);
   });
 
-  it("rejects someone who turns 18 tomorrow", () => {
-    expect(isAdult(new Date("2008-09-19T00:00:00Z"), today)).toBe(false);
-  });
-
-  it("accepts older creators", () => {
-    expect(isAdult(new Date("1990-01-01T00:00:00Z"), today)).toBe(true);
+  it("requires a real date that is not in the future", () => {
+    expect(ownBirthDateSchema.safeParse({ birth_date: "" }).success).toBe(false);
+    expect(ownBirthDateSchema.safeParse({ birth_date: "1899-12-31" }).success).toBe(false);
+    const nextYear = `${new Date().getUTCFullYear() + 1}-01-01`;
+    expect(ownBirthDateSchema.safeParse({ birth_date: nextYear }).success).toBe(false);
   });
 });
 
@@ -48,12 +45,11 @@ describe("creatorSchema", () => {
     expect(result.email).toBe("siti@example.com");
   });
 
-  it("rejects creators under 18 with a clear message", () => {
-    const result = creatorSchema.safeParse({ ...valid, birth_date: "2015-01-01" });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues.map((issue) => issue.message)).toContain(UNDERAGE_MESSAGE);
-    }
+  it("accepts any age and an empty birth date", () => {
+    expect(creatorSchema.parse({ ...valid, birth_date: "2015-01-01" }).birth_date).toBe(
+      "2015-01-01",
+    );
+    expect(creatorSchema.parse({ ...valid, birth_date: "" }).birth_date).toBeNull();
   });
 
   it("rejects unknown niches and provinces", () => {

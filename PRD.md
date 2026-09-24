@@ -2,7 +2,7 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi dokumen      | 1.4 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
+| Versi dokumen      | 1.5 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
 | Tanggal            | 24 September 2026                                                                           |
 | Status             | Fase 0–11 dan 13–18 selesai: **Tahap A (klipper mandiri) lengkap** — fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri, kampanye terbuka dan katalog, kiriman klip dan verifikasi views, saldo dan penarikan. Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
@@ -36,7 +36,7 @@
 
 **Marketplace klipper terbuka** dengan pembeda lokal:
 
-- siapa pun berusia ≥ 18 tahun dapat **mendaftar sendiri** sebagai klipper dari halaman publik;
+- siapa pun, tanpa batas usia, dapat **mendaftar sendiri** sebagai klipper dari halaman publik;
 - klipper melihat **katalog kampanye**, bergabung sendiri, mengunduh materi, lalu membuat dan memposting klip di akunnya;
 - klipper mengirim **tautan klip + tangkapan layar views**; tim memverifikasi kepemilikan, kepatuhan brief, dan keaslian views **setelah tayang**;
 - klip yang disetujui menambah **saldo** klipper sebesar **tarif per 1.000 views** yang terverifikasi, dibatasi anggaran kampanye;
@@ -149,7 +149,7 @@ Peluncuran bertahap:
 
 ### 5.1 Pendaftaran dan aktivasi klipper _(v4.0)_
 
-1. Calon klipper mengisi `/daftar`: email, kata sandi, nama lengkap, nama panggung, tanggal lahir, nomor WhatsApp, kota, provinsi; mencentang persetujuan Syarat Klipper (versi tercatat) dan pernyataan berusia ≥ 18 tahun.
+1. Calon klipper mengisi `/daftar`: email, kata sandi, nama lengkap, nama panggung, nomor WhatsApp, kota, provinsi; mencentang persetujuan Syarat Klipper (versi tercatat). Tanggal lahir tidak diminta saat mendaftar.
 2. Sistem mengirim email konfirmasi. Tautan konfirmasi membuka `/auth/callback` lalu `/portal/mulai`.
 3. Klipper menambahkan minimal satu akun media sosial (platform, handle, URL profil, jumlah pengikut). Setelah itu status menjadi `aktif`.
 4. Portal menampilkan **kode verifikasi** pribadi klipper (contoh `KB-7XK2QM`). Kode ini wajib ditulis di caption/deskripsi setiap klip sebagai bukti kepemilikan akun.
@@ -199,7 +199,7 @@ Kampanye yang dibuat sebelum v4.0 memakai `payout_model = paket` dan alur v3.2 (
 ### M3 — Kreator / Klipper
 
 - **FR-M3-01** _(diubah v4.0)_ Data klipper: nama lengkap, nama panggung, WhatsApp, email, kota, provinsi, tanggal lahir, niche, tier, status, catatan internal, `signup_source` (`undangan`/`mandiri`), dan `verification_code`. Status: `prospek` (akun dibuat, belum ada akun sosial), `aktif`, `nonaktif`, `diblokir`. Nilai lama `terverifikasi` diperlakukan sama dengan `aktif`; lencana lokal kini dibaca dari `verified_at` (FR-M3-05).
-- **FR-M3-02** Usia **≥ 18 tahun** divalidasi di aplikasi dan database, baik saat tim mendaftarkan maupun saat klipper mendaftar sendiri.
+- **FR-M3-02** _(diubah v4.2)_ Usia **bukan syarat** menjadi klipper. Tanggal lahir opsional saat tim mendaftarkan dan tidak diminta saat klipper mendaftar sendiri; klipper wajib melengkapinya sendiri (sekali, dari portal) sebelum mengajukan penarikan pertama (FR-M19-05). Perubahan setelahnya lewat tim.
 - **FR-M3-03** _(diubah v4.0)_ Akun media sosial per klipper: platform (`tiktok`, `instagram`, `youtube`, `facebook`), handle, URL profil, jumlah pengikut, persentase audiens Kalimantan, kota audiens teratas, bukti analitik, tanggal verifikasi terakhir. **Klipper menambah dan mengubah akunnya sendiri dari portal**; tim tetap dapat mengubahnya. Pasangan (`platform`, `handle`) unik lintas klipper.
 - **FR-M3-04** Persetujuan syarat kerja sama: tanggal dan versi. Sejak v4.0 dicatat otomatis saat mendaftar dari `/daftar`; saat versi syarat naik, portal meminta persetujuan ulang sebelum klipper dapat bergabung atau mengirim klip.
 - **FR-M3-05** _(diubah v4.0)_ **Lencana Klipper Lokal**: tim memverifikasi pengajuan lencana (minimal satu akun sosial dengan bukti analitik audiens dan persentase audiens Kalimantan ≥ ambang, default 50%). Tindakan ini mengisi `verified_at` dan `verified_by`. Lencana dapat dicabut dengan alasan. Lencana tidak wajib untuk bekerja, kecuali pada kampanye `local_only`.
@@ -304,14 +304,14 @@ FR-M13-01 sampai FR-M13-10 (v2.0–v3.2) tetap berlaku untuk kampanye `paket` da
 FR-M15-01 sampai FR-M15-08 tetap berlaku, dengan perubahan berikut:
 
 - **FR-M15-02** _(diubah v4.0)_ Landing menampilkan dua jalur setara: **"Daftar jadi Klipper"** (→ `/daftar`) dan **"Pasang Kampanye"** (→ WhatsApp, Tahap A). Cara kerja ditulis dari sisi klipper (daftar → pilih kampanye → posting dan kirim → tarik saldo) dan dari sisi klien.
-- **FR-M15-03** _(diubah v4.0)_ `/kreator` menjelaskan: syarat (≥ 18 tahun, punya akun media sosial aktif), cara kerja empat langkah, cara menghitung honor (tarif per 1.000 views, contoh hitungan dengan angka ilustrasi yang disetujui `owner`), kode verifikasi, aturan anti-kecurangan, lencana Klipper Lokal, dan cara menarik saldo. Tombol utama "Daftar jadi Klipper".
+- **FR-M15-03** _(diubah v4.0)_ `/kreator` menjelaskan: syarat (punya akun media sosial aktif; tanpa batas usia), cara kerja empat langkah, cara menghitung honor (tarif per 1.000 views, contoh hitungan dengan angka ilustrasi yang disetujui `owner`), kode verifikasi, aturan anti-kecurangan, lencana Klipper Lokal, dan cara menarik saldo. Tombol utama "Daftar jadi Klipper".
 - **FR-M15-05** _(diubah v4.0)_ `robots.ts` dan `sitemap.ts` menambahkan `/daftar`.
 - **FR-M15-07** _(diubah v4.0)_ Kontak WhatsApp tetap untuk calon klien dan bantuan. Satu-satunya formulir yang menerima data pengunjung adalah `/daftar` (di luar grup `(marketing)`).
 - Grup `(marketing)` tetap statis dan tanpa kueri. Katalog kampanye **tidak** ditampilkan publik.
 
 ### M16 — Pendaftaran Klipper Mandiri _(v4.0, Fase 15)_
 
-- **FR-M16-01** Halaman `/daftar` (grup `(auth)`) berisi: email, kata sandi (min. 8 karakter), nama lengkap, nama panggung, tanggal lahir, nomor WhatsApp, kota, provinsi, centang Syarat Klipper (menautkan `/syarat`, versi dari konstanta aplikasi), centang Kebijakan Privasi, dan pernyataan berusia ≥ 18 tahun. Validasi Zod di server; usia < 18 ditolak dengan pesan yang jelas.
+- **FR-M16-01** Halaman `/daftar` (grup `(auth)`) berisi: email, kata sandi (min. 8 karakter), nama lengkap, nama panggung, nomor WhatsApp, kota, provinsi, centang Syarat Klipper (menautkan `/syarat`, versi dari konstanta aplikasi), dan centang Kebijakan Privasi. Validasi Zod di server. _(diubah v4.2)_ Tanggal lahir dan pernyataan usia tidak lagi diminta (FR-M3-02).
 - **FR-M16-02** Pendaftaran memakai Supabase Auth `signUp` dengan **konfirmasi email wajib**. Templat email konfirmasi `supabase/templates/confirmation.html` memakai pola `token_hash` seperti undangan dan dipasang juga di dashboard hosted. Sebelum email dikonfirmasi, akun tidak dapat masuk.
 - **FR-M16-03** **Peran tidak boleh berasal dari input pengguna.** Trigger pembuat profil (`handle_new_user`) wajib diubah: peran dibaca dari `raw_app_meta_data` (hanya dapat diisi service role saat undangan), dan pengguna tanpa peran di `app_metadata` selalu menjadi `creator`. `raw_user_meta_data.role` diabaikan. Undangan internal, kreator, dan klien yang ada disesuaikan agar menulis peran ke `app_metadata`.
 - **FR-M16-04** Pendaftaran membuat baris `creators` terhubung (`profile_id`) dengan `signup_source = mandiri`, status `prospek`, `terms_version`/`terms_agreed_at`, dan `verification_code` unik (format `KB-` + 6 karakter tanpa O/0/I/1) yang dibuat server/database. Satu email = satu klipper; email yang sudah dipakai kreator undangan menampilkan pesan umum tanpa membocorkan keberadaan akun.
@@ -356,7 +356,7 @@ FR-M15-01 sampai FR-M15-08 tetap berlaku, dengan perubahan berikut:
 - **FR-M19-02** Honor dikreditkan **pada saat tim menyetujui** klip atau pembaruan views, dihitung di `lib/calculations/` (8.6). Fungsi database yang mencatat kredit **mengunci baris kampanye** dan menolak bila total honor kampanye akan melebihi `creator_budget` atau batas per klipper, sehingga dua verifikasi bersamaan tidak dapat membobol anggaran.
 - **FR-M19-03** Saldo tersedia = Σ `creator_ledger_entries.amount`. Portal menampilkan saldo tersedia, total pernah diterima, riwayat entri (tanggal, kampanye, klip, jenis, nominal), dan penarikan berjalan.
 - **FR-M19-04** **Rekening**: klipper mengisi sendiri nama bank/e-wallet (daftar tetap: bank umum + DANA, OVO, GoPay, ShopeePay), nomor, dan nama pemilik. Nama pemilik wajib sama dengan nama lengkap akun; perbedaan ditandai untuk diperiksa `owner`. Perubahan rekening tercatat di log dan menahan pengajuan penarikan baru selama 24 jam.
-- **FR-M19-05** **Pengajuan penarikan**: nominal ≥ minimum penarikan (`platform_settings.min_withdrawal`, default **Rp 100.000** = 10.000 views pada tarif Rp 10.000; diubah `owner` di Pengaturan → Penarikan dan tercatat di log) dan ≤ saldo tersedia; hanya satu penarikan `diajukan`/`diproses` per klipper; klipper tidak `diblokir`; rekening terisi. Pengajuan membuat `withdrawals` dengan salinan data rekening saat itu dan entri `penarikan` di buku besar **dalam satu transaksi yang mengunci baris klipper**, sehingga saldo tidak dapat ditarik dua kali.
+- **FR-M19-05** **Pengajuan penarikan**: nominal ≥ minimum penarikan (`platform_settings.min_withdrawal`, default **Rp 100.000** = 10.000 views pada tarif Rp 10.000; diubah `owner` di Pengaturan → Penarikan dan tercatat di log) dan ≤ saldo tersedia; hanya satu penarikan `diajukan`/`diproses` per klipper; klipper tidak `diblokir`; rekening terisi; _(v4.2)_ tanggal lahir terisi (FR-M3-02). Pengajuan membuat `withdrawals` dengan salinan data rekening saat itu dan entri `penarikan` di buku besar **dalam satu transaksi yang mengunci baris klipper**, sehingga saldo tidak dapat ditarik dua kali.
 - **FR-M19-06** **Pemrosesan** (hanya `owner`): `diajukan` → `diproses` → `dibayar` (tanggal transfer + bukti wajib, bucket `finance-proofs`; `owner` mencatat **biaya transfer** yang ditanggung klipper, sehingga yang diterima = nominal − biaya; buku besar tetap mendebit nominal penuh), atau `ditolak` (alasan wajib) yang otomatis membuat entri `pengembalian_penarikan`. Target: diproses ≤ 1 hari kerja. `owner` juga membuat penyesuaian saldo dengan alasan.
 - **FR-M19-07** Klipper melihat status penarikannya beserta tanggal bayar, tanpa bukti transfer. Nomor rekening di portal dan untuk `manager` hanya tampil 4 digit terakhir.
 - **FR-M19-08** Halaman `owner` "Penarikan": antrean, filter status, ekspor CSV (untuk transfer massal manual), dan total per periode.
@@ -592,7 +592,7 @@ Kerjakan berurutan. Setiap fase wajib: migrasi baru (tidak mengedit migrasi lama
 - [x] Pengunjung dapat mendaftar di `/daftar`, menerima email konfirmasi, lalu masuk ke `/portal/mulai`; sebelum konfirmasi tidak dapat masuk.
 - [x] `signUp` dengan `options.data.role = 'owner'` (atau `manager`/`client`) tetap menghasilkan profil `creator` — diuji di `scripts/rls-check.sql` atau `guards-check.sql` dengan menyisipkan `auth.users` bermetadata palsu.
 - [x] Undangan internal, kreator, dan klien yang sudah ada tetap menghasilkan peran yang benar.
-- [x] Usia < 18, email sekali pakai, WhatsApp ganda, dan pendaftaran berulang melewati batas per IP ditolak dengan pesan yang jelas.
+- [x] Email sekali pakai, WhatsApp ganda, dan pendaftaran berulang melewati batas per IP ditolak dengan pesan yang jelas.
 - [x] Klipper baru berstatus `prospek`, menjadi `aktif` setelah menambah akun sosial pertama, dan memiliki `verification_code` unik.
 - [x] Klipper hanya dapat membaca dan menulis akun sosial serta bukti audiensnya sendiri.
 - [x] Tim dapat memberi/mencabut lencana lokal dan memblokir/membuka blokir dengan alasan; semuanya tercatat di log.
@@ -707,4 +707,5 @@ _Catatan implementasi:_ minimum penarikan disimpan di `platform_settings` (satu 
 | 1.1 | 24 Sep 2026 | Tahap A selesai (Fase 17–18). Minimum penarikan Rp 100.000 dan dapat diubah `owner` (`platform_settings`); PPh atas honor klipper ditunda sampai uji coba rilis berhasil dan legalitas usaha berdiri; biaya transfer ditanggung klipper (13.2 no. 3–4) |
 | 1.2 | 24 Sep 2026 | FR-M17-03: katalog portal menampilkan anggaran klipper dalam Rupiah (total, terpakai, sisa) di samping persentase, disetujui founder; harga paket tetap tersembunyi. FR-M10-01: kartu anggaran menipis di dasbor menampilkan nominal terpakai dan sisa |
 | 1.3 | 24 Sep 2026 | Tujuan kampanye (`pendaftar`/`awareness`/`event`) hanya untuk kampanye `paket` lama, disetujui founder: kampanye `per_views` tidak memilikinya, `landing_url` opsional, dan badge/filter tujuan dihapus dari katalog portal (FR-M4-01, FR-M17-02, FR-M17-03) |
-| **1.4** | 24 Sep 2026 | Fokus klien diperluas dari instansi regional (kampus swasta, bank daerah, Pemda) menjadi umum: brand bisnis, UMKM, instansi, dan personal. Jenis klien (FR-M2-01) diganti menjadi `brand`/`umkm`/`instansi`/`personal`/`lainnya` lewat migrasi yang memetakan nilai lama |
+| 1.4 | 24 Sep 2026 | Fokus klien diperluas dari instansi regional (kampus swasta, bank daerah, Pemda) menjadi umum: brand bisnis, UMKM, instansi, dan personal. Jenis klien (FR-M2-01) diganti menjadi `brand`/`umkm`/`instansi`/`personal`/`lainnya` lewat migrasi yang memetakan nilai lama |
+| **1.5** | 24 Sep 2026 | v4.2: batas usia klipper ≥ 18 tahun dihapus, disetujui founder. `/daftar` tidak lagi meminta tanggal lahir dan pernyataan usia; tanggal lahir wajib dilengkapi klipper sebelum penarikan pertama (FR-M3-02, FR-M15-03, FR-M16-01, FR-M19-05) |

@@ -13,7 +13,7 @@ import {
   getPortalProfile,
   listPortalSocialAccounts,
 } from "@/lib/data/portal";
-import { formatDate, formatDateTime } from "@/lib/format/date";
+import { formatCalendarDate, formatDate, formatDateTime } from "@/lib/format/date";
 import { formatWhatsapp } from "@/lib/validation/phone";
 import { resolveTimezone } from "@/lib/format/timezone";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -104,6 +104,12 @@ export default async function PortalProfilePage() {
                   { label: "Email", value: creator.email },
                   { label: "Kota", value: creator.city },
                   { label: "Provinsi", value: creator.province },
+                  {
+                    label: "Tanggal lahir",
+                    value: creator.birth_date
+                      ? formatCalendarDate(creator.birth_date, "d MMMM yyyy")
+                      : "Belum diisi (diminta sebelum tarik saldo)",
+                  },
                   { label: "Tier", value: CREATOR_TIER_LABELS[creator.tier] },
                   { label: "Versi syarat disetujui", value: creator.terms_version },
                 ]}

@@ -45,8 +45,8 @@ const STEPS = [
 const REQUIREMENTS = [
   {
     icon: UserCheck,
-    title: "Usia minimal 18 tahun",
-    body: "Pekerjaan ini melibatkan honor dan persetujuan syarat, jadi hanya untuk klipper dewasa.",
+    title: "Terbuka untuk umum",
+    body: "Siapa pun boleh daftar, tanpa batas usia. Tanggal lahir baru diminta sebelum kamu tarik saldo pertama kali.",
   },
   {
     icon: Hash,

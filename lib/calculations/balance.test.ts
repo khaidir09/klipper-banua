@@ -46,6 +46,7 @@ describe("withdrawalBlockers (FR-M19-05)", () => {
   const now = new Date("2026-10-10T00:00:00Z");
   const ok: WithdrawalCheckInput = {
     creatorBlocked: false,
+    hasBirthDate: true,
     hasBankAccount: true,
     bankHoldUntil: null,
     openWithdrawalStatuses: [],
@@ -57,6 +58,10 @@ describe("withdrawalBlockers (FR-M19-05)", () => {
 
   it("allows a valid request", () => {
     expect(withdrawalBlockers(ok)).toEqual([]);
+  });
+
+  it("refuses until the birth date is filled in (FR-M3-02)", () => {
+    expect(withdrawalBlockers({ ...ok, hasBirthDate: false })).toEqual(["no_birth_date"]);
   });
 
   it("allows exactly the minimum and exactly the balance", () => {

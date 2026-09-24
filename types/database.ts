@@ -2610,6 +2610,7 @@ export type Database = {
       }
       creator_portal_profile: {
         Row: {
+          birth_date: string | null
           city: string | null
           deletion_requested_at: string | null
           email: string | null
@@ -2628,6 +2629,7 @@ export type Database = {
           verification_code: string | null
         }
         Insert: {
+          birth_date?: string | null
           city?: string | null
           deletion_requested_at?: string | null
           email?: string | null
@@ -2646,6 +2648,7 @@ export type Database = {
           verification_code?: string | null
         }
         Update: {
+          birth_date?: string | null
           city?: string | null
           deletion_requested_at?: string | null
           email?: string | null
@@ -2980,6 +2983,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_own_birth_date: { Args: { p_birth_date: string }; Returns: undefined }
       submit_clip: {
         Args: {
           p_assignment_id: string

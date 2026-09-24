@@ -41,7 +41,6 @@ async function fillSignup(page: Page, overrides: Partial<Record<string, string>>
     passwordConfirmation: "Rahasia123",
     full_name: "Klipper Uji E2E",
     stage_name: "klipuji",
-    birth_date: "2000-03-04",
     phone_wa: phone,
     city: "Banjarbaru",
     ...overrides,
@@ -49,20 +48,16 @@ async function fillSignup(page: Page, overrides: Partial<Record<string, string>>
   for (const [id, value] of Object.entries(values)) {
     await page.locator(`#${id}`).fill(value);
   }
-  for (const id of ["agree_terms", "agree_privacy", "confirm_adult"]) {
+  for (const id of ["agree_terms", "agree_privacy"]) {
     await page.locator(`#${id}`).check();
   }
 }
 
 test.describe.serial("pendaftaran klipper mandiri", () => {
-  test("pendaftar di bawah 18 tahun ditolak di formulir", async ({ page }) => {
+  test("formulir tidak meminta tanggal lahir atau pernyataan usia", async ({ page }) => {
     await page.goto("/daftar");
-    const young = `${new Date().getFullYear() - 17}-01-01`;
-    await fillSignup(page, { birth_date: young, email: `young.${email}` });
-    await page.getByRole("button", { name: "Daftar jadi Klipper" }).click();
-
-    await expect(page.getByText(/minimal 18 tahun/).first()).toBeVisible();
-    await expect(page.getByText("Cek emailmu")).toHaveCount(0);
+    await expect(page.locator("#birth_date")).toHaveCount(0);
+    await expect(page.locator("#confirm_adult")).toHaveCount(0);
   });
 
   test("daftar, konfirmasi email, dan aktifkan akun", async ({ page }) => {

@@ -163,7 +163,7 @@ export default function LandingPage() {
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-center lg:gap-16">
             <div>
               <p className="text-sm font-medium text-brand-panel-muted">
-                Buat klipper Kalimantan, usia 18+
+                Buat klipper Kalimantan, terbuka untuk umum
               </p>
               <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
                 Bisa edit video? Posting klip di akunmu, dapat honor dari views-nya.

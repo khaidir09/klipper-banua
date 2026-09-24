@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isDisposableEmail } from "./disposable-email";
-import { SIGNUP_UNDERAGE_MESSAGE, signupSchema } from "./signup";
+import { signupSchema } from "./signup";
 
 const valid = {
   email: "Rina.Klip@Gmail.com",
@@ -8,13 +8,11 @@ const valid = {
   passwordConfirmation: "Rahasia123",
   full_name: " Rina Amalia ",
   stage_name: "rinaklip",
-  birth_date: "2000-05-17",
   phone_wa: "0812-3456-7890",
   city: "Banjarmasin",
   province: "Kalimantan Selatan",
   agree_terms: true,
   agree_privacy: true,
-  confirm_adult: true,
 };
 
 function errorsOf(input: Record<string, unknown>) {
@@ -33,10 +31,9 @@ describe("signupSchema", () => {
     expect(result.phone_wa).toBe("6281234567890");
   });
 
-  it("rejects anyone under 18", () => {
-    const today = new Date();
-    const seventeen = `${today.getUTCFullYear() - 17}-01-01`;
-    expect(errorsOf({ ...valid, birth_date: seventeen }).birth_date).toBe(SIGNUP_UNDERAGE_MESSAGE);
+  it("asks for no birth date: age is not a requirement", () => {
+    const result = signupSchema.parse({ ...valid, birth_date: "2015-01-01" });
+    expect(result).not.toHaveProperty("birth_date");
   });
 
   it("requires every consent", () => {
@@ -44,11 +41,8 @@ describe("signupSchema", () => {
       ...valid,
       agree_terms: false,
       agree_privacy: false,
-      confirm_adult: false,
     });
-    expect(Object.keys(errors)).toEqual(
-      expect.arrayContaining(["agree_terms", "agree_privacy", "confirm_adult"]),
-    );
+    expect(Object.keys(errors)).toEqual(expect.arrayContaining(["agree_terms", "agree_privacy"]));
   });
 
   it("requires a WhatsApp number, unlike the team's creator form", () => {

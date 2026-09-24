@@ -704,7 +704,7 @@ select
   (select id from public.profiles where role = 'owner' and is_active limit 1) as owner_id,
   (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id;
 
-\echo 'P15-1. sign-up that claims role owner in user_metadata (expect creator / prospek / mandiri / t / t / t)'
+\echo 'P15-1. sign-up that claims role owner in user_metadata, without a birth date (expect creator / prospek / mandiri / t / t / t / t)'
 insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values (
   '15151515-0000-0000-0000-0000000000f1',
@@ -715,7 +715,7 @@ values (
   '{"provider": "email"}'::jsonb,
   jsonb_build_object(
     'role', 'owner', 'signup', 'mandiri', 'full_name', 'Guard Signup', 'stage_name', 'guardsignup',
-    'birth_date', '2000-01-01', 'phone_wa', '6281515150001', 'city', 'Banjarmasin',
+    'phone_wa', '6281515150001', 'city', 'Banjarmasin',
     'province', 'Kalimantan Selatan', 'terms_version', '2026-10'
   ),
   now(),
@@ -723,7 +723,8 @@ values (
 );
 select p.role, c.status, c.signup_source, c.verification_code ~ '^KB-[A-HJ-NP-Z2-9]{6}$' as code_ok,
        c.terms_agreed_at is not null as terms_recorded,
-       exists (select 1 from public.activity_logs a where a.entity_id = c.id and a.action = 'self_signup') as logged
+       exists (select 1 from public.activity_logs a where a.entity_id = c.id and a.action = 'self_signup') as logged,
+       c.birth_date is null as no_birth_date
 from public.profiles p join public.creators c on c.profile_id = p.id
 where p.id = '15151515-0000-0000-0000-0000000000f1';
 
@@ -734,14 +735,14 @@ values ('15151515-0000-0000-0000-0000000000f2', '00000000-0000-0000-0000-0000000
 select role, (select count(*) from public.creators where profile_id = '15151515-0000-0000-0000-0000000000f2') as creator_rows
 from public.profiles where id = '15151515-0000-0000-0000-0000000000f2';
 
-\echo 'P15-3. under-18 sign-up (expect creators_adult_check)'
+\echo 'P15-3. age is not a requirement: a 10-year-old is accepted (expect INSERT 0 1), a future birth date is not (expect creators_birth_date_range_check)'
 savepoint a;
-insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
-values ('15151515-0000-0000-0000-0000000000f3', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-  'guard.young@example.test', '{}'::jsonb,
-  jsonb_build_object('signup', 'mandiri', 'full_name', 'Young', 'stage_name', 'young', 'birth_date', (current_date - interval '17 years')::date,
-    'phone_wa', '6281515150003', 'city', 'Banjarmasin', 'province', 'Kalimantan Selatan', 'terms_version', '2026-10'),
-  now(), now());
+insert into public.creators (full_name, birth_date, province)
+values ('Young', (current_date - interval '10 years')::date, 'Kalimantan Selatan');
+rollback to savepoint a;
+savepoint a;
+insert into public.creators (full_name, birth_date, province)
+values ('Future', current_date + 1, 'Kalimantan Selatan');
 rollback to savepoint a;
 
 \echo 'P15-4. sign-up with a WhatsApp number already registered (expect SIGNUP_INVALID, number not echoed)'
@@ -1273,8 +1274,9 @@ from (values
   ('18181818-0000-0000-0000-0000000000f2'::uuid, 'guard.p18.b@example.test')
 ) as u(id, email);
 
+-- A starts without a birth date (FR-M3-02: asked before the first withdrawal).
 insert into public.creators (id, full_name, stage_name, birth_date, province, status, terms_version, terms_agreed_at, profile_id) values
- ('18181818-0000-0000-0000-0000000000a1','Klipper Saldo A','saldo.a','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'18181818-0000-0000-0000-0000000000f1'),
+ ('18181818-0000-0000-0000-0000000000a1','Klipper Saldo A','saldo.a',null,'Kalimantan Selatan','aktif','2026-10',now(),'18181818-0000-0000-0000-0000000000f1'),
  ('18181818-0000-0000-0000-0000000000a2','Klipper Saldo B','saldo.b','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'18181818-0000-0000-0000-0000000000f2');
 
 -- The owner credits both klippers (stands in for approved clips).
@@ -1294,6 +1296,15 @@ select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-
 set local role authenticated;
 \echo 'P18-3. A reads the balance (expect 300000 / 300000 / 0 / 100000)'
 select available, total_earned, total_withdrawn, min_withdrawal from public.creator_portal_balance;
+\echo 'P18-4a. a withdrawal without a birth date (expect WITHDRAW_NEEDS_BIRTH_DATE)'
+savepoint c; select public.request_withdrawal(150000); rollback to savepoint c;
+\echo 'P18-4b. a future birth date (expect BIRTH_DATE_INVALID)'
+savepoint c; select public.set_own_birth_date(current_date + 1); rollback to savepoint c;
+\echo 'P18-4c. any age is accepted, once (expect t, then BIRTH_DATE_ALREADY_SET)'
+select public.set_own_birth_date('2014-05-01') is not null as birth_date_set;
+savepoint c; select public.set_own_birth_date('2000-01-01'); rollback to savepoint c;
+\echo 'P18-4d. A reads the own birth date (expect 2014-05-01)'
+select birth_date from public.creator_portal_profile;
 \echo 'P18-4. a withdrawal without a bank account (expect WITHDRAW_NEEDS_BANK)'
 savepoint c; select public.request_withdrawal(150000); rollback to savepoint c;
 \echo 'P18-5. A saves a first account; case and spacing of the name do not matter (expect ******5678 / t / no hold)'
