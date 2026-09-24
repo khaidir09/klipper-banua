@@ -675,7 +675,7 @@ async function main() {
       await admin.from("clients").upsert({
         id: DEMO.clientId,
         name: "Universitas Demo Borneo",
-        type: "kampus_swasta",
+        type: "instansi",
         city: "Banjarmasin",
         province: "Kalimantan Selatan",
         address: "Jl. Contoh Raya No. 1, Banjarmasin",

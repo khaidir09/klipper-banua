@@ -36,7 +36,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
     <div className="space-y-6">
       <PageHeader
         title="Klien"
-        description="Instansi yang membeli paket kampanye."
+        description="Brand, UMKM, instansi, dan personal yang membeli paket kampanye."
         actions={
           <Button asChild>
             <Link href="/clients/new">

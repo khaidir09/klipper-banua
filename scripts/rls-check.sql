@@ -38,7 +38,7 @@ $$;
 insert into public.profiles (id, full_name, role, is_active)
 values ('f1000000-0000-4000-8000-000000000099', 'RLS Inactive', 'manager', false);
 insert into public.clients (id, name, type, province)
-values ('f1000000-0000-4000-8000-000000000001', 'RLS Client', 'kampus_swasta', 'Kalimantan Selatan');
+values ('f1000000-0000-4000-8000-000000000001', 'RLS Client', 'instansi', 'Kalimantan Selatan');
 insert into public.client_contacts (id, client_id, name)
 values ('f1000000-0000-4000-8000-000000000002', 'f1000000-0000-4000-8000-000000000001', 'RLS Contact');
 insert into public.creators (id, full_name, birth_date, province) values

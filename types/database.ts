@@ -3027,15 +3027,7 @@ export type Database = {
       campaign_objective: "pendaftar" | "awareness" | "event"
       campaign_status: "draft" | "aktif" | "selesai" | "dibatalkan"
       client_payment_status: "belum_dibayar" | "sebagian" | "lunas"
-      client_type:
-        | "kampus_swasta"
-        | "sekolah_swasta"
-        | "bank_daerah"
-        | "bumd"
-        | "pemda"
-        | "event_organizer"
-        | "umkm"
-        | "lainnya"
+      client_type: "brand" | "umkm" | "instansi" | "personal" | "lainnya"
       clip_rejection_reason:
         | "bukan_pemilik"
         | "langgar_brief"
@@ -3214,16 +3206,7 @@ export const Constants = {
       campaign_objective: ["pendaftar", "awareness", "event"],
       campaign_status: ["draft", "aktif", "selesai", "dibatalkan"],
       client_payment_status: ["belum_dibayar", "sebagian", "lunas"],
-      client_type: [
-        "kampus_swasta",
-        "sekolah_swasta",
-        "bank_daerah",
-        "bumd",
-        "pemda",
-        "event_organizer",
-        "umkm",
-        "lainnya",
-      ],
+      client_type: ["brand", "umkm", "instansi", "personal", "lainnya"],
       clip_rejection_reason: [
         "bukan_pemilik",
         "langgar_brief",

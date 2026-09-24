@@ -32,10 +32,10 @@ export default function OpengraphImage() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         <div style={{ fontSize: 64, fontWeight: 600, lineHeight: 1.1, letterSpacing: -1.5 }}>
-          Klip lokal Kalimantan, dibayar dari views asli.
+          Bisa edit video? Posting klip, dapat honor dari views.
         </div>
         <div style={{ fontSize: 30, color: "#C3D3E8" }}>
-          Klipper lokal · Setiap klip diverifikasi · Honor dari views asli
+          Daftar gratis · Dibayar per 1.000 views · Klipper Kalimantan
         </div>
       </div>
     </div>,

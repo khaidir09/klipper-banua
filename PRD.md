@@ -2,7 +2,7 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi dokumen      | 1.3 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
+| Versi dokumen      | 1.4 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
 | Tanggal            | 24 September 2026                                                                           |
 | Status             | Fase 0–11 dan 13–18 selesai: **Tahap A (klipper mandiri) lengkap** — fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri, kampanye terbuka dan katalog, kiriman klip dan verifikasi views, saldo dan penarikan. Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
@@ -27,10 +27,10 @@
 
 ### 1.1 Masalah
 
-- Instansi regional di Kalimantan (dimulai dari **kampus swasta**) butuh promosi yang menjangkau **audiens lokal** dan bisa dipertanggungjawabkan (contoh: jumlah pendaftar PMB), bukan views nasional yang tidak relevan.
+- Brand bisnis, UMKM, instansi, maupun personal di Kalimantan butuh promosi yang menjangkau **audiens lokal** dan bisa dipertanggungjawabkan (contoh: klik tautan, kode referal, atau pendaftar/pembeli yang dilaporkan klien), bukan views nasional yang tidak relevan.
 - Model _managed_ (v0.1–v3.2), yaitu tim yang merekrut, menugaskan, dan mengoordinasikan setiap kreator lewat WhatsApp, tidak bisa diperbesar: jumlah klipper dan kampanye dibatasi oleh jam kerja tim 2–4 orang.
 - Banyak anak muda Kalimantan mampu memotong video dan punya akun media sosial, tetapi tidak punya jalur untuk dibayar dari keterampilan itu.
-- Platform clipper nasional (misalnya ayoklip.com) membuktikan model terbuka berjalan, tetapi tidak menawarkan jangkauan lokal, kode referal per klipper, maupun laporan yang siap diserahkan ke instansi.
+- Platform clipper nasional (misalnya ayoklip.com) membuktikan model terbuka berjalan, tetapi tidak menawarkan jangkauan lokal, kode referal per klipper, maupun laporan kampanye yang siap diserahkan ke klien.
 
 ### 1.2 Solusi (v4.0)
 
@@ -41,7 +41,7 @@
 - klipper mengirim **tautan klip + tangkapan layar views**; tim memverifikasi kepemilikan, kepatuhan brief, dan keaslian views **setelah tayang**;
 - klip yang disetujui menambah **saldo** klipper sebesar **tarif per 1.000 views** yang terverifikasi, dibatasi anggaran kampanye;
 - klipper menarik saldo ke rekeningnya; `owner` mentransfer **manual** dan mengunggah bukti;
-- pembeda lokal tetap ada: **lencana Klipper Lokal** (bukti audiens Kalimantan) yang bisa diwajibkan per kampanye, tautan pelacakan dan kode referal per klipper, serta laporan kampanye untuk instansi.
+- pembeda lokal tetap ada: **lencana Klipper Lokal** (bukti audiens Kalimantan) yang bisa diwajibkan per kampanye, tautan pelacakan dan kode referal per klipper, serta laporan kampanye untuk klien.
 
 Peluncuran bertahap:
 
@@ -65,7 +65,7 @@ Peluncuran bertahap:
 1. Membuka pasokan klipper tanpa menambah beban onboarding tim.
 2. Mengubah pekerjaan tim dari koordinasi (WhatsApp) menjadi **verifikasi** (antrean di aplikasi).
 3. Membayar klipper dengan cepat dan adil berdasarkan views asli.
-4. Tetap menghasilkan data yang bisa dipertanggungjawabkan kepada klien instansi.
+4. Tetap menghasilkan data yang bisa dipertanggungjawabkan kepada klien.
 
 ### 2.2 Metrik keberhasilan
 
@@ -88,7 +88,7 @@ Peluncuran bertahap:
 | `owner`   | Founder / direktur | Semua fitur, termasuk kelola pengguna internal, data rekening lengkap, **pemrosesan penarikan saldo**, penyesuaian saldo, dan pemblokiran klipper                                              |
 | `manager` | Pengelola kampanye | Semua fitur operasional: klien, kampanye, **verifikasi klip dan views**, lencana lokal, laporan. **Tidak bisa** melihat nomor rekening lengkap, memproses penarikan, membuat penyesuaian saldo, atau mengelola pengguna |
 | `creator` | Klipper            | Portal `/portal`: profil dan akun sosialnya, katalog kampanye, penugasannya sendiri, kiriman klip, saldo, rekening, dan penarikan miliknya. **Tidak punya akses** ke aplikasi internal, harga paket, margin, klien lain di luar katalog, data klipper lain, atau log aktivitas |
-| `client`  | Kontak klien _(v3.0)_ | Portal `/klien`: kampanye instansinya sendiri. Tidak melihat honor klipper, margin, data pribadi klipper, klien lain, atau log aktivitas |
+| `client`  | Kontak klien _(v3.0)_ | Portal `/klien`: kampanye milik kliennya sendiri. Tidak melihat honor klipper, margin, data pribadi klipper, klien lain, atau log aktivitas |
 | `anonim`  | Pengunjung         | Situs publik M15, halaman pendaftaran klipper `/daftar`, dan redirect pelacakan `/r/<slug>`. Tanpa bacaan database di situs publik |
 
 - **Pendaftaran publik (v4.0) hanya untuk klipper.** Akun `owner`/`manager` tetap lewat undangan `owner`; akun `client` lewat undangan dari halaman klien sampai Tahap B.
@@ -133,7 +133,7 @@ Peluncuran bertahap:
 - Katalog kampanye yang bisa dibaca tanpa login, papan peringkat (_leaderboard_), forum, blog, atau CMS.
 - Program referal klipper-mengajak-klipper, tingkatan/level klipper, dan kampanye eksklusif berbasis pengajuan (selain `undangan` oleh tim).
 - Notifikasi WhatsApp/email otomatis, kecuali email bawaan Supabase Auth (konfirmasi, pemulihan), pengingat Telegram untuk owner (FR-M10-05), dan email pemberitahuan ke klipper (FR-M18-09, FR-M19-09).
-- Penyimpanan data pribadi calon mahasiswa/pendaftar.
+- Penyimpanan data pribadi pendaftar, pembeli, atau konsumen klien.
 - Aplikasi mobile native, multi-bahasa, multi-tenant, fitur AI.
 - Skrip, pelacak, atau captcha pihak ketiga (lihat pertanyaan terbuka 13.2 no. 14).
 
@@ -192,7 +192,7 @@ Kampanye yang dibuat sebelum v4.0 memakai `payout_model = paket` dan alur v3.2 (
 
 ### M2 — Klien
 
-- **FR-M2-01** CRUD klien: nama, jenis (`kampus_swasta`, `sekolah_swasta`, `bank_daerah`, `bumd`, `pemda`, `event_organizer`, `umkm`, `lainnya`), kota, provinsi, alamat, catatan.
+- **FR-M2-01** _(diubah v1.4)_ CRUD klien: nama, jenis (`brand`, `umkm`, `instansi`, `personal`, `lainnya`), kota, provinsi, alamat, catatan. Jenis lama dipetakan: `kampus_swasta`, `sekolah_swasta`, `bank_daerah`, `bumd`, `pemda` → `instansi`; `event_organizer` → `brand`.
 - **FR-M2-02** CRUD kontak klien: nama, jabatan, nomor WhatsApp, email. Satu ditandai kontak utama.
 - **FR-M2-03** Halaman detail klien menampilkan riwayat kampanye beserta total nilai kontrak.
 
@@ -654,10 +654,10 @@ _Catatan implementasi:_ minimum penarikan disimpan di `platform_settings` (satu 
 | 1.1–3.2 | Tautan laporan, pengingat Telegram, portal kreator, portal klien, situs publik, konfirmasi penugasan — **selesai** (kecuali Fase 12) |
 | **4.0** | **Tahap A — klipper mandiri** (Fase 15–18) — **selesai** |
 | 4.0.x | Fase 12 yang direvisi: laporan dan usulan pendaftar dari portal klien |
-| **4.1** | **Tahap B — klien mandiri** (garis besar, PRD dirinci sebelum dikerjakan): pendaftaran klien/instansi dengan verifikasi tim; dompet klien dengan **deposit manual** (transfer + bukti, dikonfirmasi `owner`); klien membuat kampanye `per_views` sendiri (anggaran, tarif, brief, materi) yang ditinjau tim sebelum tayang di katalog; biaya platform (acuan 5%) dan add-on (khusus Klipper Lokal); anggaran terkunci saat kampanye aktif dan sisa dikembalikan ke dompet saat selesai; klien menandai klip bermasalah; invoice/kuitansi otomatis |
+| **4.1** | **Tahap B — klien mandiri** (garis besar, PRD dirinci sebelum dikerjakan): pendaftaran klien (brand, UMKM, instansi, personal) dengan verifikasi tim; dompet klien dengan **deposit manual** (transfer + bukti, dikonfirmasi `owner`); klien membuat kampanye `per_views` sendiri (anggaran, tarif, brief, materi) yang ditinjau tim sebelum tayang di katalog; biaya platform (acuan 5%) dan add-on (khusus Klipper Lokal); anggaran terkunci saat kampanye aktif dan sisa dikembalikan ke dompet saat selesai; klien menandai klip bermasalah; invoice/kuitansi otomatis |
 | 4.2 | Penarikan terjadwal (batch) dan pengingat penarikan; papan peringkat di portal (nama panggung) |
 | 5.0 | Integrasi API resmi platform media sosial untuk verifikasi views otomatis |
-| 6.0 | Payment gateway untuk deposit klien dan disbursement honor; segmen bank daerah, BUMD, Pemda |
+| 6.0 | Payment gateway untuk deposit klien dan disbursement honor |
 
 ---
 
@@ -665,7 +665,7 @@ _Catatan implementasi:_ minimum penarikan disimpan di `platform_settings` (satu 
 
 ### 13.1 Asumsi
 
-1. Klien Tahap A tetap instansi regional (dimulai kampus swasta) yang membeli paket lewat tim.
+1. Klien Tahap A adalah siapa pun yang ingin menjangkau audiens Kalimantan lewat klip pendek (brand bisnis, UMKM, instansi, maupun personal) dan membeli paket lewat tim.
 2. Materi kampanye berupa video panjang milik klien yang boleh dipotong dan diposting ulang oleh klipper (hak pakai diatur di Syarat Klipper dan kontrak klien).
 3. Views diverifikasi manual oleh tim dari halaman klip dan tangkapan layar; tim sanggup memverifikasi ≤ 24 jam pada volume Tahap A.
 4. Klipper dibayar ke rekening bank atau e-wallet atas nama sendiri, ditransfer manual.
@@ -685,7 +685,7 @@ _Catatan implementasi:_ minimum penarikan disimpan di `platform_settings` (satu 
 | 8   | Default `max_clips_per_creator`, `claim_grace_days`, dan `min_live_days` untuk kampanye `per_views` | Pilot |
 | 9   | Apakah nama klien boleh tampil di katalog klipper, atau perlu opsi nama samaran per kampanye | Klien pilot |
 | 10  | Kapasitas verifikasi tim: pada volume berapa perlu verifikator paruh waktu atau pengecekan sampel | Data M12 |
-| 11  | Apakah klien instansi menerima klip yang tidak ditinjau sebelum tayang, atau perlu kampanye "review draf" di Tahap B | Wawancara klien |
+| 11  | Apakah klien menerima klip yang tidak ditinjau sebelum tayang, atau perlu kampanye "review draf" di Tahap B | Wawancara klien |
 | 12  | Hosting: Vercel berbayar atau VPS sendiri | Founder |
 | 13  | Model Tahap B: deposit di muka vs invoice, persentase biaya platform, dan kebijakan pengembalian sisa anggaran | Founder |
 | 14  | Apakah perlu captcha (mis. Cloudflare Turnstile) bila rate limit tidak cukup menahan pendaftaran bot — memerlukan pengecualian aturan pihak ketiga | Data Fase 15 |
@@ -706,4 +706,5 @@ _Catatan implementasi:_ minimum penarikan disimpan di `platform_settings` (satu 
 | 1.0 | 23 Sep 2026 | **v4.0 — perubahan arah ke marketplace klipper terbuka (acuan ayoklip.com).** Pendaftaran klipper mandiri (M16), kampanye terbuka dan katalog (M17), kiriman klip dengan verifikasi pasca-tayang (M18), saldo dan penarikan manual (M19). Honor kampanye baru = tarif per 1.000 views terverifikasi dengan batas per klip/klipper/anggaran (8.6); skema honor dasar + bonus dipertahankan hanya untuk kampanye `paket` lama. Peran hanya dari `app_metadata`. Lencana Klipper Lokal menggantikan verifikasi wajib. Persetujuan konten oleh klien (FR-M14-04) ditunda. Klien mandiri dijadwalkan sebagai Tahap B (v4.1). Kriteria fase 0–14 diringkas menjadi tabel |
 | 1.1 | 24 Sep 2026 | Tahap A selesai (Fase 17–18). Minimum penarikan Rp 100.000 dan dapat diubah `owner` (`platform_settings`); PPh atas honor klipper ditunda sampai uji coba rilis berhasil dan legalitas usaha berdiri; biaya transfer ditanggung klipper (13.2 no. 3–4) |
 | 1.2 | 24 Sep 2026 | FR-M17-03: katalog portal menampilkan anggaran klipper dalam Rupiah (total, terpakai, sisa) di samping persentase, disetujui founder; harga paket tetap tersembunyi. FR-M10-01: kartu anggaran menipis di dasbor menampilkan nominal terpakai dan sisa |
-| **1.3** | 24 Sep 2026 | Tujuan kampanye (`pendaftar`/`awareness`/`event`) hanya untuk kampanye `paket` lama, disetujui founder: kampanye `per_views` tidak memilikinya, `landing_url` opsional, dan badge/filter tujuan dihapus dari katalog portal (FR-M4-01, FR-M17-02, FR-M17-03) |
+| 1.3 | 24 Sep 2026 | Tujuan kampanye (`pendaftar`/`awareness`/`event`) hanya untuk kampanye `paket` lama, disetujui founder: kampanye `per_views` tidak memilikinya, `landing_url` opsional, dan badge/filter tujuan dihapus dari katalog portal (FR-M4-01, FR-M17-02, FR-M17-03) |
+| **1.4** | 24 Sep 2026 | Fokus klien diperluas dari instansi regional (kampus swasta, bank daerah, Pemda) menjadi umum: brand bisnis, UMKM, instansi, dan personal. Jenis klien (FR-M2-01) diganti menjadi `brand`/`umkm`/`instansi`/`personal`/`lainnya` lewat migrasi yang memetakan nilai lama |

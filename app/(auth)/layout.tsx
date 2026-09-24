@@ -7,7 +7,7 @@ import { publicEnv } from "@/lib/env";
 const POINTS = [
   {
     icon: MapPinned,
-    title: "Kampanye instansi Kalimantan",
+    title: "Kampanye lokal Kalimantan",
     body: "Pilih kampanye dari katalog, kerjakan dari akunmu sendiri.",
   },
   {

@@ -49,8 +49,8 @@ export function SiteFooter() {
               <span className="font-semibold tracking-tight">{publicEnv.NEXT_PUBLIC_APP_NAME}</span>
             </div>
             <p className="mt-3 text-sm text-pretty text-muted-foreground">
-              Marketplace klipper lokal Kalimantan: instansi memasang kampanye, klipper
-              mengerjakannya, dan setiap klip diverifikasi sebelum dibayar.
+              Marketplace klipper lokal Kalimantan: brand, UMKM, instansi, dan personal memasang
+              kampanye, klipper mengerjakannya, dan setiap klip diverifikasi sebelum dibayar.
             </p>
           </div>
 

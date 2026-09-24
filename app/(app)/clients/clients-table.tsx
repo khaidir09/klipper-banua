@@ -59,8 +59,8 @@ export function ClientsTable({ rows, filtered }: { rows: ClientListItem[]; filte
       emptyMessage={filtered ? "Tidak ada klien yang cocok" : "Belum ada klien"}
       emptyHint={
         filtered
-          ? "Coba kata kunci lain, atau kosongkan filter jenis instansi."
-          : "Tambahkan instansi lebih dulu; kampanye selalu dimiliki satu klien."
+          ? "Coba kata kunci lain, atau kosongkan filter jenis klien."
+          : "Tambahkan klien lebih dulu; kampanye selalu dimiliki satu klien."
       }
       emptyAction={
         filtered ? (

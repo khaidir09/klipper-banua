@@ -33,7 +33,7 @@ export function toCsv(headers: string[], rows: CsvCell[][], separator = CSV_SEPA
   return `${CSV_BOM}${lines.join("\r\n")}\r\n`;
 }
 
-/** A safe download file name, e.g. `PMB-UBS-2026-02-konten.csv`. */
+/** A safe download file name, e.g. `PROMO-BRANDX-2026-02-konten.csv`. */
 export function csvFileName(code: string, suffix: string): string {
   const base = code.replace(/[^A-Za-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "kampanye";
   return `${base}-${suffix}.csv`;

@@ -8,7 +8,7 @@ import { whatsappDisplay } from "@/lib/marketing/contact";
 const WHATSAPP = whatsappDisplay(publicEnv.NEXT_PUBLIC_CONTACT_WA);
 
 const DESCRIPTION =
-  "Ketentuan pemakaian platform klipper lokal: pendaftaran klipper, kewajiban instansi klien dan klipper, verifikasi klip, honor per views, saldo, dan penarikan.";
+  "Ketentuan pemakaian platform klipper lokal: pendaftaran klipper, kewajiban klien dan klipper, verifikasi klip, honor per views, saldo, dan penarikan.";
 
 export const metadata: Metadata = {
   title: "Syarat Layanan",
@@ -34,26 +34,26 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Tentang layanan ini",
     body: [
-      "Kami menjalankan platform yang mempertemukan instansi regional dengan klipper: orang yang memotong materi video kampanye menjadi klip pendek lalu mempostingnya di akun media sosialnya sendiri.",
-      "Instansi memasang kampanye bersama tim kami. Klipper mendaftar sendiri, memilih kampanye dari katalog, dan dibayar dari views klip yang sudah diverifikasi tim.",
+      "Kami menjalankan platform yang mempertemukan klien (brand bisnis, UMKM, instansi, maupun personal) dengan klipper: orang yang memotong materi video kampanye menjadi klip pendek lalu mempostingnya di akun media sosialnya sendiri.",
+      "Klien memasang kampanye bersama tim kami. Klipper mendaftar sendiri, memilih kampanye dari katalog, dan dibayar dari views klip yang sudah diverifikasi tim.",
     ],
   },
   {
     heading: "Akses ke aplikasi",
     bullets: [
       `Klipper mendaftar sendiri di halaman Daftar jadi Klipper, wajib berusia minimal ${MINIMUM_CREATOR_AGE} tahun, dan mengonfirmasi alamat emailnya. Satu orang hanya boleh memiliki satu akun.`,
-      "Akun anggota tim dan kontak instansi klien dibuat lewat undangan.",
+      "Akun anggota tim dan kontak klien dibuat lewat undangan.",
       "Setiap orang memakai akunnya sendiri dan bertanggung jawab menjaga kerahasiaan kata sandinya.",
       "Akses dapat dicabut atau dinonaktifkan sewaktu-waktu, misalnya ketika kerja sama berakhir atau ada penyalahgunaan.",
-      "Akun portal hanya memuat data milik pemakainya: klipper melihat kampanye, klip, dan saldonya sendiri; kontak klien melihat kampanye instansinya sendiri.",
+      "Akun portal hanya memuat data milik pemakainya: klipper melihat kampanye, klip, dan saldonya sendiri; kontak klien melihat kampanye miliknya sendiri.",
     ],
   },
   {
-    heading: "Kewajiban instansi klien",
+    heading: "Kewajiban klien",
     bullets: [
       "Menyediakan materi, logo, dan informasi kampanye yang sah dipakai, termasuk izin atas merek dan aset yang diserahkan kepada kami.",
       "Menyampaikan brief, larangan, dan ketentuan label berbayar yang ingin diberlakukan pada klip, serta menyetujui anggaran dan tarif per 1.000 views kampanye.",
-      "Melaporkan jumlah pendaftar dalam bentuk angka rekap per kode referal, tanpa menyertakan data pribadi pendaftar.",
+      "Melaporkan hasil kampanye, misalnya jumlah pendaftar atau pembeli, dalam bentuk angka rekap per kode referal, tanpa menyertakan data pribadi siapa pun.",
       "Membayar paket kampanye sesuai kesepakatan pada dokumen kampanye masing-masing.",
     ],
   },
@@ -88,13 +88,13 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Hak pakai konten",
     body: [
-      "Hak pakai konten oleh instansi klien, termasuk durasi dan kanal pemakaiannya, disepakati pada dokumen kampanye masing-masing. Halaman ini tidak memberikan hak pakai apa pun secara otomatis.",
+      "Hak pakai konten oleh klien, termasuk durasi dan kanal pemakaiannya, disepakati pada dokumen kampanye masing-masing. Halaman ini tidak memberikan hak pakai apa pun secara otomatis.",
     ],
   },
   {
     heading: "Larangan pemakaian",
     bullets: [
-      "Memakai akses aplikasi untuk mengambil data yang bukan hak Anda, termasuk data klipper lain, instansi lain, atau angka keuangan internal.",
+      "Memakai akses aplikasi untuk mengambil data yang bukan hak Anda, termasuk data klipper lain, klien lain, atau angka keuangan internal.",
       "Membuat lebih dari satu akun klipper, atau memakai akun media sosial milik orang lain.",
       "Membagikan akun, kata sandi, atau tautan laporan rahasia kepada pihak yang tidak berhak.",
       "Mencoba menembus pembatasan peran, memanipulasi angka metrik, atau mengganggu jalannya layanan.",

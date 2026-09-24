@@ -7,7 +7,7 @@ import { whatsappDisplay } from "@/lib/marketing/contact";
 const WHATSAPP = whatsappDisplay(publicEnv.NEXT_PUBLIC_CONTACT_WA);
 
 const DESCRIPTION =
-  "Bagaimana kami menangani data anggota tim, kontak instansi, dan kreator mitra — serta mengapa kami tidak menyimpan data pribadi calon pendaftar.";
+  "Bagaimana kami menangani data anggota tim, kontak klien, dan klipper — serta mengapa kami tidak menyimpan data pribadi calon pendaftar.";
 
 export const metadata: Metadata = {
   title: "Kebijakan Privasi",
@@ -34,8 +34,8 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Ringkasnya",
     bullets: [
-      "Kami mengumpulkan data pribadi seminimal mungkin, dan hanya dari orang yang memang bekerja dengan kami: anggota tim, kontak instansi klien, dan klipper yang mendaftar.",
-      "Kami tidak menyimpan data pribadi calon pendaftar atau calon mahasiswa. Yang kami terima dari instansi hanya angka rekap.",
+      "Kami mengumpulkan data pribadi seminimal mungkin, dan hanya dari orang yang memang bekerja dengan kami: anggota tim, kontak klien, dan klipper yang mendaftar.",
+      "Kami tidak menyimpan data pribadi pendaftar atau pembeli dari kampanye klien. Yang kami terima dari klien hanya angka rekap.",
       "Halaman informasi di situs ini tidak memuat formulir dan tidak memasang pelacak pihak ketiga. Satu-satunya formulir adalah pendaftaran klipper.",
       "Kami tidak meminta foto KTP atau dokumen identitas.",
       "Klipper dapat meminta akunnya dihapus langsung dari portal.",
@@ -48,7 +48,7 @@ const SECTIONS: LegalSection[] = [
     ],
     bullets: [
       "Anggota tim internal: nama, alamat email, peran, dan zona waktu tampilan.",
-      "Kontak instansi klien: nama, jabatan, nomor WhatsApp, dan alamat email, untuk koordinasi kampanye dan akses portal klien.",
+      "Kontak klien: nama, jabatan, nomor WhatsApp, dan alamat email, untuk koordinasi kampanye dan akses portal klien.",
       "Klipper: nama, nama panggung, nomor WhatsApp, email, kota dan provinsi, tanggal lahir (untuk memastikan usia minimal 18 tahun), versi syarat yang disetujui beserta waktunya, akun media sosial, serta tangkapan layar analitik audiens bila mengajukan lencana Klipper Lokal.",
       "Klip yang dikirim klipper: tautan klip, waktu tayang, dan tangkapan layar views, untuk verifikasi dan perhitungan honor.",
       "Data rekening klipper: nama bank atau e-wallet, nomor rekening, dan nama pemilik rekening, semata-mata untuk pembayaran honor.",
@@ -58,14 +58,14 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Data yang tidak kami kumpulkan",
     body: [
-      "Kami tidak meminta dan tidak menyimpan nama, nomor telepon, alamat email, atau data pribadi lain dari calon pendaftar maupun calon mahasiswa instansi klien.",
+      "Kami tidak meminta dan tidak menyimpan nama, nomor telepon, alamat email, atau data pribadi lain dari pendaftar, pembeli, maupun pelanggan klien.",
       "Laporan jumlah pendaftar yang kami terima berbentuk angka rekap per kode referal atau tanpa kode, misalnya jumlah pendaftar pada satu periode. Sebelum laporan semacam itu diterima, tim mengonfirmasi bahwa kirimannya bebas data pribadi.",
     ],
   },
   {
     heading: "Kunjungan lewat tautan pelacakan",
     body: [
-      "Setiap klipper mendapat tautan pelacakan unik yang meneruskan pengunjung ke halaman tujuan instansi. Kami mencatat kunjungan itu untuk menghitung klik per klipper.",
+      "Setiap klipper mendapat tautan pelacakan unik yang meneruskan pengunjung ke halaman tujuan klien. Kami mencatat kunjungan itu untuk menghitung klik per klipper.",
       "Alamat IP pengunjung tidak disimpan apa adanya. Nilainya diacak dengan kunci rahasia (hash) lalu hanya dipakai untuk menyaring klik berulang dan lalu lintas otomatis. Kami tidak membangun profil pengunjung dan tidak mengaitkannya dengan identitas siapa pun.",
     ],
   },
@@ -82,7 +82,7 @@ const SECTIONS: LegalSection[] = [
     bullets: [
       "Menjalankan kampanye: menyusun brief, menampilkan kampanye kepada klipper, dan memverifikasi klip.",
       "Menghitung dan membayar honor klipper secara adil berdasarkan views yang sudah diverifikasi.",
-      "Menyusun laporan kampanye untuk instansi klien.",
+      "Menyusun laporan kampanye untuk klien.",
       "Menjaga keamanan: membatasi akses sesuai peran dan menyimpan jejak audit tindakan penting.",
     ],
   },
@@ -96,7 +96,7 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Berapa lama disimpan",
     body: [
-      "Data kampanye, konten, metrik, dan laporan disimpan selama masih dibutuhkan untuk pertanggungjawaban kepada instansi klien dan kewajiban pembukuan.",
+      "Data kampanye, konten, metrik, dan laporan disimpan selama masih dibutuhkan untuk pertanggungjawaban kepada klien dan kewajiban pembukuan.",
       "Data klipper disimpan selama akun aktif, dan dihapus atau dianonimkan setelah permintaan penghapusan diproses dan saldo diselesaikan, kecuali bagian yang wajib kami simpan sebagai bukti pembayaran.",
     ],
   },

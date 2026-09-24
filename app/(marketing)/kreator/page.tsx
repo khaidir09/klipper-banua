@@ -7,7 +7,7 @@ import { Container, Section } from "@/components/marketing/section";
 import { SignupCta } from "@/components/marketing/signup-cta";
 
 const DESCRIPTION =
-  "Jadi klipper kampanye instansi di Kalimantan: daftar gratis, pilih kampanye, posting klip di akunmu sendiri, dan dapat honor dari views yang terverifikasi.";
+  "Jadi klipper kampanye brand, UMKM, instansi, dan personal di Kalimantan: daftar gratis, pilih kampanye, posting klip di akunmu sendiri, dan dapat honor dari views yang terverifikasi.";
 
 export const metadata: Metadata = {
   title: "Untuk Klipper",
@@ -82,7 +82,7 @@ const FAQ: FaqItem[] = [
   {
     question: "Apa itu lencana Klipper Lokal?",
     answer:
-      "Lencana untuk akun yang mayoritas audiensnya di Kalimantan, dibuktikan dengan tangkapan layar analitik. Sebagian kampanye instansi hanya terbuka untuk pemegang lencana ini.",
+      "Lencana untuk akun yang mayoritas audiensnya di Kalimantan, dibuktikan dengan tangkapan layar analitik. Sebagian kampanye hanya terbuka untuk pemegang lencana ini.",
   },
   {
     question: "Kapan honor bisa ditarik?",
@@ -108,8 +108,9 @@ export default function CreatorPage() {
                 Potong video kampanye, posting di akunmu, dibayar dari views asli.
               </h1>
               <p className="mt-5 max-w-[60ch] text-base text-pretty text-brand-panel-muted">
-                Instansi di Kalimantan menyediakan materi video dan tarif per 1.000 views. Kamu
-                memilih kampanye sendiri, membuat klip, dan menarik honornya ke rekeningmu.
+                Brand, UMKM, instansi, sampai personal menyediakan materi video dan tarif per 1.000
+                views. Kamu memilih kampanye sendiri, membuat klip, dan menarik honornya ke
+                rekeningmu.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <SignupCta tone="brand" />

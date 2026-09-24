@@ -25,7 +25,7 @@ type ClientFormProps = {
 
 const EMPTY: ClientFormInput = {
   name: "",
-  type: "kampus_swasta",
+  type: "brand",
   city: "",
   province: DEFAULT_PROVINCE,
   address: "",
@@ -79,7 +79,7 @@ export function ClientForm({ clientId, defaultValues }: ClientFormProps) {
     <FormAsideCard title={clientId ? "Yang perlu diingat" : "Sebelum menyimpan"}>
       <FormHints
         items={[
-          "Nama klien dipakai apa adanya pada laporan dan tautan berbagi, jadi tulis nama resmi instansi.",
+          "Nama klien dipakai apa adanya pada laporan dan tautan berbagi, jadi tulis nama resmi brand, usaha, instansi, atau orangnya.",
           "Provinsi dan kota dipakai untuk menyaring daftar klien; isi sesuai lokasi kantor utama.",
           "Catatan hanya terlihat tim internal dan tidak pernah ikut ke laporan klien.",
           clientId

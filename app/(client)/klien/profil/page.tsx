@@ -14,7 +14,7 @@ export default async function ClientProfilePage() {
     <div className="space-y-6">
       <PageHeader
         title="Profil saya"
-        description="Data kontak dan instansi dikelola tim. Hubungi tim bila ada yang perlu diperbarui."
+        description="Data kontak dan identitas klien dikelola tim. Hubungi tim bila ada yang perlu diperbarui."
       />
 
       <Card className="max-w-xl">

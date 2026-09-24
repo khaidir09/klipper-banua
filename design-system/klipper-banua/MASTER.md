@@ -274,7 +274,7 @@ di atas 3:1 yang dibutuhkan indikator non-teks.
 
 ## 4g. Portal klien
 
-Nada "laporan", bukan konsol: kampus membuka ini untuk tahu kampanyenya sampai
+Nada "laporan", bukan konsol: klien membuka ini untuk tahu kampanyenya sampai
 mana.
 
 - Kartu kampanye memakai **stretched link** seperti portal kreator; tautan

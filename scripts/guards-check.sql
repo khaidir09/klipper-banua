@@ -5,7 +5,7 @@
 
 \set QUIET on
 -- Fixtures as superuser.
-insert into public.clients (id, name, type, province) values ('22222222-0000-0000-0000-000000000001','Guard Client','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('22222222-0000-0000-0000-000000000001','Guard Client','instansi','Kalimantan Selatan');
 insert into public.creators (id, full_name, birth_date, province, status, blocked_reason) values
  ('22222222-0000-0000-0000-0000000000a1','Verified C','1995-01-01','Kalimantan Selatan','terverifikasi',null),
  ('22222222-0000-0000-0000-0000000000a2','Prospect C','1995-01-01','Kalimantan Selatan','prospek',null),
@@ -56,7 +56,7 @@ delete from public.clients where id='22222222-0000-0000-0000-000000000001';
 -- Phase 3: content review workflow (PRD M6)
 -- ---------------------------------------------------------------------------
 \set QUIET on
-insert into public.clients (id, name, type, province) values ('44444444-0000-0000-0000-000000000001','Review Client','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('44444444-0000-0000-0000-000000000001','Review Client','instansi','Kalimantan Selatan');
 insert into public.creators (id, full_name, birth_date, province, status) values ('44444444-0000-0000-0000-0000000000a1','Review C','1995-01-01','Kalimantan Selatan','terverifikasi');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, paid_label_required) values ('44444444-0000-0000-0000-0000000000c1','44444444-0000-0000-0000-000000000001','REVIEW-2026-01','Review','awareness','2026-10-01','2026-10-31', true);
 -- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
@@ -116,7 +116,7 @@ delete from public.clients where id='44444444-0000-0000-0000-000000000001';
 -- rollback is the only way to remove them again.
 begin;
 \set QUIET on
-insert into public.clients (id, name, type, province) values ('55555555-0000-0000-0000-000000000001','Metric Client','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('55555555-0000-0000-0000-000000000001','Metric Client','instansi','Kalimantan Selatan');
 insert into public.creators (id, full_name, birth_date, province, status) values ('55555555-0000-0000-0000-0000000000a1','Metric C','1995-01-01','Kalimantan Selatan','terverifikasi');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date) values ('55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-000000000001','METRIC-2026-01','Metric','awareness','2026-10-01','2026-10-31');
 -- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
@@ -162,7 +162,7 @@ rollback;
 -- ---------------------------------------------------------------------------
 begin;
 \set QUIET on
-insert into public.clients (id, name, type, province) values ('66666666-0000-0000-0000-000000000001','Finance Client','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('66666666-0000-0000-0000-000000000001','Finance Client','instansi','Kalimantan Selatan');
 insert into public.creators (id, full_name, birth_date, province, status) values ('66666666-0000-0000-0000-0000000000a1','Finance C','1995-01-01','Kalimantan Selatan','terverifikasi');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status) values ('66666666-0000-0000-0000-0000000000c1','66666666-0000-0000-0000-000000000001','FIN-2026-01','Finance','awareness','2026-10-01','2026-10-31','aktif');
 -- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
@@ -222,7 +222,7 @@ rollback;
 -- ---------------------------------------------------------------------------
 begin;
 \set QUIET on
-insert into public.clients (id, name, type, province) values ('77777777-0000-0000-0000-000000000001','Ops Client','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('77777777-0000-0000-0000-000000000001','Ops Client','instansi','Kalimantan Selatan');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status) values ('77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-000000000001','OPS-2026-01','Ops','awareness','2026-10-01','2026-10-31','selesai');
 -- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
 update public.campaigns set payout_model = 'paket', access = 'undangan' where id in ('77777777-0000-0000-0000-0000000000c1');
@@ -300,7 +300,7 @@ rollback;
 -- ---------------------------------------------------------------------------
 begin;
 \set QUIET on
-insert into public.clients (id, name, type, province) values ('99999999-0000-0000-0000-000000000001','Share Client','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('99999999-0000-0000-0000-000000000001','Share Client','instansi','Kalimantan Selatan');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status) values
  ('99999999-0000-0000-0000-0000000000c1','99999999-0000-0000-0000-000000000001','SHARE-2026-01','Share done','awareness','2026-10-01','2026-10-31','selesai'),
  ('99999999-0000-0000-0000-0000000000c2','99999999-0000-0000-0000-000000000001','SHARE-2026-02','Share draft','awareness','2026-10-01','2026-10-31','draft'),
@@ -382,7 +382,7 @@ values (
 insert into public.creators (id, full_name, birth_date, province, status, profile_id) values
  ('88888888-0000-0000-0000-0000000000a1','Portal C','1995-01-01','Kalimantan Selatan','terverifikasi','88888888-0000-0000-0000-0000000000f1'),
  ('88888888-0000-0000-0000-0000000000a2','Other C','1995-01-01','Kalimantan Selatan','terverifikasi',null);
-insert into public.clients (id, name, type, province) values ('88888888-0000-0000-0000-000000000001','Portal Client','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('88888888-0000-0000-0000-000000000001','Portal Client','instansi','Kalimantan Selatan');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, package_price, landing_url) values
  ('88888888-0000-0000-0000-0000000000c1','88888888-0000-0000-0000-000000000001','PORTAL-2026-01','Portal','awareness','2026-10-01','2026-10-31','aktif', 9000000, 'https://pmb.example.ac.id/daftar'),
  ('88888888-0000-0000-0000-0000000000c2','88888888-0000-0000-0000-000000000001','PORTAL-2026-02','Draft','awareness','2026-10-01','2026-10-31','draft', 5000000, null);
@@ -453,7 +453,7 @@ values (
 insert into public.creators (id, full_name, birth_date, province, status, profile_id) values
  ('77777777-0000-0000-0000-0000000000a1','Portal C10','1995-01-01','Kalimantan Selatan','aktif','77777777-0000-0000-0000-0000000000f1'),
  ('77777777-0000-0000-0000-0000000000a2','Other C10','1995-01-01','Kalimantan Selatan','aktif',null);
-insert into public.clients (id, name, type, province) values ('77777777-0000-0000-0000-000000000001','Portal Client 10','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('77777777-0000-0000-0000-000000000001','Portal Client 10','instansi','Kalimantan Selatan');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, landing_url) values
  ('77777777-0000-0000-0000-0000000000c1','77777777-0000-0000-0000-000000000001','PORTAL10-2026-01','Portal 10','awareness','2026-10-01','2026-10-31','aktif', null);
 -- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
@@ -562,7 +562,7 @@ values (
   now()
 );
 insert into public.clients (id, name, type, province) values
- ('66666666-0000-0000-0000-000000000001','Klien Portal','kampus_swasta','Kalimantan Selatan'),
+ ('66666666-0000-0000-0000-000000000001','Klien Portal','instansi','Kalimantan Selatan'),
  ('66666666-0000-0000-0000-000000000002','Klien Lain','umkm','Kalimantan Selatan');
 insert into public.client_contacts (id, client_id, name, email, is_primary, profile_id) values
  ('66666666-0000-0000-0000-0000000000e1','66666666-0000-0000-0000-000000000001','Kontak Portal','kontak@example.test', true, '66666666-0000-0000-0000-0000000000f1'),
@@ -637,7 +637,7 @@ values (
 insert into public.creators (id, full_name, birth_date, province, status, profile_id) values
  ('55555555-0000-0000-0000-0000000000a1','Portal C14','1995-01-01','Kalimantan Selatan','aktif','55555555-0000-0000-0000-0000000000f1'),
  ('55555555-0000-0000-0000-0000000000a2','Other C14','1995-01-01','Kalimantan Selatan','aktif',null);
-insert into public.clients (id, name, type, province) values ('55555555-0000-0000-0000-000000000001','Portal Client 14','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('55555555-0000-0000-0000-000000000001','Portal Client 14','instansi','Kalimantan Selatan');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, landing_url) values
  ('55555555-0000-0000-0000-0000000000c1','55555555-0000-0000-0000-000000000001','PORTAL14-2026-01','Portal 14','awareness','2026-10-01','2026-10-31','aktif', null);
 -- Legacy flow (Phase 16): package campaigns keep the v3.2 rules.
@@ -857,7 +857,7 @@ insert into public.creators (id, full_name, stage_name, birth_date, province, st
  ('16161616-0000-0000-0000-0000000000a4','Local K','lokal','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),now(),'16161616-0000-0000-0000-0000000000f4'),
  ('16161616-0000-0000-0000-0000000000a5','No Account K','tanpa akun','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),null,null),
  ('16161616-0000-0000-0000-0000000000a6','Blocked K','blokir','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),null,'16161616-0000-0000-0000-0000000000f6');
-insert into public.clients (id, name, type, province) values ('16161616-0000-0000-0000-000000000001','Open Client 16','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('16161616-0000-0000-0000-000000000001','Open Client 16','instansi','Kalimantan Selatan');
 
 -- c1 a draft to activate step by step; c2 open; c3 local only; c4 past its
 -- end; c5 invite-only; c6 a legacy package campaign.
@@ -1041,7 +1041,7 @@ insert into public.creators (id, full_name, stage_name, birth_date, province, st
 insert into public.creator_social_accounts (creator_id, platform, handle) values
  ('17171717-0000-0000-0000-0000000000a1','tiktok','guard_p17_a'),
  ('17171717-0000-0000-0000-0000000000a2','tiktok','guard_p17_b');
-insert into public.clients (id, name, type, province) values ('17171717-0000-0000-0000-000000000001','Clip Client 17','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('17171717-0000-0000-0000-000000000001','Clip Client 17','instansi','Kalimantan Selatan');
 -- Rp 10.000 per 1.000 views, Rp 400.000 budget, max 2 clips, 7 live days.
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, access, payout_model,
                               brief, rate_per_1000_views, creator_budget, min_views_to_earn, max_clips_per_creator,
@@ -1424,7 +1424,7 @@ create temporary table obj_roles on commit drop as
 select (select id from public.profiles where role = 'manager' and is_active limit 1) as manager_id;
 grant select on obj_roles to authenticated;
 
-insert into public.clients (id, name, type, province) values ('0b0b0b0b-0000-0000-0000-000000000001','Objective Client','kampus_swasta','Kalimantan Selatan');
+insert into public.clients (id, name, type, province) values ('0b0b0b0b-0000-0000-0000-000000000001','Objective Client','instansi','Kalimantan Selatan');
 insert into public.campaigns (id, client_id, code, name, objective, start_date, end_date, status, access, payout_model) values
  ('0b0b0b0b-0000-0000-0000-0000000000c1','0b0b0b0b-0000-0000-0000-000000000001','OBJ-01','Paket lama','pendaftar','2026-10-01','2026-10-31','draft','undangan','paket'),
  ('0b0b0b0b-0000-0000-0000-0000000000c2','0b0b0b0b-0000-0000-0000-000000000001','OBJ-02','Paket event','event','2026-10-01','2026-10-31','draft','undangan','paket');

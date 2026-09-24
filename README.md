@@ -1,12 +1,12 @@
 # Klipper Banua
 
-Aplikasi web internal untuk mengelola kampanye promosi instansi regional di Kalimantan
-bersama kreator lokal. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
+Marketplace klipper lokal Kalimantan: brand bisnis, UMKM, instansi, dan personal memasang
+kampanye, klipper lokal membuat dan memposting klipnya. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
 Status: **Fase 11 — v3.0** selesai: portal klien untuk memantau kampanye. v2.0 (Fase 9–10)
 memberi kreator portal untuk brief dan kiriman; Fase 11 memberi kontak klien akses baca ke
-kampanye instansinya sendiri.
+kampanye miliknya sendiri.
 Fase 8 (v1.1): tautan laporan baca-saja untuk klien (`/laporan/<token>`, dibuat dari tab Laporan
 kampanye) dan pengingat Telegram harian snapshot jatuh tempo lewat n8n
 (`/api/reminders/due-snapshots`, workflow di `docs/n8n/`). Fase 0–7 (MVP pilot): autentikasi,
@@ -108,7 +108,7 @@ internal saja, sehingga seluruh kebijakan lama otomatis menolak akun portal.
 ## Portal klien (v3.0)
 
 Kontak klien diundang dari halaman klien (tab kontak) dan masuk ke `/klien`: daftar kampanye
-instansinya beserta capaian vs target, lalu halaman kampanye berisi grafik views per checkpoint,
+miliknya beserta capaian vs target, lalu halaman kampanye berisi grafik views per checkpoint,
 rekap per kreator (nama panggung dan kode referal), dan daftar konten tayang. `owner` dapat
 mencabut atau mengaktifkan kembali akses tiap kontak.
 
@@ -131,7 +131,7 @@ pendaftar, klik tautan → selesaikan → hitung, setujui, bayar honor → invoi
 cetak A4 dan CSV → log aktivitas. Lalu memeriksa batas akses manager, dan portal kreator: brief
 miliknya sendiri (tanpa harga paket, tanpa akses ke rute internal) serta alur penuh kirim draf →
 review tim → laporan tayang → konfirmasi tim → bukti metrik → verifikasi tim. Terakhir portal
-klien: kampanye instansinya sendiri, tanpa harga paket maupun honor, dan tanpa akses ke rute
+klien: kampanye miliknya sendiri, tanpa harga paket maupun honor, dan tanpa akses ke rute
 internal. Data demo di-reset otomatis
 sebelum setiap run. Butuh `npm run db:start` dan akun dari `seed:owner` (termasuk manager) serta
 `seed:demo` (akun portal kreator).

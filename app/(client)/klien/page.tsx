@@ -120,7 +120,7 @@ export default async function ClientHomePage() {
             </span>
             <p className="text-sm font-medium">Belum ada kampanye</p>
             <p className="max-w-sm text-sm text-balance text-muted-foreground">
-              Begitu tim memulai kampanye untuk instansi Anda, capaiannya akan muncul di halaman ini
+              Begitu tim memulai kampanye untuk Anda, capaiannya akan muncul di halaman ini
               dan dapat dipantau kapan saja.
             </p>
           </CardContent>

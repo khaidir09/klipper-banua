@@ -264,7 +264,7 @@ export function CampaignForm({
                 <FieldLabel htmlFor="code">Kode kampanye</FieldLabel>
                 <Input
                   {...text("code")}
-                  placeholder="PMB-KAMPUSX-2026-01"
+                  placeholder="PROMO-BRANDX-2026-01"
                   className="font-mono uppercase"
                 />
                 <FieldDescription>Unik; huruf, angka, dan tanda hubung.</FieldDescription>
@@ -299,7 +299,7 @@ export function CampaignForm({
             </div>
             <Field>
               <FieldLabel htmlFor="hashtags">Hashtag</FieldLabel>
-              <Input {...text("hashtags")} placeholder="#PMBKampusX #KuliahDiBanua" />
+              <Input {...text("hashtags")} placeholder="#BrandX #PromoBanua" />
               <FieldDescription>Pisahkan dengan spasi atau koma.</FieldDescription>
               <FieldError errors={[errors.hashtags]} />
             </Field>
@@ -328,7 +328,7 @@ export function CampaignForm({
               <Input
                 {...text("landing_url")}
                 type="url"
-                placeholder="https://pmb.kampus.ac.id/daftar"
+                placeholder="https://brandx.co.id/promo"
               />
               <FieldDescription>
                 {perViews

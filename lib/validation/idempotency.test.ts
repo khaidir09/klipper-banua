@@ -101,7 +101,7 @@ describe("form schemas are idempotent", () => {
   it("phase 1 forms", () => {
     expectIdempotent(clientSchema, {
       name: "Kampus",
-      type: "kampus_swasta",
+      type: "instansi",
       city: "",
       province: "Kalimantan Selatan",
       address: "",

@@ -80,7 +80,7 @@ export const campaignSchema = z
           .min(1, { message: "Kode kampanye wajib diisi." })
           .max(50)
           .regex(/^[A-Z0-9]+(-[A-Z0-9]+)*$/, {
-            message: "Gunakan huruf, angka, dan tanda hubung, mis. PMB-KAMPUSX-2026-01.",
+            message: "Gunakan huruf, angka, dan tanda hubung, mis. PROMO-BRANDX-2026-01.",
           }),
       ),
     name: z.string().trim().min(1, { message: "Nama kampanye wajib diisi." }).max(200),

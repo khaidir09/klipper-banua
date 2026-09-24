@@ -4,7 +4,7 @@ Sumber kebenaran kebutuhan produk ada di `PRD.md`. Baca bagian yang relevan sebe
 
 ## Konteks singkat
 
-Sejak v4.0 (PRD 1.0) aplikasi ini adalah **marketplace klipper terbuka** untuk kampanye instansi regional Kalimantan (acuan: ayoklip.com). Klipper (di kode: peran/tabel `creator`) mendaftar sendiri di `/daftar`, bergabung ke kampanye dari katalog portal `/portal`, memposting klip, lalu mengirim tautan dan bukti views. Tim internal (`owner`, `manager`) memverifikasi, dan honor per 1.000 views masuk ke saldo yang ditarik manual (M16–M19, Tahap A). Klien memakai portal `/klien` (peran `client`) lewat undangan; pendaftaran klien mandiri adalah Tahap B dan belum dirinci. Situs publik statis ada di grup `(marketing)` (M15). Kampanye lama memakai `payout_model = paket` dan alur v3.2.
+Sejak v4.0 (PRD 1.0) aplikasi ini adalah **marketplace klipper terbuka** untuk kampanye klien umum di Kalimantan, yaitu brand bisnis, UMKM, instansi, dan personal (acuan: ayoklip.com). Klipper (di kode: peran/tabel `creator`) mendaftar sendiri di `/daftar`, bergabung ke kampanye dari katalog portal `/portal`, memposting klip, lalu mengirim tautan dan bukti views. Tim internal (`owner`, `manager`) memverifikasi, dan honor per 1.000 views masuk ke saldo yang ditarik manual (M16–M19, Tahap A). Klien memakai portal `/klien` (peran `client`) lewat undangan; pendaftaran klien mandiri adalah Tahap B dan belum dirinci. Situs publik statis ada di grup `(marketing)` (M15). Kampanye lama memakai `payout_model = paket` dan alur v3.2.
 
 ## Stack
 
@@ -32,7 +32,7 @@ Next.js (App Router) + TypeScript strict, Tailwind CSS + shadcn/ui, React Hook F
 - **Uang:** nominal Rupiah disimpan sebagai `bigint` utuh. Jangan memakai float untuk uang.
 - **Waktu:** simpan `timestamptz` UTC; tampilkan dengan zona waktu pengguna (default `Asia/Makassar`).
 - **Perhitungan:** logika honor dan metrik hanya di `lib/calculations/`, berupa fungsi murni dengan unit test.
-- **Privasi:** jangan menambah penyimpanan data pribadi pendaftar/calon mahasiswa.
+- **Privasi:** jangan menambah penyimpanan data pribadi pendaftar, pembeli, atau konsumen klien.
 - **Redirect:** `/r/[slug]` hanya mengarah ke `landing_url` dari database.
 - **Log:** aksi penting dicatat ke `activity_logs` sesuai PRD M11.
 
