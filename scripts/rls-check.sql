@@ -378,6 +378,11 @@ insert into rls_cases values
   ('creator_portal_assets_invite', 'select', $q$select count(*) from public.creator_portal_assets where campaign_id = 'f1000000-0000-4000-8000-000000000022'$q$),
   ('storage:campaign-assets-open', 'select', $q$select count(*) from storage.objects where bucket_id = 'campaign-assets' and name = 'f1000000-0000-4000-8000-000000000090/rls-open.mp4'$q$);
 
+-- FR-M15-09 (PRD 1.6): the public site lists the same open campaigns, to anyone.
+insert into rls_cases values
+  ('public_campaign_catalog', 'select', $q$select count(*) from public.public_campaign_catalog where id = 'f1000000-0000-4000-8000-000000000090'$q$),
+  ('public_campaign_catalog_closed', 'select', $q$select count(*) from public.public_campaign_catalog where id in ('f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000022', 'f1000000-0000-4000-8000-000000000026', 'f1000000-0000-4000-8000-000000000094')$q$);
+
 -- Phase 17 (M18, FR-M19-01): the ledger is read by the team and written by
 -- the verification functions only; nobody inserts, changes or deletes rows.
 insert into rls_cases values
@@ -641,6 +646,13 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) valu
   ('creator_portal_assets_invite', 'select', 'd', 'd', 'd', 'd', 'd'),
   ('storage:campaign-assets-open', 'select', 'a', 'a', 'd', 'd', 'a');
 
+-- FR-M15-09: anyone, signed in or not, reads the open campaigns on the public
+-- site; closed, invite-only and legacy campaigns never show. The view is not
+-- updatable, so there is no write to probe.
+insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator, client) values
+  ('public_campaign_catalog', 'select', 'a', 'a', 'a', 'a', 'a', 'a'),
+  ('public_campaign_catalog_closed', 'select', 'd', 'd', 'd', 'd', 'd', 'd');
+
 -- Phase 17 (M18): the ledger is internal; the klipper sees their honor per
 -- clip through creator_portal_contents.earned_amount (Phase 18 adds
 -- creator_portal_ledger).
@@ -755,6 +767,18 @@ where table_schema = 'public' and table_name = 'creator_portal_catalog'
     'package_price', 'target_contents', 'target_views', 'target_registrants', 'creator_budget',
     'default_base_fee', 'default_bonus_per_1000_views', 'default_bonus_per_registrant',
     'default_views_bonus_cap', 'closing_notes', 'notes', 'created_by', 'landing_url'
+  );
+-- FR-M15-09: the public list carries even less than the portal catalog: no
+-- brief, rules, material or assignment either.
+insert into catalog_forbidden
+select table_name::text || '.' || column_name::text
+from information_schema.columns
+where table_schema = 'public' and table_name = 'public_campaign_catalog'
+  and column_name in (
+    'package_price', 'target_contents', 'target_views', 'target_registrants', 'creator_budget',
+    'default_base_fee', 'default_bonus_per_1000_views', 'default_bonus_per_registrant',
+    'default_views_bonus_cap', 'closing_notes', 'notes', 'created_by', 'landing_url',
+    'brief', 'must_do', 'must_not', 'hashtags', 'assignment_id', 'assignment_status', 'code'
   );
 -- FR-M18-04: the team's caption check and the clip's normalised URL stay
 -- internal on the portal's clip view.

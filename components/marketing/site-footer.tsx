@@ -17,6 +17,7 @@ const GROUPS = [
     title: "Klipper",
     links: [
       { href: "/daftar", label: "Daftar jadi Klipper" },
+      { href: "/kampanye", label: "Kampanye yang lagi buka" },
       { href: "/kreator#cara-kerja", label: "Cara kerja" },
       { href: "/kreator#honor", label: "Cara honor dihitung" },
     ],

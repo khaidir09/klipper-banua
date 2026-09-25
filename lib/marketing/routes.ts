@@ -2,11 +2,14 @@
  * The public marketing site (PRD M15). Every path here is reachable without a
  * session and is the only part of the app search engines may index.
  *
+ * `/kampanye` (FR-M15-09, PRD 1.6) is the one page that reads the database,
+ * through the anon view `public_campaign_catalog` and without a session.
+ *
  * Keep this list as the single source of truth: the session proxy, `robots.ts`
  * and `sitemap.ts` all read it, so a page added in one place cannot be
  * forgotten in the others.
  */
-export const MARKETING_PATHS = ["/", "/kreator", "/privasi", "/syarat"] as const;
+export const MARKETING_PATHS = ["/", "/kreator", "/kampanye", "/privasi", "/syarat"] as const;
 
 export type MarketingPath = (typeof MARKETING_PATHS)[number];
 

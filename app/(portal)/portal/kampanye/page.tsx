@@ -22,7 +22,7 @@ import { formatCalendarDate } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { catalogQuerySchema } from "@/lib/validation/campaigns";
 import { platformList } from "../campaign-parts";
-import { BudgetMeter } from "./budget-meter";
+import { BudgetMeter } from "@/components/campaigns/budget-meter";
 import { TermsNotice } from "./terms-notice";
 
 export const metadata: Metadata = { title: "Katalog kampanye" };

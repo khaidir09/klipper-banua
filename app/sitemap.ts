@@ -8,12 +8,13 @@ import { INDEXED_PATHS } from "@/lib/marketing/routes";
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   // Build time: the public pages are static, so this is when they last changed.
+  // `/kampanye` is the exception: its list follows the open campaigns (FR-M15-09).
   const lastModified = new Date();
 
   return INDEXED_PATHS.map((path) => ({
     url: appUrl(path).toString(),
     lastModified,
-    changeFrequency: path === "/" ? "monthly" : "yearly",
-    priority: path === "/" ? 1 : path === "/daftar" ? 0.8 : 0.6,
+    changeFrequency: path === "/kampanye" ? "daily" : path === "/" ? "monthly" : "yearly",
+    priority: path === "/" ? 1 : path === "/daftar" || path === "/kampanye" ? 0.8 : 0.6,
   }));
 }

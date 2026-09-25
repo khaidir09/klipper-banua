@@ -66,7 +66,7 @@ describe("marketing paths", () => {
   });
 });
 
-describe("marketing pages stay database-free (FR-M15-05, aturan keamanan M15)", () => {
+describe("marketing pages stay session-free (FR-M15-05, FR-M15-09, aturan keamanan M15)", () => {
   const files = sourceFiles(MARKETING_DIR);
 
   it("finds the public pages", () => {
@@ -81,4 +81,14 @@ describe("marketing pages stay database-free (FR-M15-05, aturan keamanan M15)", 
       expect(offenders).toEqual([]);
     },
   );
+
+  it("reads campaigns only through the anon catalog loader", () => {
+    const loader = readFileSync(join(process.cwd(), "lib", "marketing", "campaigns.ts"), "utf8");
+
+    for (const forbidden of ["@/lib/supabase", "@/lib/auth", "@/lib/env.server", "next/headers"]) {
+      expect(loader).not.toContain(forbidden);
+    }
+    expect(loader).toContain("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    expect(loader).toContain('.from("public_campaign_catalog")');
+  });
 });

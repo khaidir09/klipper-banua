@@ -52,6 +52,20 @@ test("area ber-sesi tetap tertutup untuk anonim", async ({ page }) => {
   }
 });
 
+test("katalog publik mengajak daftar tanpa membuka portal", async ({ page }) => {
+  // FR-M15-09: works with or without a database behind it (this project runs
+  // without demo data), so it checks the page frame, not specific campaigns.
+  await page.goto("/kampanye");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Kampanye yang lagi buka" }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Daftar jadi Klipper" }).first()).toHaveAttribute(
+    "href",
+    "/daftar",
+  );
+});
+
 test("tombol Masuk mengantar ke halaman login", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Masuk", exact: true }).click();
@@ -77,6 +91,8 @@ test("robots.txt hanya mengizinkan rute publik", async ({ request }) => {
   expect(body).toContain("Allow: /kreator");
   // v4.0 (M16): the klipper registration is public and indexed too.
   expect(body).toContain("Allow: /daftar");
+  // PRD 1.6 (FR-M15-09): the open campaigns are public and indexed.
+  expect(body).toContain("Allow: /kampanye");
   for (const blocked of ["/dashboard", "/portal", "/klien", "/laporan", "/api/"]) {
     expect(body).toContain(`Disallow: ${blocked}`);
   }

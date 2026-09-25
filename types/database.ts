@@ -2834,6 +2834,28 @@ export type Database = {
         }
         Relationships: []
       }
+      public_campaign_catalog: {
+        Row: {
+          allowed_platforms:
+            | Database["public"]["Enums"]["social_platform"][]
+            | null
+          budget_exhausted: boolean | null
+          budget_remaining: number | null
+          budget_remaining_pct: number | null
+          budget_total: number | null
+          budget_used: number | null
+          client_name: string | null
+          end_date: string | null
+          id: string | null
+          local_only: boolean | null
+          max_clips_per_creator: number | null
+          max_payout_per_clip: number | null
+          name: string | null
+          published_at: string | null
+          rate_per_1000_views: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_creator_terms: { Args: never; Returns: string }
@@ -2948,6 +2970,26 @@ export type Database = {
           p_transfer_fee?: number
         }
         Returns: undefined
+      }
+      public_campaign_catalog_rows: {
+        Args: never
+        Returns: {
+          allowed_platforms: Database["public"]["Enums"]["social_platform"][]
+          budget_exhausted: boolean
+          budget_remaining: number
+          budget_remaining_pct: number
+          budget_total: number
+          budget_used: number
+          client_name: string
+          end_date: string
+          id: string
+          local_only: boolean
+          max_clips_per_creator: number
+          max_payout_per_clip: number
+          name: string
+          published_at: string
+          rate_per_1000_views: number
+        }[]
       }
       record_clip_cancellation: {
         Args: {

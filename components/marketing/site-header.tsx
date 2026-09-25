@@ -13,8 +13,8 @@ import { Container } from "./section";
  * as well as on the landing page itself.
  */
 const NAV = [
+  { href: "/kampanye", label: "Kampanye" },
   { href: "/#cara-kerja", label: "Cara kerja" },
-  { href: "/#kenapa-lokal", label: "Kenapa lokal" },
   { href: "/kreator", label: "Untuk klipper" },
   { href: "/#faq", label: "FAQ" },
 ];

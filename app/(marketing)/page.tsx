@@ -11,13 +11,22 @@ import {
   Wallet,
   WalletCards,
 } from "lucide-react";
+import { PublicCampaignCard } from "@/components/marketing/campaign-card";
 import { ContactCta } from "@/components/marketing/contact-cta";
 import { MarketingIllustration } from "@/components/marketing/illustration";
 import { FaqList, type FaqItem } from "@/components/marketing/faq-list";
 import { Container, Section } from "@/components/marketing/section";
 import { SignupCta } from "@/components/marketing/signup-cta";
 import { Button } from "@/components/ui/button";
+import { sortCatalog } from "@/lib/campaigns/open";
 import { publicEnv } from "@/lib/env";
+import { listPublicCampaigns } from "@/lib/marketing/campaigns";
+
+/** FR-M15-09: the open campaigns section follows the catalog, like /kampanye. */
+export const revalidate = 300;
+
+/** How many open campaigns the landing page previews before linking to /kampanye. */
+const FEATURED_CAMPAIGNS = 3;
 
 const DESCRIPTION =
   "Brand, UMKM, instansi, sampai personal pasang kampanye lengkap dengan materi video dan tarif per 1.000 views. Kamu tinggal pilih kampanye, potong jadi klip, posting di akunmu, lalu tarik honornya ke rekening atau e-wallet.";
@@ -153,7 +162,14 @@ const FAQ: FaqItem[] = [
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // Only campaigns that can still pay; the section disappears when there are
+  // none or the database cannot be reached, and the rest of the page is static.
+  const featured = sortCatalog(
+    ((await listPublicCampaigns()) ?? []).filter((campaign) => !campaign.budget_exhausted),
+    "terbaru",
+  ).slice(0, FEATURED_CAMPAIGNS);
+
   return (
     <>
       {/* Hero sits on the fixed brand surface, which does not flip with
@@ -206,6 +222,33 @@ export default function LandingPage() {
           </ul>
         </Container>
       </section>
+
+      {featured.length ? (
+        <Section
+          id="kampanye"
+          tone="muted"
+          eyebrow="Kampanye yang lagi buka"
+          title="Pilih kampanye, mulai bikin klip"
+          description="Tarif, batas honor, dan sisa anggaran tiap kampanye kelihatan dari awal. Brief lengkapnya bisa dibaca setelah kamu daftar."
+        >
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((campaign) => (
+              <li key={campaign.id} className="flex">
+                <PublicCampaignCard campaign={campaign} />
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-8 flex lg:justify-center">
+            <Button asChild variant="outline" size="lg" className="h-11 px-5 text-sm">
+              <Link href="/kampanye" data-cta>
+                Lihat semua kampanye
+                <ArrowRight aria-hidden />
+              </Link>
+            </Button>
+          </div>
+        </Section>
+      ) : null}
 
       <Section
         id="cara-kerja"

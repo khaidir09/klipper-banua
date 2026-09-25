@@ -15,7 +15,7 @@ import { formatCalendarRange } from "@/lib/format/date";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { uuidField } from "@/lib/validation/common";
 import { AssetListCard, BriefCards, PerViewsTermsCard } from "../../campaign-parts";
-import { BudgetMeter } from "../budget-meter";
+import { BudgetMeter } from "@/components/campaigns/budget-meter";
 import { TermsNotice } from "../terms-notice";
 import { JoinCard } from "./join-card";
 

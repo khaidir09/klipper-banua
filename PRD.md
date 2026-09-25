@@ -2,8 +2,8 @@
 
 | Info               | Keterangan                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| Versi dokumen      | 1.5 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
-| Tanggal            | 24 September 2026                                                                           |
+| Versi dokumen      | 1.6 — produk **v4.0: marketplace klipper terbuka** (menggantikan model _managed_ v0.1–v3.2) |
+| Tanggal            | 25 September 2026                                                                           |
 | Status             | Fase 0–11 dan 13–18 selesai: **Tahap A (klipper mandiri) lengkap** — fondasi internal, portal kreator, portal klien baca, situs publik, konfirmasi penugasan, pendaftaran klipper mandiri, kampanye terbuka dan katalog, kiriman klip dan verifikasi views, saldo dan penarikan. Tahap B (klien mandiri) baru garis besar. Fase 12 direvisi (lihat M14) |
 | Nama produk        | Belum ditetapkan. Di kode dipakai variabel `NEXT_PUBLIC_APP_NAME` agar mudah diganti        |
 | Acuan model        | ayoklip.com (klipper daftar sendiri → pilih kampanye → posting → kirim tautan + bukti views → diverifikasi → saldo → tarik) dengan pembeda lokal Kalimantan |
@@ -89,7 +89,7 @@ Peluncuran bertahap:
 | `manager` | Pengelola kampanye | Semua fitur operasional: klien, kampanye, **verifikasi klip dan views**, lencana lokal, laporan. **Tidak bisa** melihat nomor rekening lengkap, memproses penarikan, membuat penyesuaian saldo, atau mengelola pengguna |
 | `creator` | Klipper            | Portal `/portal`: profil dan akun sosialnya, katalog kampanye, penugasannya sendiri, kiriman klip, saldo, rekening, dan penarikan miliknya. **Tidak punya akses** ke aplikasi internal, harga paket, margin, klien lain di luar katalog, data klipper lain, atau log aktivitas |
 | `client`  | Kontak klien _(v3.0)_ | Portal `/klien`: kampanye milik kliennya sendiri. Tidak melihat honor klipper, margin, data pribadi klipper, klien lain, atau log aktivitas |
-| `anonim`  | Pengunjung         | Situs publik M15, halaman pendaftaran klipper `/daftar`, dan redirect pelacakan `/r/<slug>`. Tanpa bacaan database di situs publik |
+| `anonim`  | Pengunjung         | Situs publik M15, halaman pendaftaran klipper `/daftar`, dan redirect pelacakan `/r/<slug>`. Satu-satunya bacaan database di situs publik adalah daftar kampanye terbuka lewat view `public_campaign_catalog` (FR-M15-09, v1.6) |
 
 - **Pendaftaran publik (v4.0) hanya untuk klipper.** Akun `owner`/`manager` tetap lewat undangan `owner`; akun `client` lewat undangan dari halaman klien sampai Tahap B.
 - **Peran tidak pernah ditentukan oleh input pengguna.** Pendaftaran mandiri selalu menghasilkan peran `creator`; peran lain hanya dapat diberikan lewat undangan dari server (lihat FR-M16-03).
@@ -307,7 +307,8 @@ FR-M15-01 sampai FR-M15-08 tetap berlaku, dengan perubahan berikut:
 - **FR-M15-03** _(diubah v4.0)_ `/kreator` menjelaskan: syarat (punya akun media sosial aktif; tanpa batas usia), cara kerja empat langkah, cara menghitung honor (tarif per 1.000 views, contoh hitungan dengan angka ilustrasi yang disetujui `owner`), kode verifikasi, aturan anti-kecurangan, lencana Klipper Lokal, dan cara menarik saldo. Tombol utama "Daftar jadi Klipper".
 - **FR-M15-05** _(diubah v4.0)_ `robots.ts` dan `sitemap.ts` menambahkan `/daftar`.
 - **FR-M15-07** _(diubah v4.0)_ Kontak WhatsApp tetap untuk calon klien dan bantuan. Satu-satunya formulir yang menerima data pengunjung adalah `/daftar` (di luar grup `(marketing)`).
-- Grup `(marketing)` tetap statis dan tanpa kueri. Katalog kampanye **tidak** ditampilkan publik.
+- **FR-M15-09** _(baru v1.6)_ **Kampanye yang lagi buka** di `/kampanye` (publik, diindeks, masuk `robots.ts` dan `sitemap.ts`) menampilkan kampanye yang sama dengan katalog portal (FR-M17-03: `aktif` + `terbuka` + `per_views`, belum lewat `end_date`) dalam bentuk ringkas: nama kampanye, nama klien, platform, tarif per 1.000 views, batas per klip, kuota klip, tenggat, penanda "Khusus Klipper Lokal", sisa anggaran klipper dalam persen dan Rupiah (total, terpakai, sisa), dan status "Anggaran habis". **Tidak** memuat brief, poin wajib/larangan, hashtag, materi, harga paket, target, atau catatan internal: semua itu tetap di portal setelah login. Tiap kartu mengajak "Daftar untuk gabung" (→ `/daftar`) dan "Masuk untuk lihat brief" (→ `/login?next=/portal/kampanye/<id>`). Landing menampilkan hingga 3 kampanye terbaru yang anggarannya belum habis dengan tautan ke `/kampanye`; bagian itu disembunyikan bila tidak ada kampanye.
+- Grup `(marketing)` tetap tanpa sesi, tanpa cookie, dan tanpa formulir. Pengecualian satu-satunya (v1.6): `/kampanye` dan landing membaca view `public_campaign_catalog` dengan kunci anon (tanpa sesi, tanpa service role) lewat `lib/marketing/campaigns.ts`, di-cache ISR 5 menit. Bila database tidak terjangkau, halaman tetap tampil dengan pesan, bukan error.
 
 ### M16 — Pendaftaran Klipper Mandiri _(v4.0, Fase 15)_
 
@@ -408,6 +409,7 @@ View lama (`creator_portal_profile`, `_assignments`, `_assets`, `_contents`, `_r
 | `creator_portal_withdrawals`       | Penarikannya, nomor rekening tersamar, tanpa `transfer_proof_path` |
 | `creator_portal_bank_account`      | Rekeningnya, nomor tersamar |
 | `creator_portal_social_accounts`   | Akun sosialnya beserta status lencana |
+| `public_campaign_catalog` _(v1.6)_ | **Publik** (`anon` dan `authenticated`, hanya baca), untuk FR-M15-09: kampanye yang sama dengan `creator_portal_catalog`, tetapi hanya kolom ringkas (nama, nama klien, platform, tarif, batas per klip, kuota klip, `local_only`, tenggat, `published_at`, anggaran dalam persen dan Rupiah, `budget_exhausted`). Tanpa brief, aturan, materi, status penugasan, `package_price`, target, dan catatan internal. Baris berasal dari fungsi `security definer` `public_campaign_catalog_rows()`, sehingga `anon` tidak memanggil helper anggaran secara langsung |
 
 ### 7.4 Penyimpanan berkas
 
@@ -508,7 +510,7 @@ Saldo boleh negatif hanya akibat `pembatalan` setelah penarikan; selama negatif,
 | Privasi (UU PDP) | Data klipper minimum (tanpa KTP); persetujuan syarat dan privasi dicatat berversi; rekening hanya `owner` lengkap; hash IP bersalt; penghapusan akun atas permintaan; tidak menyimpan data pendaftar |
 | Skala            | Target Tahap A: 2.000 klipper, 50 kampanye aktif, 500 kiriman/hari tanpa penurunan kinerja; daftar dan antrean dengan paginasi server |
 | Keandalan        | Migrasi SQL berversi; buku besar append-only sebagai sumber kebenaran saldo; ekspor CSV |
-| Kinerja          | Muat halaman < 2 detik; situs publik statis, LCP < 2,5 detik di 4G |
+| Kinerja          | Muat halaman < 2 detik; situs publik statis (daftar kampanye lewat ISR, FR-M15-09), LCP < 2,5 detik di 4G |
 | Aksesibilitas    | Kontras cukup, label setiap input, dapat dioperasikan keyboard |
 | SEO              | Hanya situs publik M15 dan `/daftar` yang diindeks |
 
@@ -683,7 +685,7 @@ _Catatan implementasi:_ minimum penarikan disimpan di `platform_settings` (satu 
 | 6   | ~~Pembaruan Kebijakan Privasi untuk pendaftaran mandiri dan penyimpanan rekening oleh klipper~~ — **terjawab 23 Sep 2026:** isi `/privasi` disetujui owner | Founder + konsultasi hukum |
 | 7   | Ambang persentase audiens Kalimantan untuk lencana lokal (usulan 50%) | Pilot |
 | 8   | Default `max_clips_per_creator`, `claim_grace_days`, dan `min_live_days` untuk kampanye `per_views` | Pilot |
-| 9   | Apakah nama klien boleh tampil di katalog klipper, atau perlu opsi nama samaran per kampanye | Klien pilot |
+| 9   | Apakah nama klien boleh tampil di katalog klipper, atau perlu opsi nama samaran per kampanye — **sebagian terjawab 25 Sep 2026:** nama klien tampil di katalog portal dan katalog publik (FR-M15-09), disetujui founder. Opsi nama samaran per kampanye masih terbuka | Klien pilot |
 | 10  | Kapasitas verifikasi tim: pada volume berapa perlu verifikator paruh waktu atau pengecekan sampel | Data M12 |
 | 11  | Apakah klien menerima klip yang tidak ditinjau sebelum tayang, atau perlu kampanye "review draf" di Tahap B | Wawancara klien |
 | 12  | Hosting: Vercel berbayar atau VPS sendiri | Founder |
@@ -708,4 +710,5 @@ _Catatan implementasi:_ minimum penarikan disimpan di `platform_settings` (satu 
 | 1.2 | 24 Sep 2026 | FR-M17-03: katalog portal menampilkan anggaran klipper dalam Rupiah (total, terpakai, sisa) di samping persentase, disetujui founder; harga paket tetap tersembunyi. FR-M10-01: kartu anggaran menipis di dasbor menampilkan nominal terpakai dan sisa |
 | 1.3 | 24 Sep 2026 | Tujuan kampanye (`pendaftar`/`awareness`/`event`) hanya untuk kampanye `paket` lama, disetujui founder: kampanye `per_views` tidak memilikinya, `landing_url` opsional, dan badge/filter tujuan dihapus dari katalog portal (FR-M4-01, FR-M17-02, FR-M17-03) |
 | 1.4 | 24 Sep 2026 | Fokus klien diperluas dari instansi regional (kampus swasta, bank daerah, Pemda) menjadi umum: brand bisnis, UMKM, instansi, dan personal. Jenis klien (FR-M2-01) diganti menjadi `brand`/`umkm`/`instansi`/`personal`/`lainnya` lewat migrasi yang memetakan nilai lama |
-| **1.5** | 24 Sep 2026 | v4.2: batas usia klipper ≥ 18 tahun dihapus, disetujui founder. `/daftar` tidak lagi meminta tanggal lahir dan pernyataan usia; tanggal lahir wajib dilengkapi klipper sebelum penarikan pertama (FR-M3-02, FR-M15-03, FR-M16-01, FR-M19-05) |
+| 1.5 | 24 Sep 2026 | v4.2: batas usia klipper ≥ 18 tahun dihapus, disetujui founder. `/daftar` tidak lagi meminta tanggal lahir dan pernyataan usia; tanggal lahir wajib dilengkapi klipper sebelum penarikan pertama (FR-M3-02, FR-M15-03, FR-M16-01, FR-M19-05) |
+| **1.6** | 25 Sep 2026 | Katalog kampanye publik, disetujui founder: `/kampanye` dan bagian di landing menampilkan kampanye terbuka (nama klien, tarif, batas, platform, tenggat, sisa anggaran dalam persen dan Rupiah) tanpa brief dan materi (FR-M15-09). View baru `public_campaign_catalog` dapat dibaca `anon`; aturan "situs publik tanpa kueri" dilonggarkan hanya untuk view ini (peran `anonim`, M15, 7.3, 13.2 no. 9) |
