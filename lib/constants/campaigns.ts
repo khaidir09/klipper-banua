@@ -67,6 +67,14 @@ export const CAMPAIGN_ASSET_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 ] as const;
 
+/**
+ * Cover image on the public campaign card (FR-M15-09, PRD 1.7). Kept in its
+ * own public bucket, apart from the private campaign material.
+ */
+export const CAMPAIGN_COVER_BUCKET = "campaign-covers";
+export const CAMPAIGN_COVER_MAX_BYTES = 2 * 1024 * 1024;
+export const CAMPAIGN_COVER_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
+
 /* ------------------------------------------------------------------ */
 /* Open campaigns (v4.0, PRD M17)                                        */
 /* ------------------------------------------------------------------ */

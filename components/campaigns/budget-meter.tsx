@@ -47,10 +47,6 @@ export function BudgetMeter({ pct, exhausted, total, used, remaining }: BudgetMe
             {formatRupiah(remaining)}
           </dd>
         </div>
-        <div className="flex basis-full gap-1">
-          <dt className="text-muted-foreground">Total anggaran</dt>
-          <dd>{formatRupiah(total)}</dd>
-        </div>
       </dl>
     </div>
   );

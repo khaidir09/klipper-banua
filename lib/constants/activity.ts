@@ -82,6 +82,7 @@ export const ACTIVITY_ACTION_LABELS = {
   withdrawal_dibayar: "Menandai penarikan dibayar",
   withdrawal_ditolak: "Menolak penarikan",
   min_withdrawal_change: "Mengubah minimum penarikan",
+  cover_change: "Mengubah gambar sampul kampanye",
 } as const;
 
 export type ActivityAction = keyof typeof ACTIVITY_ACTION_LABELS;

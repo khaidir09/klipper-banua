@@ -18,7 +18,7 @@ type NonNullableExcept<T, K extends keyof T> = {
 
 export type PublicCampaign = NonNullableExcept<
   PublicCatalogRow,
-  "max_payout_per_clip" | "published_at"
+  "max_payout_per_clip" | "published_at" | "cover_image_path"
 >;
 
 /**

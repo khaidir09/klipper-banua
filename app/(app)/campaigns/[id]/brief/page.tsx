@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { listAssets } from "@/lib/data/campaigns";
 import { loadCampaign } from "../data";
 import { AssetsManager } from "./assets-manager";
+import { CoverManager } from "./cover-manager";
 
 export const metadata: Metadata = { title: "Brief & materi" };
 
@@ -65,6 +66,16 @@ export default async function CampaignBriefPage({ params }: { params: Promise<{ 
           <List items={campaign.must_not} empty="Belum ada larangan." />
         </CardContent>
       </Card>
+
+      {campaign.payout_model === "per_views" ? (
+        <div className="lg:col-span-2">
+          <CoverManager
+            campaignId={id}
+            coverPath={campaign.cover_image_path}
+            canEdit={canEdit}
+          />
+        </div>
+      ) : null}
 
       <div className="lg:col-span-2">
         <AssetsManager campaignId={id} assets={assets} canEdit={canEdit} />

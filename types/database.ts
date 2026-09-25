@@ -262,6 +262,7 @@ export type Database = {
           client_id: string
           closing_notes: string
           code: string
+          cover_image_path: string | null
           created_at: string
           created_by: string | null
           creator_budget: number
@@ -303,6 +304,7 @@ export type Database = {
           client_id: string
           closing_notes?: string
           code: string
+          cover_image_path?: string | null
           created_at?: string
           created_by?: string | null
           creator_budget?: number
@@ -344,6 +346,7 @@ export type Database = {
           client_id?: string
           closing_notes?: string
           code?: string
+          cover_image_path?: string | null
           created_at?: string
           created_by?: string | null
           creator_budget?: number
@@ -2845,11 +2848,13 @@ export type Database = {
           budget_total: number | null
           budget_used: number | null
           client_name: string | null
+          cover_image_path: string | null
           end_date: string | null
           id: string | null
           local_only: boolean | null
           max_clips_per_creator: number | null
           max_payout_per_clip: number | null
+          min_views_to_earn: number | null
           name: string | null
           published_at: string | null
           rate_per_1000_views: number | null
@@ -2981,11 +2986,13 @@ export type Database = {
           budget_total: number
           budget_used: number
           client_name: string
+          cover_image_path: string
           end_date: string
           id: string
           local_only: boolean
           max_clips_per_creator: number
           max_payout_per_clip: number
+          min_views_to_earn: number
           name: string
           published_at: string
           rate_per_1000_views: number

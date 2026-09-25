@@ -95,7 +95,7 @@ insert into public.activity_logs (id, actor_id, entity_type, entity_id, action)
 values ('f1000000-0000-4000-8000-000000000019', (select owner_id from rls_ids), 'client', 'f1000000-0000-4000-8000-000000000001', 'create');
 insert into storage.objects (bucket_id, name)
 select bucket, 'rls-check/' || bucket || '.png'
-from unnest(array['audience-proofs', 'campaign-assets', 'content-drafts', 'metric-proofs', 'finance-proofs']) as bucket;
+from unnest(array['audience-proofs', 'campaign-assets', 'campaign-covers', 'content-drafts', 'metric-proofs', 'finance-proofs']) as bucket;
 
 -- Client portal account (M14), linked to the contact of "RLS Client" (f1…01).
 -- Campaign f1…07 belongs to that client; f1…26 belongs to another one.
@@ -423,7 +423,7 @@ insert into rls_cases values
 -- Storage buckets: list, upload, remove.
 insert into rls_cases
 select 'storage:' || bucket, op, sql
-from unnest(array['audience-proofs', 'campaign-assets', 'content-drafts', 'metric-proofs', 'finance-proofs']) as bucket,
+from unnest(array['audience-proofs', 'campaign-assets', 'campaign-covers', 'content-drafts', 'metric-proofs', 'finance-proofs']) as bucket,
 lateral (values
   ('select', format($q$select count(*) from storage.objects where bucket_id = %L and name = %L$q$, bucket, 'rls-check/' || bucket || '.png')),
   ('insert', format($q$insert into storage.objects (bucket_id, name) values (%L, %L)$q$, bucket, 'rls-check/new-' || bucket || '.png')),
@@ -530,6 +530,11 @@ insert into rls_expected values
   ('storage:campaign-assets', 'select', 'a', 'a', 'd', 'd'),
   ('storage:campaign-assets', 'insert', 'a', 'a', 'd', 'd'),
   ('storage:campaign-assets', 'delete', 'a', 'a', 'd', 'd'),
+  -- Covers are public through the bucket's public URL; listing and writing
+  -- stay with the team.
+  ('storage:campaign-covers', 'select', 'a', 'a', 'd', 'd'),
+  ('storage:campaign-covers', 'insert', 'a', 'a', 'd', 'd'),
+  ('storage:campaign-covers', 'delete', 'a', 'a', 'd', 'd'),
   ('storage:content-drafts', 'select', 'a', 'a', 'd', 'd'),
   ('storage:content-drafts', 'insert', 'a', 'a', 'd', 'd'),
   ('storage:content-drafts', 'delete', 'a', 'a', 'd', 'd'),

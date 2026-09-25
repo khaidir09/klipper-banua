@@ -16,7 +16,7 @@ import { logActivity } from "@/lib/activity/log";
 import { requireInternal, requireRole } from "@/lib/auth/guards";
 import { campaignToday } from "@/lib/campaigns/open";
 import { activationBlockers, canTransition } from "@/lib/campaigns/status";
-import { CAMPAIGN_STATUS_LABELS } from "@/lib/constants/campaigns";
+import { CAMPAIGN_COVER_BUCKET, CAMPAIGN_STATUS_LABELS } from "@/lib/constants/campaigns";
 import { CAMPAIGN_ASSET_BUCKET } from "@/lib/data/campaigns";
 import { generateReferralCode, generateTrackingSlug } from "@/lib/referral/generate";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -292,7 +292,7 @@ export async function deleteCampaignAction(values: unknown): Promise<ActionResul
   const supabase = await createSupabaseServerClient();
   const { data: campaign } = await supabase
     .from("campaigns")
-    .select("code, assets:campaign_assets(file_path)")
+    .select("code, cover_image_path, assets:campaign_assets(file_path)")
     .eq("id", parsed.data.id)
     .maybeSingle();
   if (!campaign) return fail("Kampanye tidak ditemukan.");
@@ -310,6 +310,9 @@ export async function deleteCampaignAction(values: unknown): Promise<ActionResul
     .map((asset) => asset.file_path)
     .filter((path): path is string => Boolean(path));
   if (paths.length) await supabase.storage.from(CAMPAIGN_ASSET_BUCKET).remove(paths);
+  if (campaign.cover_image_path) {
+    await supabase.storage.from(CAMPAIGN_COVER_BUCKET).remove([campaign.cover_image_path]);
+  }
 
   await logActivity(supabase, {
     actorId: session.user.id,
@@ -409,6 +412,70 @@ export async function deleteAssetAction(values: unknown): Promise<ActionResult> 
 
   revalidateCampaign(parsed.data.campaign_id);
   return ok("Materi dihapus.");
+}
+
+/* ------------------------------------------------------------------ */
+/* Cover image (FR-M15-09, PRD 1.7)                                     */
+/* ------------------------------------------------------------------ */
+
+const coverSchema = z.object({
+  campaign_id: uuidField,
+  file_path: z.string().trim().max(500).nullable(),
+});
+
+/**
+ * Sets or clears the cover shown on the public campaign card. Like material,
+ * the browser uploads the image straight to the `campaign-covers` bucket and
+ * only the path reaches this action; the replaced file is removed afterwards.
+ */
+export async function setCampaignCoverAction(values: unknown): Promise<ActionResult> {
+  const session = await requireInternal();
+  const parsed = coverSchema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error);
+  const { campaign_id, file_path } = parsed.data;
+
+  if (file_path && (!file_path.startsWith(`${campaign_id}/`) || file_path.includes(".."))) {
+    return fail("Lokasi berkas tidak valid.");
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: campaign } = await supabase
+    .from("campaigns")
+    .select("cover_image_path")
+    .eq("id", campaign_id)
+    .maybeSingle();
+  if (!campaign) {
+    if (file_path) await supabase.storage.from(CAMPAIGN_COVER_BUCKET).remove([file_path]);
+    return fail("Kampanye tidak ditemukan.");
+  }
+
+  const { error } = await supabase
+    .from("campaigns")
+    .update({ cover_image_path: file_path })
+    .eq("id", campaign_id);
+  if (error) {
+    if (file_path) await supabase.storage.from(CAMPAIGN_COVER_BUCKET).remove([file_path]);
+    return fail(dbRuleMessage(error, "Gambar sampul gagal disimpan."));
+  }
+
+  const previous = campaign.cover_image_path;
+  if (previous && previous !== file_path) {
+    await supabase.storage.from(CAMPAIGN_COVER_BUCKET).remove([previous]);
+  }
+
+  await logActivity(supabase, {
+    actorId: session.user.id,
+    entityType: "campaign",
+    entityId: campaign_id,
+    action: "cover_change",
+    details: { cleared: file_path === null },
+  });
+
+  revalidateCampaign(campaign_id);
+  // The public catalog is cached (ISR); show the new cover right away.
+  revalidatePath("/kampanye");
+  revalidatePath("/");
+  return ok(file_path ? "Gambar sampul disimpan." : "Gambar sampul dihapus.");
 }
 
 /* ------------------------------------------------------------------ */
