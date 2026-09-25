@@ -11,18 +11,19 @@ import { DEMO_OPEN_CAMPAIGN_ID, alertDialog, expectToast } from "./helpers";
 const CAMPAIGN = /Klip Wisuda Universitas Demo Borneo/;
 
 test("a klipper finds an open campaign, joins it and withdraws", async ({ page }) => {
-  await test.step("the catalog lists the open campaign without internal numbers", async () => {
+  await test.step("the catalog lists the open campaign without the package price", async () => {
     await page.goto("/portal/kampanye");
     await expect(page.getByRole("heading", { name: "Katalog kampanye" })).toBeVisible();
     const card = page.getByRole("link", { name: CAMPAIGN });
     await expect(card).toBeVisible();
 
-    // FR-M17-03: rate and remaining share, never the package price or budget.
+    // FR-M17-03 (PRD 1.2): rate and the klipper budget in Rupiah, never the
+    // package price (Rp 12.000.000 in the demo data).
     const body = (await page.locator("body").innerText()).replace(/\s+/g, " ");
     expect(body).toContain("Rp 10.000");
     expect(body).toContain("Sisa anggaran");
+    expect(body).toContain("Total anggaran Rp 5.000.000");
     expect(body).not.toContain("12.000.000");
-    expect(body).not.toContain("5.000.000");
     // Legacy package campaigns stay out of the catalog.
     expect(body).not.toContain("Open House Universitas Demo Borneo");
   });
@@ -47,7 +48,7 @@ test("a klipper finds an open campaign, joins it and withdraws", async ({ page }
     await expect(page.getByRole("button", { name: "Gabung" })).toBeDisabled();
     await page.getByLabel(/Saya sudah membaca dan menyetujui Syarat Klipper/).check();
     await page.getByRole("button", { name: "Setujui syarat" }).click();
-    await expectToast(page, /Syarat Klipper versi .* disetujui/);
+    await expectToast(page, /Syarat Klipper versi .* sudah kamu setujui/);
   });
 
   await test.step("joining confirms the brief and opens the assignment", async () => {

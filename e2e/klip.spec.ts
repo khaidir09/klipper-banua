@@ -24,7 +24,7 @@ test("a klipper sends a clip, the team verifies it and the honor is credited", a
     if (await accept.isVisible()) {
       await page.getByLabel(/Saya sudah membaca dan menyetujui Syarat Klipper/).check();
       await accept.click();
-      await expectToast(page, /Syarat Klipper versi .* disetujui/);
+      await expectToast(page, /Syarat Klipper versi .* sudah kamu setujui/);
     }
   });
 
