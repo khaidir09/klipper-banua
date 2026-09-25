@@ -797,6 +797,25 @@ where table_schema = 'public'
 \echo '--- Forbidden columns in portal views (expect 0 rows) ---'
 select column_name from catalog_forbidden;
 
+-- `anon` executes only the functions the public side needs. Anything else must
+-- be revoked from PUBLIC too: a revoke from `anon` alone leaves the PUBLIC
+-- grant in place (fixed in 20261011000000_revoke_public_execute.sql). Trigger
+-- functions cannot be called directly and are skipped.
+create temporary table anon_functions on commit drop as
+select p.proname::text as function_name
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public'
+  and p.prorettype <> 'trigger'::regtype
+  and has_function_privilege('anon', p.oid, 'execute')
+  and p.proname not in (
+    -- Public catalog (FR-M15-09) and the klipper registration (M16).
+    'public_campaign_catalog_rows', 'campaign_today', 'current_creator_terms_version',
+    'normalize_clip_url', 'normalize_person_name'
+  );
+\echo '--- Functions anon may execute outside the allowlist (expect 0 rows) ---'
+select function_name from anon_functions;
+
 \echo '--- Manager reads bank details only masked (expect bank + ******7890) ---'
 select set_config('request.jwt.claims', json_build_object('sub', (select manager_id from rls_ids), 'role', 'authenticated')::text, true) is not null as claims_set;
 set local role authenticated;
@@ -818,6 +837,7 @@ begin
             or not exists (select 1 from pg_policies p where p.schemaname = 'public' and p.tablename = c.relname))))
   );
   failures := failures + (select count(*) from catalog_forbidden);
+  failures := failures + (select count(*) from anon_functions);
   if failures > 0 then
     raise exception 'RLS check failed: % problem(s), see above', failures;
   end if;
