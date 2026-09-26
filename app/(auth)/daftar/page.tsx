@@ -13,7 +13,8 @@ export const metadata: Metadata = {
 /** FR-M16-01. Public: a signed-in visitor is sent home by the proxy. */
 export default function SignupPage() {
   return (
-    <Card>
+    // Wide on large screens: two field columns keep the form within one viewport.
+    <Card data-auth-width="wide">
       <CardHeader>
         <CardTitle>
           <h1>Daftar jadi Klipper</h1>

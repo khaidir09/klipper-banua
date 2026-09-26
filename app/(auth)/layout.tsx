@@ -24,13 +24,14 @@ const POINTS = [
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-svh lg:grid-cols-[1.1fr_1fr]">
+    <div className="grid min-h-svh lg:grid-cols-[1.1fr_1fr] lg:has-data-[auth-width=wide]:grid-cols-[2fr_3fr]">
       {/* Brand panel. Decorative context only, apart from the brand link back to
-          the public site, and off small screens, where the form owns the viewport. */}
-      <aside className="hidden flex-col bg-brand-panel p-10 text-brand-panel-foreground lg:flex xl:p-14">
+          the public site, and off small screens, where the form owns the viewport.
+          Pinned to the viewport so a tall form never stretches the pitch out of view. */}
+      <aside className="sticky top-0 hidden h-svh flex-col bg-brand-panel p-10 text-brand-panel-foreground lg:flex xl:p-14">
         <Link
           href="/"
-          className="flex w-fit items-center gap-2.5 rounded-md outline-none transition-opacity hover:opacity-90 focus-visible:ring-3 focus-visible:ring-brand-panel-foreground/40"
+          className="flex w-fit items-center gap-2.5 rounded-md transition-opacity outline-none hover:opacity-90 focus-visible:ring-3 focus-visible:ring-brand-panel-foreground/40"
         >
           <span
             aria-hidden
@@ -62,13 +63,15 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
       </aside>
 
-      <main className="flex flex-col px-4 py-6 sm:px-6">
-        <div className="flex justify-end">
+      <main className="relative flex flex-col px-4 py-6 sm:px-6 lg:px-12 lg:py-3">
+        {/* Floats on large screens so it does not push the form below the fold. */}
+        <div className="flex justify-end lg:absolute lg:top-3 lg:right-3">
           <ThemeToggle />
         </div>
 
-        <div className="flex flex-1 items-center justify-center py-6">
-          <div className="w-full max-w-sm">
+        {/* A page opts into the wider column with data-auth-width="wide" (e.g. /daftar). */}
+        <div className="flex flex-1 items-center justify-center py-6 lg:py-0">
+          <div className="w-full max-w-sm lg:has-data-[auth-width=wide]:max-w-3xl">
             {/* Repeats the brand on small screens, where the panel is hidden. */}
             <Link
               href="/"

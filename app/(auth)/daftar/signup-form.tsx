@@ -24,29 +24,30 @@ import { signUpCreatorAction } from "./actions";
 
 type TextFieldName = "email" | "full_name" | "stage_name" | "phone_wa" | "city";
 
+/** Each label is one span: FieldLabel is a flex row and would split a bare sentence. */
 const CONSENTS = [
   {
     name: "agree_terms",
     label: (
-      <>
+      <span>
         Saya menyetujui{" "}
         <Link href="/syarat" target="_blank" className="underline underline-offset-4">
           Syarat Klipper
         </Link>
         : nggak pakai views palsu dan selalu tulis kode verifikasi di setiap klip.
-      </>
+      </span>
     ),
   },
   {
     name: "agree_privacy",
     label: (
-      <>
+      <span>
         Saya menyetujui{" "}
         <Link href="/privasi" target="_blank" className="underline underline-offset-4">
           Kebijakan Privasi
         </Link>
         .
-      </>
+      </span>
     ),
   },
 ] as const;
@@ -123,12 +124,14 @@ export function SignupForm() {
         <FieldLabel htmlFor={name}>{label}</FieldLabel>
         <Input
           id={name}
-          className="h-11"
+          className="h-11 lg:h-10"
           aria-invalid={Boolean(errors[name])}
           {...props}
           {...form.register(name)}
         />
-        {description ? <FieldDescription>{description}</FieldDescription> : null}
+        {description ? (
+          <FieldDescription className="lg:text-xs">{description}</FieldDescription>
+        ) : null}
         <FieldError errors={[errors[name]]} />
       </Field>
     );
@@ -136,15 +139,23 @@ export function SignupForm() {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
-      <FieldGroup>
+      {/* Two columns on large screens so the whole form fits one viewport; the
+          fields are ordered in pairs so reading order matches the grid. */}
+      <FieldGroup className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-4 lg:gap-y-3">
         {serverError ? (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="lg:col-span-2">
             <OctagonAlert aria-hidden />
             <AlertDescription>{serverError}</AlertDescription>
           </Alert>
         ) : null}
 
         {textField("email", "Email", { type: "email", inputMode: "email", autoComplete: "email" })}
+        {textField(
+          "phone_wa",
+          "Nomor WhatsApp",
+          { type: "tel", inputMode: "tel", autoComplete: "tel", placeholder: "0812-3456-7890" },
+          "Buat info kampanye dari tim. Satu nomor cuma bisa untuk satu akun.",
+        )}
 
         <Field>
           <FieldLabel htmlFor="password">Kata sandi</FieldLabel>
@@ -152,11 +163,11 @@ export function SignupForm() {
             id="password"
             type="password"
             autoComplete="new-password"
-            className="h-11"
+            className="h-11 lg:h-10"
             aria-invalid={Boolean(errors.password)}
             {...form.register("password")}
           />
-          <FieldDescription>
+          <FieldDescription className="lg:text-xs">
             Minimal 8 karakter, dengan huruf besar, huruf kecil, dan angka.
           </FieldDescription>
           <FieldError errors={[errors.password]} />
@@ -168,7 +179,7 @@ export function SignupForm() {
             id="passwordConfirmation"
             type="password"
             autoComplete="new-password"
-            className="h-11"
+            className="h-11 lg:h-10"
             aria-invalid={Boolean(errors.passwordConfirmation)}
             {...form.register("passwordConfirmation")}
           />
@@ -183,55 +194,51 @@ export function SignupForm() {
         )}
         {textField(
           "stage_name",
-          "Nama panggung",
+          "Nama panggung (Username)",
           { autoComplete: "nickname" },
           "Nama yang dilihat klien di laporan kampanye, misalnya nama akunmu.",
         )}
-        {textField(
-          "phone_wa",
-          "Nomor WhatsApp",
-          { type: "tel", inputMode: "tel", autoComplete: "tel", placeholder: "0812-3456-7890" },
-          "Buat info kampanye dari tim. Satu nomor cuma bisa untuk satu akun.",
-        )}
-        {textField("city", "Kota/kabupaten", { autoComplete: "address-level2" })}
 
         <Field>
           <FieldLabel htmlFor="province">Provinsi</FieldLabel>
           <ProvinceSelect
             id="province"
-            className="h-11 w-full"
+            className="h-11 w-full lg:h-10"
             defaultValue={DEFAULT_PROVINCE}
             aria-invalid={Boolean(errors.province)}
             {...form.register("province")}
           />
           <FieldError errors={[errors.province]} />
         </Field>
+        {textField("city", "Kota/kabupaten", { autoComplete: "address-level2" })}
 
-        {CONSENTS.map((consent) => (
-          <Controller
-            key={consent.name}
-            control={form.control}
-            name={consent.name}
-            render={({ field, fieldState }) => (
-              <Field orientation="horizontal" data-invalid={Boolean(fieldState.error)}>
-                <Checkbox
-                  id={consent.name}
-                  checked={field.value === true}
-                  onCheckedChange={(checked) => field.onChange(checked === true)}
-                  aria-invalid={Boolean(fieldState.error)}
-                />
-                <FieldContent>
-                  <FieldLabel htmlFor={consent.name} className="font-normal">
-                    {consent.label}
-                  </FieldLabel>
-                  <FieldError errors={[fieldState.error]} />
-                </FieldContent>
-              </Field>
-            )}
-          />
-        ))}
+        <div className="flex flex-col gap-3 lg:col-span-2 lg:gap-2">
+          {CONSENTS.map((consent) => (
+            <Controller
+              key={consent.name}
+              control={form.control}
+              name={consent.name}
+              render={({ field, fieldState }) => (
+                <Field orientation="horizontal" data-invalid={Boolean(fieldState.error)}>
+                  <Checkbox
+                    id={consent.name}
+                    checked={field.value === true}
+                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    aria-invalid={Boolean(fieldState.error)}
+                  />
+                  <FieldContent>
+                    <FieldLabel htmlFor={consent.name} className="font-normal">
+                      {consent.label}
+                    </FieldLabel>
+                    <FieldError errors={[fieldState.error]} />
+                  </FieldContent>
+                </Field>
+              )}
+            />
+          ))}
+        </div>
 
-        <Button type="submit" disabled={isPending} className="h-11 w-full">
+        <Button type="submit" disabled={isPending} className="h-11 w-full lg:col-span-2">
           {isPending ? (
             <>
               <Loader2 className="animate-spin" aria-hidden />
@@ -242,7 +249,7 @@ export function SignupForm() {
           )}
         </Button>
 
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-sm text-muted-foreground lg:col-span-2">
           Sudah punya akun?{" "}
           <Link href="/login" className="text-foreground underline underline-offset-4">
             Masuk
