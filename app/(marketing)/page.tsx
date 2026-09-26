@@ -126,37 +126,17 @@ const CLIENT_PILLARS = [
 
 const FAQ: FaqItem[] = [
   {
-    question: "Harus punya banyak followers?",
-    answer:
-      "Nggak. Yang dibayar views klipmu, bukan jumlah followers. Akun kecil dengan klip yang bagus tetap bisa dapat honor.",
-  },
-  {
-    question: "Berapa honor yang bisa aku dapat?",
-    answer:
-      "Tergantung kampanyenya. Tiap kampanye punya tarif per 1.000 views, batas honor per klip dan per klipper, serta anggaran total. Semuanya tertulis sebelum kamu gabung, dan honor berhenti saat anggaran kampanye habis.",
-  },
-  {
-    question: "Kapan honornya bisa ditarik?",
-    answer:
-      "Begitu klip disetujui, honornya masuk saldo. Setelah saldo mencapai batas minimum, ajukan penarikan kapan saja, dan tim mentransfer ke rekening atau e-wallet atas namamu. Biaya transfer ditanggung klipper.",
-  },
-  {
-    question: "Apa itu lencana Klipper Lokal?",
-    answer:
-      "Tanda untuk akun yang audiensnya mayoritas di Kalimantan, dibuktikan dengan screenshot analitik. Sebagian kampanye cuma terbuka untuk pemegang lencana ini. Untuk kampanye umum, lencana nggak wajib.",
-  },
-  {
-    question: "Untuk pemilik kampanye: siapa saja yang bisa pasang kampanye?",
+    question: "Siapa saja yang bisa pasang kampanye?",
     answer:
       "Siapa pun yang ingin menjangkau audiens Kalimantan lewat klip pendek: brand bisnis, UMKM, instansi, maupun personal. Materi, brief, anggaran, dan tarif per 1.000 views disepakati bersama tim sebelum kampanye tayang di katalog klipper.",
   },
   {
-    question: "Untuk pemilik kampanye: bagaimana hasilnya diukur?",
+    question: "Bagaimana hasilnya diukur?",
     answer:
       "Lewat tiga angka: views terverifikasi per klip (selalu dengan tangkapan layar bukti), klik pada tautan pelacakan unik tiap klipper, dan hasil per kode referal yang Anda laporkan, misalnya jumlah pendaftar atau pembeli. Anda memantaunya dari portal klien dan menerima laporan akhir.",
   },
   {
-    question: "Untuk pemilik kampanye: apakah data pribadi pelanggan saya disimpan?",
+    question: "Apakah data pribadi pelanggan saya disimpan?",
     answer:
       "Tidak. Kami hanya menerima angka rekap per kode referal, misalnya 12 pembeli untuk kode ABC pada Oktober. Nama, nomor, dan data pribadi pelanggan atau pendaftar Anda tidak pernah diminta maupun disimpan.",
   },
