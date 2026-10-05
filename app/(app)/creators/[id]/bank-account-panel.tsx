@@ -25,7 +25,7 @@ import {
 type MaskedAccount = {
   bank_name: string;
   account_number_masked: string;
-  /** FR-M19-04: the holder name differs from the klipper's full name. */
+  /** FR-M19-04: the holder name differs from the kliper's full name. */
   holder_matches_name?: boolean;
 } | null;
 
@@ -74,7 +74,7 @@ export function BankAccountPanel({ creatorId, isOwner, masked }: BankAccountPane
             </div>
             {masked.holder_matches_name === false ? (
               <p className="text-sm font-medium text-warning-soft-foreground sm:col-span-2">
-                Nama pemilik rekening berbeda dengan nama lengkap klipper; periksa sebelum
+                Nama pemilik rekening berbeda dengan nama lengkap kliper; periksa sebelum
                 mentransfer.
               </p>
             ) : null}

@@ -10,7 +10,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { joinCampaignAction } from "../actions";
 
 /**
- * FR-M17-04: joining is also the klipper's dated acknowledgement of the brief
+ * FR-M17-04: joining is also the kliper's dated acknowledgement of the brief
  * (FR-M13-10), so it needs the same explicit tick. `blocker` explains why the
  * button is off; the server checks everything again.
  */

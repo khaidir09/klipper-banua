@@ -2,7 +2,7 @@ import { CopyButton } from "@/components/forms/copy-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
- * FR-M16-07. The code proves that a clip was posted from the klipper's own
+ * FR-M16-07. The code proves that a clip was posted from the kliper's own
  * account: it goes into the caption or description of every clip (FR-M18-03).
  */
 export function VerificationCodeCard({ code }: { code: string }) {

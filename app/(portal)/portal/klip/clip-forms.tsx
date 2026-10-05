@@ -69,7 +69,7 @@ export function SubmitClipDialog({
 }: {
   assignmentId: string;
   campaignId: string;
-  /** Allowed by the campaign and registered by the klipper. */
+  /** Allowed by the campaign and registered by the kliper. */
   platforms: SocialPlatform[];
   verificationCode: string;
   onClose: () => void;

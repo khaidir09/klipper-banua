@@ -17,7 +17,7 @@ export default async function BadgeRequestsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Pengajuan lencana Klipper Lokal"
+        title="Pengajuan lencana Kliper Lokal"
         description={`Periksa tangkapan layar analitik: lencana diberikan bila minimal ${LOCAL_BADGE_MIN_PCT}% audiens berada di Kalimantan.`}
         backHref="/creators"
         backLabel="Daftar kreator"

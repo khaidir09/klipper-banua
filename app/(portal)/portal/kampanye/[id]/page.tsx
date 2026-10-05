@@ -71,7 +71,7 @@ export default async function PortalCatalogCampaignPage({
         description={`${campaign.client_name} · ${formatCalendarRange(campaign.start_date, campaign.end_date)}`}
         backHref="/portal/kampanye"
         backLabel="Katalog kampanye"
-        actions={campaign.local_only ? <Badge>Khusus Klipper Lokal</Badge> : undefined}
+        actions={campaign.local_only ? <Badge>Khusus Kliper Lokal</Badge> : undefined}
       />
 
       {blockers.includes("terms_outdated") ? <TermsNotice version={CREATOR_TERMS_VERSION} /> : null}
@@ -112,7 +112,7 @@ export default async function PortalCatalogCampaignPage({
             />
             <p className="mt-3 text-xs text-muted-foreground">
               Honor dibayar selama anggarannya masih ada. Kalau anggaran habis, kampanye ditutup
-              untuk klipper dan klip baru, jadi jangan kelamaan.
+              untuk kliper dan klip baru, jadi jangan kelamaan.
             </p>
           </CardContent>
         </Card>

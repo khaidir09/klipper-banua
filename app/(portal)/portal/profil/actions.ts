@@ -18,7 +18,7 @@ import { uuidField } from "@/lib/validation/common";
 import { badgeRequestSchema, portalSocialAccountSchema } from "@/lib/validation/creators";
 
 /*
- * What a klipper manages about themselves (PRD M16: FR-M3-03, FR-M16-05,
+ * What a kliper manages about themselves (PRD M16: FR-M3-03, FR-M16-05,
  * FR-M16-08, FR-M16-09). Ownership is checked here for a clear message, and
  * again by the `*_own` policies and `guard_portal_social_account` in
  * 20261001000000_creator_self_signup.sql.
@@ -43,11 +43,11 @@ function handleTaken(): ActionResult {
   return {
     status: "error",
     message: "Akun ini sudah terdaftar di platform yang sama.",
-    fieldErrors: { handle: "Sudah dipakai klipper lain. Kalau ini akunmu, hubungi tim, ya." },
+    fieldErrors: { handle: "Sudah dipakai kliper lain. Kalau ini akunmu, hubungi tim, ya." },
   };
 }
 
-/** FR-M3-03. Adding the first account also activates a new klipper (trigger). */
+/** FR-M3-03. Adding the first account also activates a new kliper (trigger). */
 export async function savePortalSocialAccountAction(
   accountId: string | null,
   values: unknown,
@@ -146,7 +146,7 @@ export async function deletePortalSocialAccountAction(values: unknown): Promise<
 }
 
 /**
- * FR-M16-08. The screenshot goes into the klipper's own folder of the private
+ * FR-M16-08. The screenshot goes into the kliper's own folder of the private
  * `audience-proofs` bucket; the claim waits for the team (FR-M3-05). A new
  * claim withdraws an earlier verification of that account (trigger).
  */

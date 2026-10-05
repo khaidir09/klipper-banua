@@ -364,7 +364,7 @@ export default async function PortalAssignmentPage({
   );
 }
 
-/** What the clip card needs (FR-M18-01): the klipper, their accounts and clips. */
+/** What the clip card needs (FR-M18-01): the kliper, their accounts and clips. */
 async function loadClipContext(
   supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
   campaignId: string,

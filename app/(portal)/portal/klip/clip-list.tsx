@@ -19,7 +19,7 @@ import { formatNumber } from "@/lib/format/number";
 import { ResubmitClipButton, ViewsUpdateDialog } from "./clip-forms";
 
 /**
- * The klipper's clips with their review, honor and next step (FR-M18-03 …
+ * The kliper's clips with their review, honor and next step (FR-M18-03 …
  * FR-M18-05). `showCampaign` adds the campaign name, for the list across
  * every campaign.
  */

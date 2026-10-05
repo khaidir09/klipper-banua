@@ -39,7 +39,7 @@ export default async function PortalProfilePage() {
     <div className="space-y-6">
       <PageHeader
         title="Profil saya"
-        description="Kode verifikasi, akun medsos, rekening, dan lencana Klipper Lokal kamu. Mau ubah data diri? Hubungi tim."
+        description="Kode verifikasi, akun medsos, rekening, dan lencana Kliper Lokal kamu. Mau ubah data diri? Hubungi tim."
       />
 
       {creator ? <VerificationCodeCard code={creator.verification_code} /> : null}
@@ -88,7 +88,7 @@ export default async function PortalProfilePage() {
                 {creator.local_badge_at ? (
                   <Badge variant="outline" className="gap-1">
                     <BadgeCheck className="size-3.5 text-success" aria-hidden />
-                    Klipper Lokal sejak {formatDate(creator.local_badge_at, timezone)}
+                    Kliper Lokal sejak {formatDate(creator.local_badge_at, timezone)}
                   </Badge>
                 ) : null}
               </CardDescription>

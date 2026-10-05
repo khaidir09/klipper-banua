@@ -50,7 +50,7 @@ async function removeProof(supabase: Supabase, path: string) {
 }
 
 const DUPLICATE_URL_MESSAGE =
-  "Klip dengan tautan ini sudah pernah dikirim, entah olehmu atau klipper lain.";
+  "Klip dengan tautan ini sudah pernah dikirim, entah olehmu atau kliper lain.";
 
 /** FR-M18-01: a clip and its first views proof, in one transaction. */
 export async function submitClipAction(values: unknown): Promise<ActionResult> {
@@ -71,7 +71,7 @@ export async function submitClipAction(values: unknown): Promise<ActionResult> {
       .maybeSingle(),
     supabase.from("creator_portal_social_accounts").select("platform"),
   ]);
-  if (!profile) return fail("Data klipper tidak ditemukan.");
+  if (!profile) return fail("Data kliper tidak ditemukan.");
   if (!assignment?.campaign_id || assignment.payout_model !== "per_views") {
     return fail("Penugasan tidak ditemukan.");
   }

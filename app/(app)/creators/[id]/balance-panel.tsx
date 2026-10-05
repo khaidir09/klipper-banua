@@ -19,7 +19,7 @@ type CreatorWithdrawal = {
   rejection_reason: string | null;
 };
 
-/** FR-M3-08, FR-M19-03: the klipper's clips, balance and money history. */
+/** FR-M3-08, FR-M19-03: the kliper's clips, balance and money history. */
 export function BalancePanel({
   creatorId,
   isOwner,

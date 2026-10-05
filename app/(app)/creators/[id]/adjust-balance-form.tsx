@@ -19,7 +19,7 @@ import { adjustBalanceAction } from "../../penarikan/actions";
 
 /**
  * FR-M19-06: the owner's signed correction, e.g. paying out or cancelling the
- * frozen balance of a blocked klipper (FR-M3-09). Always with a reason.
+ * frozen balance of a blocked kliper (FR-M3-09). Always with a reason.
  */
 export function AdjustBalanceForm({ creatorId }: { creatorId: string }) {
   const [serverError, setServerError] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export function AdjustBalanceForm({ creatorId }: { creatorId: string }) {
           <FieldError errors={[errors.amount]} />
         </Field>
         <Field>
-          <FieldLabel htmlFor="adjust-reason">Alasan (dibaca klipper)</FieldLabel>
+          <FieldLabel htmlFor="adjust-reason">Alasan (dibaca kliper)</FieldLabel>
           <Textarea id="adjust-reason" rows={2} {...form.register("reason")} />
           <FieldError errors={[errors.reason]} />
         </Field>

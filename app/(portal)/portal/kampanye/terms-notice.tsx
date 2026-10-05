@@ -11,7 +11,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { acceptTermsAction } from "./actions";
 
 /**
- * FR-M3-04: when the Syarat Klipper get a new version, the klipper agrees to
+ * FR-M3-04: when the Syarat Kliper get a new version, the kliper agrees to
  * it again before joining or sending clips.
  */
 export function TermsNotice({ version }: { version: string }) {
@@ -29,12 +29,12 @@ export function TermsNotice({ version }: { version: string }) {
   return (
     <Alert>
       <FileText />
-      <AlertTitle>Ada Syarat Klipper versi baru</AlertTitle>
+      <AlertTitle>Ada Syarat Kliper versi baru</AlertTitle>
       <AlertDescription className="space-y-3">
         <p>
           Baca dulu{" "}
           <Link href="/syarat" target="_blank" className="font-medium underline">
-            Syarat Klipper versi {version}
+            Syarat Kliper versi {version}
           </Link>{" "}
           ya. Setelah kamu setujui, kamu bisa gabung kampanye dan kirim klip lagi.
         </p>
@@ -45,7 +45,7 @@ export function TermsNotice({ version }: { version: string }) {
             onCheckedChange={(checked) => setAgreed(checked === true)}
           />
           <FieldLabel htmlFor="setuju-syarat" className="font-normal">
-            Saya sudah membaca dan menyetujui Syarat Klipper versi {version}.
+            Saya sudah membaca dan menyetujui Syarat Kliper versi {version}.
           </FieldLabel>
         </Field>
         <Button size="sm" onClick={accept} disabled={!agreed || isPending}>

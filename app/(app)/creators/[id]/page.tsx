@@ -122,7 +122,7 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
       {creator.deletion_requested_at && !anonymized ? (
         <Alert>
           <Trash2 />
-          <AlertTitle>Klipper meminta penghapusan akun</AlertTitle>
+          <AlertTitle>Kliper meminta penghapusan akun</AlertTitle>
           <AlertDescription>
             Diminta {formatDateTime(creator.deletion_requested_at, tz)}. Owner menyelesaikan saldo
             lalu menganonimkan data (FR-M16-09).
@@ -135,7 +135,7 @@ export default async function CreatorDetailPage({ params }: { params: Promise<{ 
         {creator.verified_at ? (
           <Badge variant="outline" className="gap-1">
             <BadgeCheck className="size-3.5 text-success" aria-hidden />
-            Klipper Lokal
+            Kliper Lokal
           </Badge>
         ) : null}
         <Badge variant="outline">{SIGNUP_SOURCE_LABELS[creator.signup_source]}</Badge>

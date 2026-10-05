@@ -30,7 +30,7 @@ export type BankAccountSummary = {
 };
 
 /**
- * FR-M19-04: the klipper fills in their own account. The full number is
+ * FR-M19-04: the kliper fills in their own account. The full number is
  * never sent back to the browser; only the last four digits are shown.
  */
 export function BankAccountCard({

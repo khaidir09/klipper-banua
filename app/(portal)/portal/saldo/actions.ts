@@ -18,10 +18,10 @@ import { ownBirthDateSchema } from "@/lib/validation/creators";
 import { portalBankAccountSchema, withdrawalRequestSchema } from "@/lib/validation/withdrawals";
 
 /*
- * The klipper's bank account and withdrawals (PRD M19: FR-M19-04,
+ * The kliper's bank account and withdrawals (PRD M19: FR-M19-04,
  * FR-M19-05). The checks here explain; `save_creator_bank_account()` and
  * `request_withdrawal()` decide again under a row lock. `requireCreator`
- * already keeps a blocked klipper out of both (FR-M3-09).
+ * already keeps a blocked kliper out of both (FR-M3-09).
  */
 
 function revalidateBalance() {
@@ -30,7 +30,7 @@ function revalidateBalance() {
   revalidatePath("/portal");
 }
 
-/** FR-M19-04: save or change the klipper's own account. */
+/** FR-M19-04: save or change the kliper's own account. */
 export async function saveOwnBankAccountAction(values: unknown): Promise<ActionResult> {
   await requireCreator();
   const parsed = portalBankAccountSchema.safeParse(values);

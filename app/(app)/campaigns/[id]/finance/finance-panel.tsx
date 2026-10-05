@@ -138,7 +138,7 @@ export function FinancePanel(props: Props) {
         {summary.perViews ? (
           <>
             <Tile
-              label="Anggaran klipper"
+              label="Anggaran kliper"
               value={formatRupiah(summary.perViews.creatorBudget)}
               detail={`Sisa ${formatRupiah(summary.perViews.budgetRemaining)}`}
             />

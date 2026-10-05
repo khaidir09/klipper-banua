@@ -49,7 +49,7 @@ export function BlockPanel({
   }
 
   function unblock() {
-    if (!window.confirm("Buka blokir klipper ini? Statusnya kembali aktif.")) return;
+    if (!window.confirm("Buka blokir kliper ini? Statusnya kembali aktif.")) return;
     startTransition(async () => {
       const result = await unblockCreatorAction({ id: creatorId });
       if (result.status === "success") toast.success(result.message);
@@ -62,7 +62,7 @@ export function BlockPanel({
       <CardHeader>
         <CardTitle>Blokir</CardTitle>
         <CardDescription>
-          Klipper yang diblokir tidak dapat masuk portal, bergabung ke kampanye, atau mengirim klip.
+          Kliper yang diblokir tidak dapat masuk portal, bergabung ke kampanye, atau mengirim klip.
           Gunakan untuk kecurangan views atau pelanggaran syarat.
         </CardDescription>
       </CardHeader>
@@ -102,7 +102,7 @@ export function BlockPanel({
             </Field>
             <Button variant="destructive" onClick={block} disabled={isPending}>
               <Ban aria-hidden />
-              Blokir klipper
+              Blokir kliper
             </Button>
           </>
         )}

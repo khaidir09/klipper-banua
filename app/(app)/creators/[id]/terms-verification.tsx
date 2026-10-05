@@ -67,7 +67,7 @@ export function TermsVerification({
   function revoke() {
     if (
       !window.confirm(
-        "Cabut lencana Klipper Lokal? Klipper tidak lagi dapat ikut kampanye khusus lokal.",
+        "Cabut lencana Kliper Lokal? Kliper tidak lagi dapat ikut kampanye khusus lokal.",
       )
     )
       return;
@@ -137,10 +137,10 @@ export function TermsVerification({
 
       <Card>
         <CardHeader>
-          <CardTitle>Lencana Klipper Lokal</CardTitle>
+          <CardTitle>Lencana Kliper Lokal</CardTitle>
           <CardDescription>
             Diberikan bila ada akun sosial berbukti analitik dengan audiens Kalimantan di atas
-            ambang, dan persetujuan syarat sudah tercatat (FR-M3-05). Klipper dapat mengajukannya
+            ambang, dan persetujuan syarat sudah tercatat (FR-M3-05). Kliper dapat mengajukannya
             sendiri dari portal.
           </CardDescription>
         </CardHeader>
@@ -148,7 +148,7 @@ export function TermsVerification({
           {verifiedAt ? (
             <Alert>
               <BadgeCheck />
-              <AlertTitle>Memegang lencana Klipper Lokal</AlertTitle>
+              <AlertTitle>Memegang lencana Kliper Lokal</AlertTitle>
               <AlertDescription>Sejak {formatDateTime(verifiedAt, timezone)}.</AlertDescription>
             </Alert>
           ) : null}
@@ -169,7 +169,7 @@ export function TermsVerification({
 
           {status === "diblokir" ? (
             <p className="text-sm text-muted-foreground">
-              Klipper yang diblokir tidak dapat diberi lencana.
+              Kliper yang diblokir tidak dapat diberi lencana.
             </p>
           ) : null}
 

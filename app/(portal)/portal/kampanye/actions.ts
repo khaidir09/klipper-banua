@@ -19,7 +19,7 @@ import { uuidField } from "@/lib/validation/common";
 
 /*
  * Joining and leaving open campaigns from the portal (PRD M17: FR-M17-04,
- * FR-M17-05) and accepting a new version of the Syarat Klipper (FR-M3-04).
+ * FR-M17-05) and accepting a new version of the Syarat Kliper (FR-M3-04).
  * The checks here explain; RLS and `guard_campaign_creator_change` /
  * `guard_portal_assignment_confirm` decide again in the database.
  */
@@ -38,7 +38,7 @@ function revalidatePortal() {
 }
 
 /**
- * FR-M17-04: one action that records the klipper read the brief, the must-do
+ * FR-M17-04: one action that records the kliper read the brief, the must-do
  * points and the prohibitions, and joins them. The database fills in the
  * status, both timestamps, the referral code and the tracking slug.
  */
@@ -55,7 +55,7 @@ export async function joinCampaignAction(values: unknown): Promise<ActionResult>
     getPortalProfile(supabase),
     getPortalCatalogCampaign(supabase, campaignId),
   ]);
-  if (!creator) return fail("Data klipper tidak ditemukan.");
+  if (!creator) return fail("Data kliper tidak ditemukan.");
   if (!campaign) return fail("Kampanye tidak ditemukan atau tidak lagi terbuka.");
 
   const blockers = joinBlockers({
@@ -165,7 +165,7 @@ export async function withdrawAssignmentAction(values: unknown): Promise<ActionR
   return ok("Kamu sudah mundur dari kampanye ini.");
 }
 
-/** FR-M3-04: accept the current Syarat Klipper; the database logs it. */
+/** FR-M3-04: accept the current Syarat Kliper; the database logs it. */
 export async function acceptTermsAction(): Promise<ActionResult> {
   await requireCreator();
   const supabase = await createSupabaseServerClient();
@@ -173,5 +173,5 @@ export async function acceptTermsAction(): Promise<ActionResult> {
   if (error) return fail(dbRuleMessage(error, "Persetujuan gagal disimpan."));
 
   revalidatePortal();
-  return ok(`Makasih! Syarat Klipper versi ${CREATOR_TERMS_VERSION} sudah kamu setujui.`);
+  return ok(`Makasih! Syarat Kliper versi ${CREATOR_TERMS_VERSION} sudah kamu setujui.`);
 }

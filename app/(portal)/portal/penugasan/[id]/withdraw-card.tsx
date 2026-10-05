@@ -19,7 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { withdrawAssignmentAction } from "../../kampanye/actions";
 
 /**
- * FR-M17-05: a klipper may leave a per_views campaign while none of their
+ * FR-M17-05: a kliper may leave a per_views campaign while none of their
  * clips was approved. Joining the same campaign again is not possible.
  */
 export function WithdrawCard({ assignmentId }: { assignmentId: string }) {

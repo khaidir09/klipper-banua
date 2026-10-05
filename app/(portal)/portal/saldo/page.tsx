@@ -26,7 +26,7 @@ import { WithdrawForm } from "./withdraw-form";
 export const metadata: Metadata = { title: "Saldo" };
 
 /**
- * FR-M19-03 … FR-M19-07. A blocked klipper lands here too (FR-M3-09): they
+ * FR-M19-03 … FR-M19-07. A blocked kliper lands here too (FR-M3-09): they
  * read their frozen balance and history, and cannot withdraw.
  */
 export default async function PortalBalancePage() {
@@ -40,7 +40,7 @@ export default async function PortalBalancePage() {
     listPortalWithdrawals(supabase),
     getPortalProfile(supabase),
   ]);
-  // A blocked klipper has no profile row here; their first blocker is the block.
+  // A blocked kliper has no profile row here; their first blocker is the block.
   const needsBirthDate = !session.blocked && profile !== null && !profile.birth_date;
 
   const available = balance?.available ?? 0;

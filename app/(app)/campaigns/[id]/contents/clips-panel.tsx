@@ -19,7 +19,7 @@ import { formatNumber } from "@/lib/format/number";
 
 /**
  * FR-M18-04: the Konten tab of a `per_views` campaign lists the clips the
- * klippers sent. Decisions are taken on the verification page, which keeps
+ * klipers sent. Decisions are taken on the verification page, which keeps
  * the honor ledger right.
  */
 export function ClipsPanel({ clips, timezone }: { clips: CampaignClipRow[]; timezone: string }) {
@@ -32,7 +32,7 @@ export function ClipsPanel({ clips, timezone }: { clips: CampaignClipRow[]; time
           <h2>Klip ({formatNumber(clips.length)})</h2>
         </CardTitle>
         <CardDescription>
-          Klip dikirim klipper setelah tayang dan diverifikasi di halaman Verifikasi. Total honor
+          Klip dikirim kliper setelah tayang dan diverifikasi di halaman Verifikasi. Total honor
           klip: {formatRupiah(earned)}.
         </CardDescription>
       </CardHeader>
@@ -44,7 +44,7 @@ export function ClipsPanel({ clips, timezone }: { clips: CampaignClipRow[]; time
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Klipper</TableHead>
+                  <TableHead>Kliper</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Tayang</TableHead>
                   <TableHead className="text-right">Views terverifikasi</TableHead>

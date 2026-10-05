@@ -35,7 +35,7 @@ function CatalogCard({ campaign }: { campaign: PortalCatalogCampaign }) {
       <CardHeader className="gap-2">
         {campaign.local_only || campaign.budget_exhausted || campaign.assignment_id ? (
           <div className="flex flex-wrap items-center gap-2">
-            {campaign.local_only ? <Badge>Khusus Klipper Lokal</Badge> : null}
+            {campaign.local_only ? <Badge>Khusus Kliper Lokal</Badge> : null}
             {campaign.budget_exhausted ? <Badge variant="destructive">Anggaran habis</Badge> : null}
             {campaign.assignment_id ? <Badge variant="secondary">Kamu sudah ikut</Badge> : null}
           </div>
@@ -98,7 +98,7 @@ function CatalogCard({ campaign }: { campaign: PortalCatalogCampaign }) {
   );
 }
 
-/** FR-M17-03: open campaigns a klipper may join. */
+/** FR-M17-03: open campaigns a kliper may join. */
 export default async function PortalCatalogPage({ searchParams }: { searchParams: SearchParams }) {
   await requireCreator();
   const query = catalogQuerySchema.parse(await searchParams);
@@ -167,7 +167,7 @@ export default async function PortalCatalogPage({ searchParams }: { searchParams
         <Field orientation="horizontal" className="self-end pb-2">
           <Checkbox id="lokal" name="lokal" value="1" defaultChecked={query.lokal} />
           <FieldLabel htmlFor="lokal" className="font-normal">
-            Khusus Klipper Lokal
+            Khusus Kliper Lokal
           </FieldLabel>
         </Field>
         <div className="flex items-end gap-2">

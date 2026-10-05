@@ -10,7 +10,7 @@ import { ClipList } from "./clip-list";
 
 export const metadata: Metadata = { title: "Klip Saya" };
 
-/** FR-M18: every clip the klipper sent, across campaigns, newest first. */
+/** FR-M18: every clip the kliper sent, across campaigns, newest first. */
 export default async function PortalClipsPage() {
   const session = await requireCreator();
   const supabase = await createSupabaseServerClient();

@@ -40,7 +40,7 @@ import {
 type Editing = PortalSocialAccount | "new" | null;
 
 /**
- * FR-M3-03 and FR-M16-08 from the klipper's side: their own accounts, and the
+ * FR-M3-03 and FR-M16-08 from the kliper's side: their own accounts, and the
  * local badge request that rides on one of them. `hasBadge` is the creator's
  * badge (`verified_at`), which a single verified account earns.
  */
@@ -172,7 +172,7 @@ function BadgeState({
       ) : null}
       {hasBadge ? null : (
         <Button size="sm" variant="outline" onClick={() => onRequest(account)}>
-          Ajukan lencana Klipper Lokal
+          Ajukan lencana Kliper Lokal
         </Button>
       )}
     </div>
@@ -329,7 +329,7 @@ function BadgeRequestDialog({
       <DialogContent className="sm:max-w-lg">
         <form onSubmit={onSubmit} noValidate>
           <DialogHeader>
-            <DialogTitle>Ajukan lencana Klipper Lokal</DialogTitle>
+            <DialogTitle>Ajukan lencana Kliper Lokal</DialogTitle>
             <DialogDescription>
               Punya lencana ini, kamu bisa ikut kampanye khusus audiens Kalimantan. Syaratnya
               minimal {LOCAL_BADGE_MIN_PCT}% penonton akun ini ada di Kalimantan. Buktikan pakai

@@ -29,7 +29,7 @@ export default async function WithdrawalSettingsPage() {
           <h2>Minimum penarikan saldo</h2>
         </CardTitle>
         <CardDescription>
-          Klipper hanya dapat mengajukan penarikan bila nominalnya mencapai batas ini. Perubahan
+          Kliper hanya dapat mengajukan penarikan bila nominalnya mencapai batas ini. Perubahan
           berlaku langsung untuk pengajuan berikutnya dan tercatat di log aktivitas.
           {row?.updated_at
             ? ` Terakhir diubah ${formatDateTime(row.updated_at, session.profile.timezone)}${row.editor?.full_name ? ` oleh ${row.editor.full_name}` : ""}.`

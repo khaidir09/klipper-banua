@@ -20,7 +20,7 @@ const STEPS = [
 ];
 
 /**
- * FR-M16-05. Where the confirmation email lands: a new klipper adds their
+ * FR-M16-05. Where the confirmation email lands: a new kliper adds their
  * first social account here, which turns `prospek` into `aktif`.
  */
 export default async function PortalStartPage() {
@@ -37,7 +37,7 @@ export default async function PortalStartPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Selamat datang, klipper!"
+        title="Selamat datang, kliper!"
         description="Beresin dua langkah singkat ini dulu, habis itu kamu bisa ambil kampanye pertamamu."
       />
 
