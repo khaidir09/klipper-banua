@@ -11,7 +11,7 @@ test("a creator sees their own brief and nothing internal", async ({ page }) => 
     await page.goto("/portal");
     await expect(page.getByRole("heading", { name: /Halo/ })).toBeVisible();
     await expect(page.getByRole("link", { name: "Klien" })).toHaveCount(0);
-    // "Kampanye" is the klipper catalog (M17), never the internal campaign list.
+    // "Kampanye" is the kliper catalog (M17), never the internal campaign list.
     await expect(page.locator('a[href="/campaigns"]')).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Kampanye", exact: true }).first()).toHaveAttribute(
       "href",

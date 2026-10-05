@@ -36,7 +36,7 @@ export const MIN_WITHDRAWAL_CEILING = 100_000_000;
 /** FR-M19-04: withdrawals wait this long after a bank account change. */
 export const BANK_CHANGE_HOLD_HOURS = 24;
 
-/** FR-M19-04: the fixed list of banks and e-wallets a klipper picks from. */
+/** FR-M19-04: the fixed list of banks and e-wallets a kliper picks from. */
 export const PAYOUT_BANKS = [
   "BCA",
   "BRI",

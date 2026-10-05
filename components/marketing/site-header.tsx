@@ -15,7 +15,7 @@ import { Container } from "./section";
 const NAV = [
   { href: "/kampanye", label: "Kampanye" },
   { href: "/#cara-kerja", label: "Cara kerja" },
-  { href: "/kreator", label: "Untuk klipper" },
+  { href: "/kreator", label: "Untuk kliper" },
   { href: "/#faq", label: "FAQ" },
 ];
 
@@ -69,7 +69,7 @@ export function SiteHeader() {
           <Button asChild variant="outline" size="lg" className="h-11 px-4 md:h-9">
             <Link href="/login">Masuk</Link>
           </Button>
-          {/* v4.0 (M16): the klipper registration, next to the sign-in. Hidden on
+          {/* v4.0 (M16): the kliper registration, next to the sign-in. Hidden on
               the smallest screens, where the hero already carries it. */}
           <Button asChild size="lg" className="hidden h-11 px-4 sm:inline-flex md:h-9">
             <Link href="/daftar">Daftar</Link>

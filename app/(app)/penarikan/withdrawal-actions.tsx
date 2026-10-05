@@ -31,7 +31,7 @@ type Mode = "dibayar" | "ditolak" | null;
 /**
  * FR-M19-06: the owner's next step on one withdrawal. Paying needs the
  * transfer date and the receipt, uploaded straight to the owner-only bucket;
- * rejecting needs a reason the klipper will read.
+ * rejecting needs a reason the kliper will read.
  */
 export function WithdrawalActions({
   id,
@@ -132,7 +132,7 @@ export function WithdrawalActions({
               <DialogTitle>{mode === "dibayar" ? "Tandai dibayar" : "Tolak penarikan"}</DialogTitle>
               <DialogDescription>
                 {formatRupiah(amount)} ke {accountLabel}.
-                {mode === "ditolak" ? " Saldo klipper dikembalikan otomatis." : ""}
+                {mode === "ditolak" ? " Saldo kliper dikembalikan otomatis." : ""}
               </DialogDescription>
             </DialogHeader>
             <FieldGroup className="my-2">
@@ -163,7 +163,7 @@ export function WithdrawalActions({
                       onChange={(event) => setFee(event.target.value)}
                     />
                     <FieldDescription>
-                      Ditanggung klipper: transfer {formatRupiah(amount)} dikurangi biaya ini.
+                      Ditanggung kliper: transfer {formatRupiah(amount)} dikurangi biaya ini.
                     </FieldDescription>
                   </Field>
                   <Field>
@@ -179,7 +179,7 @@ export function WithdrawalActions({
                 </>
               ) : (
                 <Field>
-                  <FieldLabel htmlFor={`reason-${id}`}>Alasan (dibaca klipper)</FieldLabel>
+                  <FieldLabel htmlFor={`reason-${id}`}>Alasan (dibaca kliper)</FieldLabel>
                   <Textarea
                     id={`reason-${id}`}
                     rows={3}

@@ -46,7 +46,7 @@ export const PORTAL_NAV_ITEMS: NavItem[] = [
   { label: "Profil", href: "/portal/profil", icon: User },
 ];
 
-/** FR-M3-09: a blocked klipper only reads their status and frozen balance. */
+/** FR-M3-09: a blocked kliper only reads their status and frozen balance. */
 export const BLOCKED_PORTAL_NAV_ITEMS: NavItem[] = [
   { label: "Saldo", href: "/portal/saldo", icon: Wallet },
 ];
@@ -67,7 +67,7 @@ export function visibleNavItems(role: InternalRole): NavItem[] {
 
 /**
  * The signed-in areas, each with its own shell chrome. `portal-blocked` is
- * the creator portal of a blocked klipper (FR-M3-09): same chrome, one entry.
+ * the creator portal of a blocked kliper (FR-M3-09): same chrome, one entry.
  */
 export type ShellArea = "app" | "portal" | "portal-blocked" | "client";
 
@@ -81,7 +81,7 @@ export type AreaChrome = {
    * Retints the sidebar's active and hover surface. Overriding the tokens keeps
    * every menu item styled by the same rules, so a portal can never drift from
    * the internal shell beyond its accent. Each pair is contrast-checked in
-   * `design-system/klipper-banua/MASTER.md`.
+   * `design-system/kliper-banua/MASTER.md`.
    */
   sidebarVars: React.CSSProperties;
 };
@@ -94,7 +94,7 @@ const AREA_CHROME_BASE: Record<Exclude<ShellArea, "portal-blocked">, AreaChrome>
     sidebarVars: {},
   },
   portal: {
-    label: "Portal Klipper",
+    label: "Portal Kliper",
     icon: ClipboardList,
     markClass: "bg-info text-info-foreground",
     sidebarVars: {
@@ -130,6 +130,6 @@ export function navItemsFor(area: ShellArea, role: UserRole): NavItem[] {
 export const ROLE_LABELS: Record<UserRole, string> = {
   owner: "Owner",
   manager: "Manager",
-  creator: "Klipper",
+  creator: "Kliper",
   client: "Klien",
 };

@@ -7,14 +7,14 @@ import { Container, Section } from "@/components/marketing/section";
 import { SignupCta } from "@/components/marketing/signup-cta";
 
 const DESCRIPTION =
-  "Jadi klipper kampanye brand, UMKM, instansi, dan personal di Kalimantan: daftar gratis, pilih kampanye, posting klip di akunmu sendiri, dan dapat honor dari views yang terverifikasi.";
+  "Jadi kliper kampanye brand, UMKM, instansi, dan personal di Kalimantan: daftar gratis, pilih kampanye, posting klip di akunmu sendiri, dan dapat honor dari views yang terverifikasi.";
 
 export const metadata: Metadata = {
-  title: "Untuk Klipper",
+  title: "Untuk Kliper",
   description: DESCRIPTION,
   alternates: { canonical: "/kreator" },
   openGraph: {
-    title: "Untuk Klipper",
+    title: "Untuk Kliper",
     description: DESCRIPTION,
     url: "/kreator",
     type: "website",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
 };
 
-/** PRD 5.1 and 5.2 (v4.0), from the klipper's side. */
+/** PRD 5.1 and 5.2 (v4.0), from the kliper's side. */
 const STEPS = [
   {
     title: "Daftar gratis",
@@ -64,7 +64,7 @@ const REQUIREMENTS = [
 const FEE_RULES = [
   "Setiap kampanye menetapkan tarif per 1.000 views. Honor klip = views terverifikasi × tarif ÷ 1.000.",
   "Views bisa kamu perbarui selama masa klaim kampanye; yang dibayar adalah selisihnya.",
-  "Ada batas honor per klip dan per klipper, dan honor berhenti saat anggaran kampanye habis.",
+  "Ada batas honor per klip dan per kliper, dan honor berhenti saat anggaran kampanye habis.",
   "Klip yang dihapus sebelum masa tayang minimum selesai, honornya dibatalkan.",
 ];
 
@@ -80,14 +80,14 @@ const FAQ: FaqItem[] = [
       "Kode pribadi seperti KB-7XK2QM yang muncul di profil portalmu. Tulis di caption atau deskripsi setiap klip, supaya tim tahu klip itu benar-benar diposting dari akunmu.",
   },
   {
-    question: "Apa itu lencana Klipper Lokal?",
+    question: "Apa itu lencana Kliper Lokal?",
     answer:
       "Lencana untuk akun yang mayoritas audiensnya di Kalimantan, dibuktikan dengan tangkapan layar analitik. Sebagian kampanye hanya terbuka untuk pemegang lencana ini.",
   },
   {
     question: "Kapan honor bisa ditarik?",
     answer:
-      "Begitu klip disetujui, honornya langsung masuk saldo. Kamu bisa mengajukan penarikan kapan saja setelah saldo mencapai batas minimum, lalu owner mentransfer ke rekeningmu. Biaya transfer antarbank atau e-wallet ditanggung klipper dan dipotong dari nominal yang ditransfer.",
+      "Begitu klip disetujui, honornya langsung masuk saldo. Kamu bisa mengajukan penarikan kapan saja setelah saldo mencapai batas minimum, lalu owner mentransfer ke rekeningmu. Biaya transfer antarbank atau e-wallet ditanggung kliper dan dipotong dari nominal yang ditransfer.",
   },
   {
     question: "Kenapa klip saya ditolak?",
@@ -103,7 +103,7 @@ export default function CreatorPage() {
         <Container className="py-16 lg:py-20">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-center lg:gap-16">
             <div>
-              <p className="text-sm font-medium text-brand-panel-muted">Untuk klipper</p>
+              <p className="text-sm font-medium text-brand-panel-muted">Untuk kliper</p>
               <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl">
                 Potong video kampanye, posting di akunmu, dibayar dari views asli.
               </h1>
@@ -204,7 +204,7 @@ export default function CreatorPage() {
       <Section
         id="lencana"
         tone="muted"
-        eyebrow="Lencana Klipper Lokal"
+        eyebrow="Lencana Kliper Lokal"
         title="Audiensmu di Kalimantan? Buka kampanye khusus lokal"
         description="Ajukan dari portal dengan tangkapan layar analitik audiens. Setelah tim memeriksa, lencana muncul di profilmu."
         layout="split"
@@ -221,7 +221,7 @@ export default function CreatorPage() {
       <Section
         id="faq-kreator"
         eyebrow="Tanya jawab"
-        title="Pertanyaan dari klipper"
+        title="Pertanyaan dari kliper"
         description="Masih bingung? Tim bisa dihubungi lewat WhatsApp."
         layout="split"
         action={<ContactCta intent="creator" whatsappLabel="Tanya lewat WhatsApp" />}

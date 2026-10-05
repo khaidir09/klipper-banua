@@ -164,7 +164,7 @@ export async function listBadgeRequests(
 }
 
 /** Dashboard counters for the open marketplace (FR-M10-01, v4.0). */
-export async function countKlipperQueues(supabase: SupabaseClient<Database>) {
+export async function countKliperQueues(supabase: SupabaseClient<Database>) {
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const [signups, badges] = await Promise.all([
     supabase

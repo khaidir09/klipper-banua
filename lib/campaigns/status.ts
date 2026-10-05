@@ -59,14 +59,14 @@ export function activationBlockers(input: {
     if (!perViews.brief.trim()) blockers.push("Isi brief kampanye.");
     if (perViews.assetCount < 1) blockers.push("Tambahkan minimal satu materi kampanye.");
     if (perViews.ratePer1000Views <= 0) blockers.push("Isi tarif per 1.000 views.");
-    if (perViews.creatorBudget <= 0) blockers.push("Isi anggaran klipper.");
+    if (perViews.creatorBudget <= 0) blockers.push("Isi anggaran kliper.");
     if (perViews.endDate < perViews.today) {
       blockers.push("Tanggal selesai sudah lewat; perpanjang periode kampanye.");
     }
     if (!perViews.allowedPlatforms.length) blockers.push("Pilih minimal satu platform.");
   }
 
-  // FR-M4-02: an open campaign may start without klippers.
+  // FR-M4-02: an open campaign may start without klipers.
   if (
     (input.access ?? "undangan") === "undangan" &&
     !input.assignmentStatuses.some((status) => ACTIVE_ASSIGNMENT_STATUSES.includes(status))

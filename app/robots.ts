@@ -4,7 +4,7 @@ import { INDEXED_PATHS, PRIVATE_PREFIXES } from "@/lib/marketing/routes";
 
 /**
  * Replaces the old blanket `public/robots.txt` (`Disallow: /`). Only the public
- * marketing site and the klipper registration may be indexed; every session-bound area stays out
+ * marketing site and the kliper registration may be indexed; every session-bound area stays out
  * (FR-M15-05). Crawlers apply the longest matching rule, so the explicit
  * `Disallow` entries win over the `Allow: /` above them.
  */

@@ -21,7 +21,7 @@ import {
  * Clip verification by the team (PRD M18: FR-M18-04 … FR-M18-07,
  * FR-M19-02). The credit comes from lib/calculations/clip-earning.ts; the
  * database functions lock the campaign row and refuse a credit that no longer
- * fits the budget or the per-klipper cap, e.g. when another verifier approved
+ * fits the budget or the per-kliper cap, e.g. when another verifier approved
  * a clip in the meantime. Then the numbers are read again and the decision
  * retried once.
  */
@@ -50,7 +50,7 @@ async function creditFor(supabase: Supabase, clip: ClipDetail, verifiedViews: nu
 
 function creditMessage(credit: number, limited: boolean) {
   if (credit === 0) return "Tidak ada honor tambahan.";
-  return `Honor ${formatRupiah(credit)} masuk ke saldo klipper${limited ? " (dibatasi batas kampanye)" : ""}.`;
+  return `Honor ${formatRupiah(credit)} masuk ke saldo kliper${limited ? " (dibatasi batas kampanye)" : ""}.`;
 }
 
 /** FR-M18-04: approve with verified views, ask for a revision, or reject. */
@@ -64,7 +64,7 @@ export async function verifyClipAction(values: unknown): Promise<ActionResult> {
   const clip = await getClipForVerification(supabase, input.content_id);
   if (!clip) return fail("Klip tidak ditemukan.");
   if (clip.reviewStatus !== "menunggu_review") {
-    return fail("Klip ini sudah diputuskan; tunggu klipper mengirim ulang.");
+    return fail("Klip ini sudah diputuskan; tunggu kliper mengirim ulang.");
   }
   if (
     input.decision === "disetujui" &&
@@ -246,7 +246,7 @@ export async function cancelClipAction(values: unknown): Promise<ActionResult> {
 
   revalidateClip(clip);
   const taken =
-    amount > 0 ? ` Honor ${formatRupiah(amount)} dibatalkan.` : " Honor tetap milik klipper.";
+    amount > 0 ? ` Honor ${formatRupiah(amount)} dibatalkan.` : " Honor tetap milik kliper.";
   return ok(
     input.kind === "dihapus"
       ? `Klip ditandai dihapus.${taken}`

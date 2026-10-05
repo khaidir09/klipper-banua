@@ -13,7 +13,7 @@ const stamp = Date.now();
 const email = `e2e.saldo.${stamp}@example.com`;
 const handle = `e2esaldo${stamp}`;
 const phone = `0815${String(stamp).slice(-8)}`;
-const fullName = "Klipper Saldo E2E";
+const fullName = "Kliper Saldo E2E";
 const clipUrl = `https://www.tiktok.com/@${handle}/video/${stamp}`;
 
 async function confirmationLink(to: string): Promise<string> {
@@ -35,7 +35,7 @@ async function confirmationLink(to: string): Promise<string> {
   throw new Error(`No confirmation email for ${to}`);
 }
 
-test("a new klipper earns honor and withdraws it", async ({ page, browser }) => {
+test("a new kliper earns honor and withdraws it", async ({ page, browser }) => {
   await test.step("sign up, confirm the email and add a social account", async () => {
     await page.goto("/daftar");
     const values = {
@@ -51,7 +51,7 @@ test("a new klipper earns honor and withdraws it", async ({ page, browser }) => 
     for (const id of ["agree_terms", "agree_privacy"]) {
       await page.locator(`#${id}`).check();
     }
-    await page.getByRole("button", { name: "Daftar jadi Klipper" }).click();
+    await page.getByRole("button", { name: "Daftar jadi Kliper" }).click();
     await expect(page.getByText("Cek emailmu")).toBeVisible();
 
     await page.goto(await confirmationLink(email));
@@ -96,11 +96,11 @@ test("a new klipper earns honor and withdraws it", async ({ page, browser }) => 
     }
     await team.getByLabel("Views terverifikasi").fill("23450");
     await team.getByRole("button", { name: "Setujui" }).click();
-    await expectToast(team, /Honor Rp 234\.500 masuk ke saldo klipper/);
+    await expectToast(team, /Honor Rp 234\.500 masuk ke saldo kliper/);
     await context.close();
   });
 
-  await test.step("the balance grows; the klipper adds a bank account and withdraws", async () => {
+  await test.step("the balance grows; the kliper adds a bank account and withdraws", async () => {
     await page.goto("/portal/saldo");
     await expect(page.getByText("Rp 234.500").first()).toBeVisible();
 
@@ -148,7 +148,7 @@ test("a new klipper earns honor and withdraws it", async ({ page, browser }) => 
       .getByRole("button", { name: "Tandai dibayar" })
       .click();
     const pay = dialog(owner);
-    // The klipper bears the transfer fee (owner decision).
+    // The kliper bears the transfer fee (owner decision).
     await pay.getByLabel("Biaya transfer (Rp)").fill("2.500");
     await pay.getByLabel("Bukti transfer").setInputFiles(PROOF_FILE);
     await pay.getByRole("button", { name: "Simpan pembayaran" }).click();
@@ -156,7 +156,7 @@ test("a new klipper earns honor and withdraws it", async ({ page, browser }) => 
     await context.close();
   });
 
-  await test.step("the klipper sees it paid, without the proof", async () => {
+  await test.step("the kliper sees it paid, without the proof", async () => {
     await page.reload();
     await expect(page.getByText("Dibayar").first()).toBeVisible();
     await expect(page.getByText(/dibayar \d/)).toBeVisible();

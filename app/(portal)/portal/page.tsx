@@ -30,7 +30,7 @@ export default async function PortalHomePage() {
     listPortalClips(supabase, { timezone: profile.timezone }),
     getPortalBalance(supabase),
   ]);
-  // FR-M16-05: a new klipper finishes their account before anything else.
+  // FR-M16-05: a new kliper finishes their account before anything else.
   if (creator?.status === "prospek") redirect("/portal/mulai");
 
   // Withdrawn assignments stay in "Kampanye Saya" but are no longer followed.

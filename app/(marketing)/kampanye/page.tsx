@@ -87,7 +87,7 @@ export default async function PublicCatalogPage() {
 
         <p className="mt-8 max-w-[65ch] text-sm text-pretty text-muted-foreground">
           Brief lengkap, hal yang wajib dan dilarang, serta materi video bisa kamu lihat setelah
-          daftar dan masuk ke portal klipper. Honor dihitung dari views yang lolos cek tim, sampai
+          daftar dan masuk ke portal kliper. Honor dihitung dari views yang lolos cek tim, sampai
           anggaran kampanye habis.
         </p>
       </Section>

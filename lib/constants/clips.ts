@@ -26,7 +26,7 @@ export const CLIP_REJECTION_REASONS = Object.keys(
  * required by `guard_content_review_insert` before an approval.
  */
 export const CLIP_CHECKLIST_ITEMS = [
-  { key: "kode_verifikasi", label: "Kode verifikasi klipper ada di caption" },
+  { key: "kode_verifikasi", label: "Kode verifikasi kliper ada di caption" },
   { key: "akun_sesuai", label: "Akun sesuai akun sosial terdaftar" },
   { key: "sesuai_brief", label: "Isi sesuai brief" },
   { key: "tanpa_larangan", label: "Tidak melanggar larangan" },

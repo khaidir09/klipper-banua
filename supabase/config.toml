@@ -2,7 +2,7 @@
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
-project_id = "klipper-banua"
+project_id = "kliper-banua"
 
 [api]
 enabled = true
@@ -172,7 +172,7 @@ enable_refresh_token_rotation = true
 # Requires enable_refresh_token_rotation = true.
 refresh_token_reuse_interval = 10
 # Allow/disallow new user signups to your project. Open since v4.0 for the
-# klipper registration at /daftar (PRD M16); handle_new_user makes every
+# kliper registration at /daftar (PRD M16); handle_new_user makes every
 # self-registered account a `creator`, whatever its metadata says.
 enable_signup = true
 # Allow/disallow anonymous sign-ins to your project.
@@ -225,7 +225,7 @@ enable_signup = true
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
-# Required by FR-M16-02: a self-registered klipper confirms before signing in.
+# Required by FR-M16-02: a self-registered kliper confirms before signing in.
 enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
@@ -259,9 +259,9 @@ content_path = "./supabase/templates/invite.html"
 subject = "Atur ulang kata sandi"
 content_path = "./supabase/templates/recovery.html"
 
-# v4.0 (FR-M16-02): the confirmation sent after a klipper registers at /daftar.
+# v4.0 (FR-M16-02): the confirmation sent after a kliper registers at /daftar.
 [auth.email.template.confirmation]
-subject = "Konfirmasi pendaftaran klipper"
+subject = "Konfirmasi pendaftaran kliper"
 content_path = "./supabase/templates/confirmation.html"
 
 # Uncomment to customize notification email template

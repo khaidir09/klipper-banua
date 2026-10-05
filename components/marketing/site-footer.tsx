@@ -9,14 +9,14 @@ const GROUPS = [
     links: [
       { href: "/#masalah", label: "Masalah yang dibereskan" },
       { href: "/#cara-kerja", label: "Cara kerja" },
-      { href: "/#kenapa-lokal", label: "Kenapa klipper lokal" },
+      { href: "/#kenapa-lokal", label: "Kenapa kliper lokal" },
       { href: "/#faq", label: "Tanya jawab" },
     ],
   },
   {
-    title: "Klipper",
+    title: "Kliper",
     links: [
-      { href: "/daftar", label: "Daftar jadi Klipper" },
+      { href: "/daftar", label: "Daftar jadi Kliper" },
       { href: "/kampanye", label: "Kampanye yang lagi buka" },
       { href: "/kreator#cara-kerja", label: "Cara kerja" },
       { href: "/kreator#honor", label: "Cara honor dihitung" },
@@ -50,8 +50,8 @@ export function SiteFooter() {
               <span className="font-semibold tracking-tight">{publicEnv.NEXT_PUBLIC_APP_NAME}</span>
             </div>
             <p className="mt-3 text-sm text-pretty text-muted-foreground">
-              Marketplace klipper lokal Kalimantan: brand, UMKM, instansi, dan personal memasang
-              kampanye, klipper mengerjakannya, dan setiap klip diverifikasi sebelum dibayar.
+              Marketplace kliper lokal Kalimantan: brand, UMKM, instansi, dan personal memasang
+              kampanye, kliper mengerjakannya, dan setiap klip diverifikasi sebelum dibayar.
             </p>
           </div>
 

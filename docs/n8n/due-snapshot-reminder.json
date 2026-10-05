@@ -1,5 +1,5 @@
 {
-  "name": "Klipper Banua - pengingat snapshot jatuh tempo",
+  "name": "Kliper Banua - pengingat snapshot jatuh tempo",
   "nodes": [
     {
       "parameters": {
@@ -15,7 +15,7 @@
     },
     {
       "parameters": {
-        "url": "http://klipper-banua-app:3000/api/reminders/due-snapshots",
+        "url": "http://kliper-banua-app:3000/api/reminders/due-snapshots",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": { "timeout": 30000 }
@@ -26,7 +26,7 @@
       "typeVersion": 4.2,
       "position": [240, 0],
       "credentials": {
-        "httpHeaderAuth": { "id": "", "name": "Klipper Banua reminder token" }
+        "httpHeaderAuth": { "id": "", "name": "Kliper Banua reminder token" }
       }
     },
     {
@@ -67,7 +67,7 @@
       "typeVersion": 1.2,
       "position": [720, -80],
       "credentials": {
-        "telegramApi": { "id": "", "name": "Klipper Banua bot" }
+        "telegramApi": { "id": "", "name": "Kliper Banua bot" }
       }
     }
   ],

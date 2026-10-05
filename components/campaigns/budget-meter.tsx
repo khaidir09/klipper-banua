@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 type BudgetMeterProps = {
   pct: number;
   exhausted: boolean;
-  /** Whole Rupiah: the klipper budget, honor already spent, and what is left. */
+  /** Whole Rupiah: the kliper budget, honor already spent, and what is left. */
   total: number;
   used: number;
   remaining: number;
 };
 
-/** FR-M17-03: the klipper budget left, as a share and in Rupiah. */
+/** FR-M17-03: the kliper budget left, as a share and in Rupiah. */
 export function BudgetMeter({ pct, exhausted, total, used, remaining }: BudgetMeterProps) {
   const shown = exhausted ? 0 : pct;
   const low = shown < 10;

@@ -137,8 +137,8 @@ export async function getPortalAssignment(
 }
 
 /**
- * FR-M17-03: open campaigns the klipper may browse. The view already hides
- * everything a klipper must not see and returns nothing to other roles.
+ * FR-M17-03: open campaigns the kliper may browse. The view already hides
+ * everything a kliper must not see and returns nothing to other roles.
  */
 export async function listPortalCatalog(
   supabase: SupabaseClient<Database>,
@@ -163,7 +163,7 @@ export async function getPortalCatalogCampaign(
 
 /**
  * FR-M13-04, PRD 7.4. Signed URLs are short-lived and only work for campaigns
- * the klipper is on, or open catalog campaigns once their account is active.
+ * the kliper is on, or open catalog campaigns once their account is active.
  */
 export async function listPortalAssets(
   supabase: SupabaseClient<Database>,
@@ -340,7 +340,7 @@ export type PortalClip = {
 };
 
 /**
- * FR-M18-01 … FR-M18-05: the klipper's clips on `per_views` campaigns, newest
+ * FR-M18-01 … FR-M18-05: the kliper's clips on `per_views` campaigns, newest
  * first, with their review, honor and whether new views can be sent. Pass an
  * assignment to limit the list to one campaign.
  */
@@ -467,7 +467,7 @@ export type PortalBankAccount = NonNullableExcept<BankAccountView, "changed_at" 
 
 /**
  * FR-M19-03. These views read through `current_creator_account_id()`, so a
- * blocked klipper still sees their frozen balance (FR-M3-09).
+ * blocked kliper still sees their frozen balance (FR-M3-09).
  */
 export async function getPortalBalance(
   supabase: SupabaseClient<Database>,
@@ -499,7 +499,7 @@ export async function listPortalWithdrawals(
   return data as PortalWithdrawal[];
 }
 
-/** FR-M19-04: the klipper's own account, number masked. */
+/** FR-M19-04: the kliper's own account, number masked. */
 export async function getPortalBankAccount(
   supabase: SupabaseClient<Database>,
 ): Promise<PortalBankAccount | null> {

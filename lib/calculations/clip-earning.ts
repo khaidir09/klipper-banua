@@ -3,7 +3,7 @@
  *
  * The verification action computes the credit here and hands it to
  * `verify_clip()` / `verify_views_update()`, which lock the campaign row and
- * re-check the invariants (budget, per-klipper cap, never above what the
+ * re-check the invariants (budget, per-kliper cap, never above what the
  * verified views earn). A credit computed on stale numbers is refused there
  * with `BUDGET_EXCEEDED` or `CREDIT_ABOVE_CREATOR_CAP`, and the action
  * recomputes once.
@@ -18,14 +18,14 @@ export type ClipEarningInput = {
   maxPayoutPerCreator: number | null;
   /** Σ ledger `honor_klip` + `pembatalan` for this clip. */
   alreadyCreditedForClip: number;
-  /** Σ ledger `honor_klip` + `pembatalan` for this klipper in this campaign. */
+  /** Σ ledger `honor_klip` + `pembatalan` for this kliper in this campaign. */
   creatorEarnedInCampaign: number;
   creatorBudget: number;
   /** Σ ledger `honor_klip` + `pembatalan` for the whole campaign. */
   campaignCost: number;
 };
 
-export type ClipEarningLimit = "klipper" | "anggaran";
+export type ClipEarningLimit = "kliper" | "anggaran";
 
 export type ClipEarning = {
   eligibleViews: number;
@@ -33,7 +33,7 @@ export type ClipEarning = {
   clipEarning: number;
   /** Not yet credited for this clip; never below zero. */
   delta: number;
-  /** Room under the per-klipper cap, or null without a cap. */
+  /** Room under the per-kliper cap, or null without a cap. */
   creatorRoom: number | null;
   budgetRoom: number;
   /** The amount to credit now; zero means no ledger entry. */
@@ -62,7 +62,7 @@ export function clipEarning(input: ClipEarningInput): ClipEarning {
 
   let limitedBy: ClipEarningLimit | null = null;
   if (credit < delta) {
-    limitedBy = creatorRoom !== null && creatorRoom <= budgetRoom ? "klipper" : "anggaran";
+    limitedBy = creatorRoom !== null && creatorRoom <= budgetRoom ? "kliper" : "anggaran";
   }
 
   return { eligibleViews, clipEarning: earning, delta, creatorRoom, budgetRoom, credit, limitedBy };

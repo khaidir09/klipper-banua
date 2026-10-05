@@ -56,7 +56,7 @@ export type ClipBlocker =
 export const CLIP_BLOCKER_MESSAGES: Record<ClipBlocker, string> = {
   creator_not_active: "Akunmu belum aktif. Tambahkan akun medsos di Profil dulu.",
   terms_outdated:
-    "Syarat Klipper sudah diperbarui. Setujui versi terbarunya dulu, baru kamu bisa kirim klip.",
+    "Syarat Kliper sudah diperbarui. Setujui versi terbarunya dulu, baru kamu bisa kirim klip.",
   not_joined: "Kamu cuma bisa kirim klip untuk kampanye yang kamu ikuti.",
   campaign_closed: "Kampanye ini sudah nggak terima klip baru.",
   budget_exhausted: "Anggaran kampanye ini sudah habis, jadi klip baru nggak diterima lagi.",
@@ -73,11 +73,11 @@ export type ClipCheckInput = {
   today: string;
   budgetExhausted: boolean;
   maxClipsPerCreator: number;
-  /** Clips of this klipper on this campaign that were not rejected. */
+  /** Clips of this kliper on this campaign that were not rejected. */
   activeClipCount: number;
 };
 
-/** Reasons the klipper cannot send a new clip now, in the trigger's order. */
+/** Reasons the kliper cannot send a new clip now, in the trigger's order. */
 export function clipSubmissionBlockers(input: ClipCheckInput): ClipBlocker[] {
   const blockers: ClipBlocker[] = [];
   if (input.creatorStatus !== "aktif" && input.creatorStatus !== "terverifikasi") {

@@ -15,7 +15,7 @@ create temporary table demo_campaigns on commit drop as
     'de300000-0000-4000-8000-0000000000c1',  -- PMB campaign, run by the E2E owner flow
     'de300000-0000-4000-8000-0000000000c2',  -- portal campaign, always running (M13)
     'de300000-0000-4000-8000-0000000000c3',  -- open per_views campaign in the catalog (M17)
-    'de300000-0000-4000-8000-0000000000c4'   -- open per_views campaign with a joined klipper (M18)
+    'de300000-0000-4000-8000-0000000000c4'   -- open per_views campaign with a joined kliper (M18)
   ]::uuid[]) as id;
 
 create temporary table demo_assignments on commit drop as

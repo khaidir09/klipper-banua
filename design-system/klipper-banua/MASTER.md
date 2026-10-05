@@ -1,4 +1,4 @@
-# Klipper Banua — Design System (MASTER)
+# Kliper Banua — Design System (MASTER)
 
 Sumber acuan global untuk redesign UI/UX. Aturan produk tetap di `PRD.md`;
 aturan teknis tetap di `CLAUDE.md`. Dokumen ini hanya mengatur tampilan.
@@ -487,16 +487,16 @@ lapisan pattern landing page **tidak dipakai** untuk area yang sudah login.
 Aturan itu tetap berlaku. Grup `app/(marketing)` adalah satu-satunya
 pengecualian: di sanalah lapisan pattern landing page justru dipakai.
 
-| Aspek      | Aturan di `(marketing)`                                                                      |
-| ---------- | -------------------------------------------------------------------------------------------- |
-| Dial       | variance 5/10, motion 3/10, density 4/10 — lapang, bukan padat seperti dasbor (density 8/10) |
-| Warna      | Token yang sama, tanpa warna mentah. Hero memakai `--brand-panel` (bagian 11) karena permukaan itu tidak ikut membalik di mode gelap |
-| Tipografi  | Hero satu tingkat di atas heading aplikasi (bagian 5); hierarki tetap berurutan, tidak melompat |
-| Ritme      | Satu pesan per seksi; padding vertikal 64px di ponsel, 96px pada ≥1024px; lebar teks maks. 65ch |
-| CTA        | Satu tindakan utama per seksi: tombol `default` untuk hubungi tim, `outline` untuk "Masuk"    |
-| Ikon       | Tetap Lucide, tanpa emoji (bagian 9)                                                         |
-| Gerak      | Hanya fade/translate halus ≤ 200ms, dihentikan `prefers-reduced-motion`; tanpa parallax dan tanpa carousel otomatis |
-| Gambar     | Aset statis di `public/` lewat `next/image` dengan ukuran eksplisit; tanpa foto stok yang mengesankan klien nyata |
+| Aspek     | Aturan di `(marketing)`                                                                                                              |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Dial      | variance 5/10, motion 3/10, density 4/10 — lapang, bukan padat seperti dasbor (density 8/10)                                         |
+| Warna     | Token yang sama, tanpa warna mentah. Hero memakai `--brand-panel` (bagian 11) karena permukaan itu tidak ikut membalik di mode gelap |
+| Tipografi | Hero satu tingkat di atas heading aplikasi (bagian 5); hierarki tetap berurutan, tidak melompat                                      |
+| Ritme     | Satu pesan per seksi; padding vertikal 64px di ponsel, 96px pada ≥1024px; lebar teks maks. 65ch                                      |
+| CTA       | Satu tindakan utama per seksi: tombol `default` untuk hubungi tim, `outline` untuk "Masuk"                                           |
+| Ikon      | Tetap Lucide, tanpa emoji (bagian 9)                                                                                                 |
+| Gerak     | Hanya fade/translate halus ≤ 200ms, dihentikan `prefers-reduced-motion`; tanpa parallax dan tanpa carousel otomatis                  |
+| Gambar    | Aset statis di `public/` lewat `next/image` dengan ukuran eksplisit; tanpa foto stok yang mengesankan klien nyata                    |
 
 Larangan bagian 9 dan checklist bagian 12 berlaku penuh di halaman publik.
 Isi teks, angka, dan nama di situs tunduk pada PRD FR-M15-06: konten statis yang

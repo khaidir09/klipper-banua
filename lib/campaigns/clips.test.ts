@@ -22,7 +22,7 @@ const ok: ClipCheckInput = {
 };
 
 describe("clipSubmissionBlockers (FR-M18-02)", () => {
-  it("lets an active, joined klipper send", () => {
+  it("lets an active, joined kliper send", () => {
     expect(clipSubmissionBlockers(ok)).toEqual([]);
   });
 
@@ -48,7 +48,7 @@ describe("clipSubmissionBlockers (FR-M18-02)", () => {
 });
 
 describe("clipPeriod", () => {
-  it("starts when the klipper joined and ends after end_date in WITA", () => {
+  it("starts when the kliper joined and ends after end_date in WITA", () => {
     const period = clipPeriod({
       joinedAt: "2026-10-05T03:00:00Z",
       startDate: "2026-10-01",

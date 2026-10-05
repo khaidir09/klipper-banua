@@ -68,8 +68,8 @@ function CreditPreview({
         Kredit sekarang: {formatRupiah(earning.credit)}
         {earning.limitedBy === "anggaran"
           ? " — dibatasi sisa anggaran kampanye"
-          : earning.limitedBy === "klipper"
-            ? " — dibatasi batas honor per klipper"
+          : earning.limitedBy === "kliper"
+            ? " — dibatasi batas honor per kliper"
             : ""}
       </p>
       {earning.eligibleViews === 0 && parsed > 0 ? (
@@ -191,7 +191,7 @@ export function ClipDecisionForm({
                   <FieldLabel htmlFor="vc-views">Views terverifikasi</FieldLabel>
                   <Input id="vc-views" inputMode="numeric" {...form.register("verified_views")} />
                   <FieldDescription>
-                    Klaim klipper: {claimedViews.toLocaleString("id-ID")} views.
+                    Klaim kliper: {claimedViews.toLocaleString("id-ID")} views.
                   </FieldDescription>
                   <FieldError errors={[errors.verified_views]} />
                 </Field>
@@ -216,7 +216,7 @@ export function ClipDecisionForm({
 
             <Field>
               <FieldLabel htmlFor="vc-notes">
-                {decision === "disetujui" ? "Catatan (opsional)" : "Catatan untuk klipper"}
+                {decision === "disetujui" ? "Catatan (opsional)" : "Catatan untuk kliper"}
               </FieldLabel>
               <Textarea
                 id="vc-notes"
@@ -300,7 +300,7 @@ export function ViewsUpdateDecisionForm({
           <h2>Pembaruan views</h2>
         </CardTitle>
         <CardDescription>
-          Klaim klipper: {claimedViews.toLocaleString("id-ID")} views. Hanya selisih honornya yang
+          Klaim kliper: {claimedViews.toLocaleString("id-ID")} views. Hanya selisih honornya yang
           dikreditkan; views yang turun tidak mengurangi saldo.
         </CardDescription>
       </CardHeader>
@@ -401,7 +401,7 @@ export function CancelClipCard({
         </CardTitle>
         <CardDescription>
           Klip dihapus sebelum {minLiveDays} hari tayang membatalkan seluruh honornya. Setelah itu
-          honor tetap milik klipper.
+          honor tetap milik kliper.
           {isOwner ? " Kecurangan terbukti selalu membatalkan seluruh honor (hanya owner)." : ""}
         </CardDescription>
       </CardHeader>
@@ -447,7 +447,7 @@ export function CancelClipCard({
                   </NativeSelect>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="cc-notes">Bukti kecurangan (dibaca klipper)</FieldLabel>
+                  <FieldLabel htmlFor="cc-notes">Bukti kecurangan (dibaca kliper)</FieldLabel>
                   <Textarea id="cc-notes" rows={3} {...form.register("notes")} />
                   <FieldError errors={[errors.notes]} />
                 </Field>

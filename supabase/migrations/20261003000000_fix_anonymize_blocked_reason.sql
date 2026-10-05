@@ -3,7 +3,7 @@
 -- Erasing a creator also blocks the row (status `diblokir`), but Phase 15
 -- added creators_blocked_reason_check, which requires a reason for every
 -- blocked creator. The update carried none, so every erasure - including the
--- account deletions klippers request from the portal - was rolled back.
+-- account deletions klipers request from the portal - was rolled back.
 -- The body below is the previous one with a reason added; nothing else moves.
 create or replace function public.anonymize_creator(target_id uuid)
 returns text[]

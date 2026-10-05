@@ -1,4 +1,4 @@
--- FR-M17-03 (revised): the catalog shows the klipper budget in Rupiah (total,
+-- FR-M17-03 (revised): the catalog shows the kliper budget in Rupiah (total,
 -- spent, left) next to the share left. The package price, targets and internal
 -- notes stay out. New columns are appended, so `create or replace view`
 -- accepts them.
@@ -58,4 +58,4 @@ where c.status = 'aktif'
   );
 
 comment on view public.creator_portal_catalog is
-  'FR-M17-03: open per_views campaigns for the signed-in klipper, with the klipper budget (total, spent, left). No package_price, targets or internal notes.';
+  'FR-M17-03: open per_views campaigns for the signed-in kliper, with the kliper budget (total, spent, left). No package_price, targets or internal notes.';

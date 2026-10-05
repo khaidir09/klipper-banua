@@ -474,7 +474,7 @@ export type LowBudgetCampaign = CampaignRef & {
   remaining: number;
 };
 
-/** Running per_views campaigns with less than 10% of the klipper budget left. */
+/** Running per_views campaigns with less than 10% of the kliper budget left. */
 export async function listLowBudgetCampaigns(supabase: Supabase): Promise<LowBudgetCampaign[]> {
   const { data: campaigns, error } = await supabase
     .from("campaigns")

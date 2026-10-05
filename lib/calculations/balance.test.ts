@@ -92,7 +92,7 @@ describe("withdrawalBlockers (FR-M19-05)", () => {
     );
   });
 
-  it("refuses a blocked klipper and a missing bank account", () => {
+  it("refuses a blocked kliper and a missing bank account", () => {
     expect(withdrawalBlockers({ ...ok, creatorBlocked: true, hasBankAccount: false })).toEqual([
       "creator_blocked",
       "no_bank_account",

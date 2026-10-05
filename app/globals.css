@@ -79,7 +79,7 @@
 /*
  * Palette: navy + "paid" green, light-first. Every value below was converted
  * from its source hex and checked for contrast; the ratios are recorded in
- * `design-system/klipper-banua/MASTER.md`. The hex in each comment is the
+ * `design-system/kliper-banua/MASTER.md`. The hex in each comment is the
  * source of truth for that conversion.
  *
  * `--secondary` and `--accent` stay neutral surfaces, as shadcn expects them.

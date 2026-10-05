@@ -4,17 +4,17 @@
 -- 1. The minimum withdrawal lives in `platform_settings` so the owner can
 --    change it without a release (owner decision 24 Sep 2026: Rp 100.000,
 --    i.e. 10.000 views at Rp 10.000 per 1.000).
--- 2. A klipper saves their own bank account through a function, so the full
+-- 2. A kliper saves their own bank account through a function, so the full
 --    number is never readable back from the portal (RLS would need SELECT).
--- 3. `request_withdrawal()` locks the klipper row and writes the withdrawal
+-- 3. `request_withdrawal()` locks the kliper row and writes the withdrawal
 --    and its ledger debit in one transaction, so a balance cannot be drawn
 --    twice. The owner processes it with `process_withdrawal()`; a rejection
 --    refunds the ledger. `adjust_balance()` is the owner's correction.
--- 4. The klipper bears the transfer fee (owner decision 24 Sep 2026): the
+-- 4. The kliper bears the transfer fee (owner decision 24 Sep 2026): the
 --    owner records the fee actually charged when marking a withdrawal paid,
---    and the klipper receives amount − fee. The ledger debit stays the full
+--    and the kliper receives amount − fee. The ledger debit stays the full
 --    amount, so the balance maths do not change.
--- 5. A blocked klipper keeps read access to their balance (FR-M3-09) through
+-- 5. A blocked kliper keeps read access to their balance (FR-M3-09) through
 --    `current_creator_account_id()`; every write path stays on
 --    `current_creator_id()`, which still excludes blocked accounts.
 
@@ -76,7 +76,7 @@ revoke execute on function public.current_min_withdrawal() from public, anon;
 grant execute on function public.current_min_withdrawal() to authenticated;
 
 -- FR-M19-04: a change holds new withdrawals for 24 hours; a holder name that
--- differs from the klipper's full name is flagged for the owner.
+-- differs from the kliper's full name is flagged for the owner.
 alter table public.creator_bank_accounts
   add column changed_at timestamptz,
   add column holder_matches_name boolean not null default true;
@@ -88,7 +88,7 @@ comment on column public.creator_bank_accounts.changed_at is
 -- 2. Helpers
 -- ---------------------------------------------------------------------------
 
--- Same as current_creator_id(), but a blocked klipper is included: used by
+-- Same as current_creator_id(), but a blocked kliper is included: used by
 -- the read-only balance views only (FR-M3-09).
 create or replace function public.current_creator_account_id()
 returns uuid
@@ -187,7 +187,7 @@ create table public.withdrawals (
   processed_at timestamptz,
   paid_at date,
   transfer_proof_path text,
-  -- Charged by the bank or e-wallet and borne by the klipper.
+  -- Charged by the bank or e-wallet and borne by the kliper.
   transfer_fee bigint not null default 0,
   rejection_reason text,
   created_at timestamptz not null default now(),
@@ -205,12 +205,12 @@ create table public.withdrawals (
 );
 
 comment on table public.withdrawals is
-  'FR-M19-05, FR-M19-06: balance withdrawals. Owner only; the klipper reads a masked copy through creator_portal_withdrawals.';
+  'FR-M19-05, FR-M19-06: balance withdrawals. Owner only; the kliper reads a masked copy through creator_portal_withdrawals.';
 
 create index withdrawals_creator_idx on public.withdrawals (creator_id, requested_at);
 create index withdrawals_status_idx on public.withdrawals (status, requested_at);
 
--- FR-M19-05: one open withdrawal per klipper.
+-- FR-M19-05: one open withdrawal per kliper.
 create unique index withdrawals_one_open_idx
   on public.withdrawals (creator_id)
   where status in ('diajukan', 'diproses');
@@ -259,7 +259,7 @@ alter table public.creator_ledger_entries
   );
 
 -- ---------------------------------------------------------------------------
--- 4. The klipper's bank account (FR-M19-04)
+-- 4. The kliper's bank account (FR-M19-04)
 -- ---------------------------------------------------------------------------
 create or replace function public.save_creator_bank_account(
   p_bank_name text,
@@ -277,7 +277,7 @@ declare
   v_saved public.creator_bank_accounts%rowtype;
 begin
   if me is null then
-    raise exception 'CREATOR_NOT_FOUND: no active klipper for this account';
+    raise exception 'CREATOR_NOT_FOUND: no active kliper for this account';
   end if;
   if length(trim(coalesce(p_bank_name, ''))) = 0 or length(trim(coalesce(p_account_holder, ''))) = 0 then
     raise exception 'BANK_ACCOUNT_INCOMPLETE: bank and holder name are required';
@@ -330,15 +330,15 @@ declare
 begin
   if me is null then
     if public.current_creator_account_id() is not null then
-      raise exception 'WITHDRAW_CREATOR_BLOCKED: a blocked klipper cannot withdraw';
+      raise exception 'WITHDRAW_CREATOR_BLOCKED: a blocked kliper cannot withdraw';
     end if;
-    raise exception 'CREATOR_NOT_FOUND: no active klipper for this account';
+    raise exception 'CREATOR_NOT_FOUND: no active kliper for this account';
   end if;
 
-  -- Serialises every withdrawal of this klipper (two requests at once).
+  -- Serialises every withdrawal of this kliper (two requests at once).
   select * into v_creator from public.creators where id = me for update;
   if v_creator.status = 'diblokir' then
-    raise exception 'WITHDRAW_CREATOR_BLOCKED: a blocked klipper cannot withdraw';
+    raise exception 'WITHDRAW_CREATOR_BLOCKED: a blocked kliper cannot withdraw';
   end if;
 
   select * into v_bank from public.creator_bank_accounts where creator_id = me;
@@ -431,7 +431,7 @@ begin
     raise exception 'WITHDRAWAL_FEE_INVALID: the transfer fee must be below the amount';
   end if;
   if p_status = 'ditolak' and length(trim(coalesce(p_reason, ''))) = 0 then
-    raise exception 'WITHDRAWAL_REJECT_NEEDS_REASON: tell the klipper why';
+    raise exception 'WITHDRAWAL_REJECT_NEEDS_REASON: tell the kliper why';
   end if;
 
   perform set_config('app.withdrawal_write', 'on', true);
@@ -469,7 +469,7 @@ revoke execute on function public.process_withdrawal(uuid, public.withdrawal_sta
 grant execute on function public.process_withdrawal(uuid, public.withdrawal_status, date, text, text, bigint) to authenticated;
 
 -- Owner's correction (FR-M19-01, FR-M19-06), e.g. paying out or cancelling
--- the frozen balance of a blocked klipper (FR-M3-09).
+-- the frozen balance of a blocked kliper (FR-M3-09).
 create or replace function public.adjust_balance(
   p_creator_id uuid,
   p_amount bigint,
@@ -518,7 +518,7 @@ grant execute on function public.adjust_balance(uuid, bigint, text) to authentic
 
 -- ---------------------------------------------------------------------------
 -- 7. Portal read surface (PRD 7.3). Filtered on current_creator_account_id(),
---    so a blocked klipper still reads their balance; whitelisted columns;
+--    so a blocked kliper still reads their balance; whitelisted columns;
 --    never readable by `anon`.
 -- ---------------------------------------------------------------------------
 create view public.creator_portal_account
@@ -534,7 +534,7 @@ from public.creators c
 where c.id = public.current_creator_account_id();
 
 comment on view public.creator_portal_account is
-  'FR-M3-09: who the signed-in klipper is, including a blocked one, and why they were blocked.';
+  'FR-M3-09: who the signed-in kliper is, including a blocked one, and why they were blocked.';
 
 create view public.creator_portal_ledger
 with (security_invoker = off) as
@@ -553,7 +553,7 @@ left join public.campaigns cp on cp.id = e.campaign_id
 where e.creator_id = public.current_creator_account_id();
 
 comment on view public.creator_portal_ledger is
-  'FR-M19-03: the klipper''s own ledger entries.';
+  'FR-M19-03: the kliper''s own ledger entries.';
 
 -- Mirrored by balanceSummary() in lib/calculations/balance.ts.
 create view public.creator_portal_balance
@@ -590,13 +590,13 @@ select
   w.paid_at,
   w.rejection_reason,
   w.transfer_fee,
-  -- What reached the klipper's account once paid.
+  -- What reached the kliper's account once paid.
   w.amount - w.transfer_fee as net_amount
 from public.withdrawals w
 where w.creator_id = public.current_creator_account_id();
 
 comment on view public.creator_portal_withdrawals is
-  'FR-M19-07: the klipper''s withdrawals, account number masked, without the transfer proof.';
+  'FR-M19-07: the kliper''s withdrawals, account number masked, without the transfer proof.';
 
 create view public.creator_portal_bank_account
 with (security_invoker = off) as
@@ -612,7 +612,7 @@ from public.creator_bank_accounts b
 where b.creator_id = public.current_creator_account_id();
 
 comment on view public.creator_portal_bank_account is
-  'FR-M19-04: the klipper''s own bank account, number masked.';
+  'FR-M19-04: the kliper''s own bank account, number masked.';
 
 revoke all on public.creator_portal_account from anon;
 revoke all on public.creator_portal_ledger from anon;
@@ -677,7 +677,7 @@ create trigger creators_guard_anonymize_balance
   execute function public.guard_creator_anonymize_balance();
 
 -- ---------------------------------------------------------------------------
--- 9. Clip period starts at the minute the klipper joined. The posting time
+-- 9. Clip period starts at the minute the kliper joined. The posting time
 --    comes from a minute-precision input, so a clip posted in the same
 --    minute as joining was refused as "before joining" (fix to Phase 17).
 --    Mirrored by clipPeriod() in lib/campaigns/clips.ts.
@@ -739,7 +739,7 @@ begin
   select * into v_creator from public.creators where id = v_assignment.creator_id;
 
   if v_creator.status not in ('aktif', 'terverifikasi') then
-    raise exception 'CLIP_CREATOR_NOT_ACTIVE: the klipper account is not active';
+    raise exception 'CLIP_CREATOR_NOT_ACTIVE: the kliper account is not active';
   end if;
   if v_creator.terms_version is distinct from public.current_creator_terms_version() then
     raise exception 'CLIP_TERMS_OUTDATED: accept the latest terms first';
@@ -783,7 +783,7 @@ begin
     select count(*) from public.contents ct
     where ct.campaign_creator_id = v_assignment.id and ct.review_status <> 'ditolak'
   ) >= v_campaign.max_clips_per_creator then
-    raise exception 'CLIP_LIMIT_REACHED: the klipper already sent the maximum number of clips';
+    raise exception 'CLIP_LIMIT_REACHED: the kliper already sent the maximum number of clips';
   end if;
 
   if exists (

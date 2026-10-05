@@ -53,14 +53,14 @@ export async function processWithdrawalAction(values: unknown): Promise<ActionRe
     diproses: "Penarikan ditandai diproses.",
     dibayar:
       input.status === "dibayar" && input.transfer_fee > 0
-        ? `Penarikan ditandai dibayar; biaya transfer ${formatRupiah(input.transfer_fee)} ditanggung klipper.`
+        ? `Penarikan ditandai dibayar; biaya transfer ${formatRupiah(input.transfer_fee)} ditanggung kliper.`
         : "Penarikan ditandai dibayar.",
-    ditolak: "Penarikan ditolak; saldo klipper dikembalikan.",
+    ditolak: "Penarikan ditolak; saldo kliper dikembalikan.",
   } as const;
   return ok(messages[input.status]);
 }
 
-/** FR-M19-06: the owner's signed correction of a klipper balance. */
+/** FR-M19-06: the owner's signed correction of a kliper balance. */
 export async function adjustBalanceAction(values: unknown): Promise<ActionResult> {
   await requireRole("owner");
   const parsed = balanceAdjustmentSchema.safeParse(values);

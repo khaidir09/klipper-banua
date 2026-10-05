@@ -8,7 +8,7 @@ import { whatsappDisplay } from "@/lib/marketing/contact";
 const WHATSAPP = whatsappDisplay(publicEnv.NEXT_PUBLIC_CONTACT_WA);
 
 const DESCRIPTION =
-  "Ketentuan pemakaian platform klipper lokal: pendaftaran klipper, kewajiban klien dan klipper, verifikasi klip, honor per views, saldo, dan penarikan.";
+  "Ketentuan pemakaian platform kliper lokal: pendaftaran kliper, kewajiban klien dan kliper, verifikasi klip, honor per views, saldo, dan penarikan.";
 
 export const metadata: Metadata = {
   title: "Syarat Layanan",
@@ -34,19 +34,19 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Tentang layanan ini",
     body: [
-      "Kami menjalankan platform yang mempertemukan klien (brand bisnis, UMKM, instansi, maupun personal) dengan klipper: orang yang memotong materi video kampanye menjadi klip pendek lalu mempostingnya di akun media sosialnya sendiri.",
-      "Klien memasang kampanye bersama tim kami. Klipper mendaftar sendiri, memilih kampanye dari katalog, dan dibayar dari views klip yang sudah diverifikasi tim.",
+      "Kami menjalankan platform yang mempertemukan klien (brand bisnis, UMKM, instansi, maupun personal) dengan kliper: orang yang memotong materi video kampanye menjadi klip pendek lalu mempostingnya di akun media sosialnya sendiri.",
+      "Klien memasang kampanye bersama tim kami. Kliper mendaftar sendiri, memilih kampanye dari katalog, dan dibayar dari views klip yang sudah diverifikasi tim.",
     ],
   },
   {
     heading: "Akses ke aplikasi",
     bullets: [
-      "Klipper mendaftar sendiri di halaman Daftar jadi Klipper dan mengonfirmasi alamat emailnya. Pendaftaran terbuka untuk umum tanpa batas usia. Satu orang hanya boleh memiliki satu akun.",
-      "Sebelum menarik saldo pertama kali, klipper wajib melengkapi tanggal lahirnya di portal.",
+      "Kliper mendaftar sendiri di halaman Daftar jadi Kliper dan mengonfirmasi alamat emailnya. Pendaftaran terbuka untuk umum tanpa batas usia. Satu orang hanya boleh memiliki satu akun.",
+      "Sebelum menarik saldo pertama kali, kliper wajib melengkapi tanggal lahirnya di portal.",
       "Akun anggota tim dan kontak klien dibuat lewat undangan.",
       "Setiap orang memakai akunnya sendiri dan bertanggung jawab menjaga kerahasiaan kata sandinya.",
       "Akses dapat dicabut atau dinonaktifkan sewaktu-waktu, misalnya ketika kerja sama berakhir atau ada penyalahgunaan.",
-      "Akun portal hanya memuat data milik pemakainya: klipper melihat kampanye, klip, dan saldonya sendiri; kontak klien melihat kampanye miliknya sendiri.",
+      "Akun portal hanya memuat data milik pemakainya: kliper melihat kampanye, klip, dan saldonya sendiri; kontak klien melihat kampanye miliknya sendiri.",
     ],
   },
   {
@@ -59,7 +59,7 @@ const SECTIONS: LegalSection[] = [
     ],
   },
   {
-    heading: "Syarat Klipper",
+    heading: "Syarat Kliper",
     bullets: [
       "Memposting klip hanya dari akun media sosial yang terdaftar atas nama Anda di portal, dan menulis kode verifikasi pribadi Anda di caption atau deskripsi setiap klip.",
       "Mengikuti brief kampanye: hal yang wajib dilakukan, larangan, hashtag, dan kewajiban mencantumkan label berbayar bila diminta.",
@@ -79,10 +79,10 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Honor, saldo, dan penarikan",
     body: [
-      "Honor klip dihitung dari views terverifikasi dikali tarif per 1.000 views kampanye, dengan batas per klip dan per klipper yang tertulis di kampanye, dan tidak melebihi anggaran kampanye.",
+      "Honor klip dihitung dari views terverifikasi dikali tarif per 1.000 views kampanye, dengan batas per klip dan per kliper yang tertulis di kampanye, dan tidak melebihi anggaran kampanye.",
       "Honor masuk ke saldo saat klip atau pembaruan views disetujui. Honor dapat dibatalkan bila klip dihapus sebelum masa tayang minimum atau terbukti curang.",
       "Penarikan diajukan dari portal ke rekening bank atau e-wallet atas nama Anda sendiri, dengan batas minimum yang tertera di portal, lalu ditransfer manual oleh owner.",
-      "Biaya transfer antarbank atau e-wallet ditanggung klipper dan dipotong dari nominal yang ditransfer.",
+      "Biaya transfer antarbank atau e-wallet ditanggung kliper dan dipotong dari nominal yang ditransfer.",
       "Kewajiban perpajakan atas honor mengikuti ketentuan yang berlaku dan disampaikan sebelum pembayaran.",
     ],
   },
@@ -95,8 +95,8 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Larangan pemakaian",
     bullets: [
-      "Memakai akses aplikasi untuk mengambil data yang bukan hak Anda, termasuk data klipper lain, klien lain, atau angka keuangan internal.",
-      "Membuat lebih dari satu akun klipper, atau memakai akun media sosial milik orang lain.",
+      "Memakai akses aplikasi untuk mengambil data yang bukan hak Anda, termasuk data kliper lain, klien lain, atau angka keuangan internal.",
+      "Membuat lebih dari satu akun kliper, atau memakai akun media sosial milik orang lain.",
       "Membagikan akun, kata sandi, atau tautan laporan rahasia kepada pihak yang tidak berhak.",
       "Mencoba menembus pembatasan peran, memanipulasi angka metrik, atau mengganggu jalannya layanan.",
     ],
@@ -137,7 +137,7 @@ export default function TermsPage() {
       title="Syarat Layanan"
       updatedAt="24 Sep 2026"
       intro={[
-        `Ketentuan umum pemakaian layanan dan aplikasi ${publicEnv.NEXT_PUBLIC_APP_NAME}, termasuk Syarat Klipper versi ${CREATOR_TERMS_VERSION} yang disetujui saat mendaftar. Ketentuan yang lebih rinci untuk satu kampanye tertulis di kampanye masing-masing.`,
+        `Ketentuan umum pemakaian layanan dan aplikasi ${publicEnv.NEXT_PUBLIC_APP_NAME}, termasuk Syarat Kliper versi ${CREATOR_TERMS_VERSION} yang disetujui saat mendaftar. Ketentuan yang lebih rinci untuk satu kampanye tertulis di kampanye masing-masing.`,
       ]}
       sections={SECTIONS}
       footnote="Dokumen ini menjelaskan praktik produk. Identitas badan hukum pengelola beserta alamat resminya dicantumkan setelah ditetapkan."

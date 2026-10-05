@@ -43,7 +43,7 @@ export type WithdrawalRow = {
   processedAt: string | null;
   paidAt: string | null;
   rejectionReason: string | null;
-  /** Borne by the klipper; the transfer is amount − fee. */
+  /** Borne by the kliper; the transfer is amount − fee. */
   transferFee: number;
   proofUrl: string | null;
 };
@@ -126,7 +126,7 @@ export type CreatorLedgerLine = {
   createdAt: string;
 };
 
-/** FR-M3-08: a klipper's balance for the team, with the ledger behind it. */
+/** FR-M3-08: a kliper's balance for the team, with the ledger behind it. */
 export async function getCreatorBalance(
   supabase: Supabase,
   creatorId: string,
@@ -154,7 +154,7 @@ export async function getCreatorBalance(
   };
 }
 
-/** FR-M3-08: one klipper's withdrawals, for the owner (RLS: empty for a manager). */
+/** FR-M3-08: one kliper's withdrawals, for the owner (RLS: empty for a manager). */
 export async function listCreatorWithdrawals(supabase: Supabase, creatorId: string) {
   const { data, error } = await supabase
     .from("withdrawals")

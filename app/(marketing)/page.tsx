@@ -31,7 +31,7 @@ const FEATURED_CAMPAIGNS = 3;
 const DESCRIPTION =
   "Brand, UMKM, instansi, sampai personal pasang kampanye lengkap dengan materi video dan tarif per 1.000 views. Kamu tinggal pilih kampanye, potong jadi klip, posting di akunmu, lalu tarik honornya ke rekening atau e-wallet.";
 
-const TITLE = `${publicEnv.NEXT_PUBLIC_APP_NAME} — Klipper Kalimantan, dibayar dari views`;
+const TITLE = `${publicEnv.NEXT_PUBLIC_APP_NAME} — Kliper Kalimantan, dibayar dari views`;
 
 export const metadata: Metadata = {
   // Absolute, so the landing page is not titled "Beranda · Nama Aplikasi".
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   },
 };
 
-/** The three things a klipper gets, shown under the hero. */
+/** The three things a kliper gets, shown under the hero. */
 const PERKS = [
   {
     icon: Users,
@@ -66,7 +66,7 @@ const PERKS = [
   },
 ];
 
-/** PRD 5.2 (v4.0), FR-M15-02: how it works, from the klipper's side. */
+/** PRD 5.2 (v4.0), FR-M15-02: how it works, from the kliper's side. */
 const STEPS = [
   {
     title: "Daftar, gratis",
@@ -109,18 +109,18 @@ const RULES = [
 const CLIENT_PILLARS = [
   {
     icon: MapPinned,
-    title: "Klipper lokal berlencana",
-    body: "Klipper berlencana Klipper Lokal sudah menunjukkan analitik audiensnya ke tim. Kampanye bisa dibatasi hanya untuk mereka.",
+    title: "Kliper lokal berlencana",
+    body: "Kliper berlencana Kliper Lokal sudah menunjukkan analitik audiensnya ke tim. Kampanye bisa dibatasi hanya untuk mereka.",
   },
   {
     icon: ShieldCheck,
     title: "Setiap klip diverifikasi",
-    body: "Klip dibayar hanya bila diposting dari akun klipper sendiri, sesuai brief, dan views-nya wajar. Anggaran tidak pernah terpakai melebihi kesepakatan.",
+    body: "Klip dibayar hanya bila diposting dari akun kliper sendiri, sesuai brief, dan views-nya wajar. Anggaran tidak pernah terpakai melebihi kesepakatan.",
   },
   {
     icon: FileBarChart2,
     title: "Laporan siap diserahkan",
-    body: "Views terverifikasi, klik tautan, dan hasil per kode klipper (misalnya jumlah pendaftar atau pembeli) dirangkum dalam satu laporan yang bisa dicetak atau diunduh sebagai CSV.",
+    body: "Views terverifikasi, klik tautan, dan hasil per kode kliper (misalnya jumlah pendaftar atau pembeli) dirangkum dalam satu laporan yang bisa dicetak atau diunduh sebagai CSV.",
   },
 ];
 
@@ -128,12 +128,12 @@ const FAQ: FaqItem[] = [
   {
     question: "Siapa saja yang bisa pasang kampanye?",
     answer:
-      "Siapa pun yang ingin menjangkau audiens Kalimantan lewat klip pendek: brand bisnis, UMKM, instansi, maupun personal. Materi, brief, anggaran, dan tarif per 1.000 views disepakati bersama tim sebelum kampanye tayang di katalog klipper.",
+      "Siapa pun yang ingin menjangkau audiens Kalimantan lewat klip pendek: brand bisnis, UMKM, instansi, maupun personal. Materi, brief, anggaran, dan tarif per 1.000 views disepakati bersama tim sebelum kampanye tayang di katalog kliper.",
   },
   {
     question: "Bagaimana hasilnya diukur?",
     answer:
-      "Lewat tiga angka: views terverifikasi per klip (selalu dengan tangkapan layar bukti), klik pada tautan pelacakan unik tiap klipper, dan hasil per kode referal yang Anda laporkan, misalnya jumlah pendaftar atau pembeli. Anda memantaunya dari portal klien dan menerima laporan akhir.",
+      "Lewat tiga angka: views terverifikasi per klip (selalu dengan tangkapan layar bukti), klik pada tautan pelacakan unik tiap kliper, dan hasil per kode referal yang Anda laporkan, misalnya jumlah pendaftar atau pembeli. Anda memantaunya dari portal klien dan menerima laporan akhir.",
   },
   {
     question: "Apakah data pribadi pelanggan saya disimpan?",
@@ -159,7 +159,7 @@ export default async function LandingPage() {
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-center lg:gap-16">
             <div>
               <p className="text-sm font-medium text-brand-panel-muted">
-                Buat klipper Kalimantan, terbuka untuk umum
+                Buat kliper Kalimantan, terbuka untuk umum
               </p>
               <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
                 Bisa edit video? Posting klip di akunmu, dapat honor dari views-nya.
@@ -317,7 +317,7 @@ export default async function LandingPage() {
         tone="muted"
         eyebrow="Untuk pemilik kampanye"
         title="Punya produk, usaha, atau program yang ingin dikenal di Kalimantan?"
-        description="Brand bisnis, UMKM, instansi, maupun personal bisa pasang kampanye. Anda menyiapkan materi video dan anggaran, klipper lokal membuat klipnya, dan tim kami memeriksa setiap klip sebelum honor dibayar."
+        description="Brand bisnis, UMKM, instansi, maupun personal bisa pasang kampanye. Anda menyiapkan materi video dan anggaran, kliper lokal membuat klipnya, dan tim kami memeriksa setiap klip sebelum honor dibayar."
       >
         <ul className="grid gap-6 lg:grid-cols-3">
           {CLIENT_PILLARS.map((pillar) => (

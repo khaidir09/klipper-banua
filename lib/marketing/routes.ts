@@ -14,7 +14,7 @@ export const MARKETING_PATHS = ["/", "/kreator", "/kampanye", "/privasi", "/syar
 export type MarketingPath = (typeof MARKETING_PATHS)[number];
 
 /**
- * Klipper registration (PRD M16, v4.0). Public and indexed like the marketing
+ * Kliper registration (PRD M16, v4.0). Public and indexed like the marketing
  * pages, but it lives in the `(auth)` group: it talks to Supabase Auth and
  * sends a signed-in visitor home, so the proxy must still see the session.
  */

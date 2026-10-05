@@ -3,7 +3,7 @@ import { appUrl } from "@/lib/app-url";
 import { INDEXED_PATHS } from "@/lib/marketing/routes";
 
 /**
- * Only the public pages and the klipper registration (FR-M15-05). Nothing behind a session is listed, and
+ * Only the public pages and the kliper registration (FR-M15-05). Nothing behind a session is listed, and
  * the token report link (FR-M9-05) must never appear here.
  */
 export default function sitemap(): MetadataRoute.Sitemap {

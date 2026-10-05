@@ -73,7 +73,7 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
     <div className="space-y-6">
       <PageHeader
         title="Kreator"
-        description="Klipper yang mendaftar sendiri maupun yang didaftarkan tim, beserta akun media sosialnya."
+        description="Kliper yang mendaftar sendiri maupun yang didaftarkan tim, beserta akun media sosialnya."
         actions={
           <>
             <Button variant="outline" asChild>
@@ -180,10 +180,10 @@ export default async function CreatorsPage({ searchParams }: { searchParams: Sea
           className="w-full"
           name="badge"
           defaultValue={query.badge ?? ""}
-          aria-label="Lencana Klipper Lokal"
+          aria-label="Lencana Kliper Lokal"
         >
           <NativeSelectOption value="">Semua lencana</NativeSelectOption>
-          <NativeSelectOption value="ya">Klipper Lokal</NativeSelectOption>
+          <NativeSelectOption value="ya">Kliper Lokal</NativeSelectOption>
           <NativeSelectOption value="tidak">Tanpa lencana</NativeSelectOption>
         </NativeSelect>
         {/* The unit stays visible once a number is typed; a bare "50" in the

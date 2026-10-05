@@ -33,7 +33,7 @@ export type CreatorAccountSession = Session & {
   blockedReason: string | null;
 };
 
-/** The only portal page a blocked klipper can open. */
+/** The only portal page a blocked kliper can open. */
 export const BLOCKED_CREATOR_HOME = "/portal/saldo";
 
 /** A signed-in client contact, together with the institution behind them. */
@@ -123,7 +123,7 @@ export async function requireCreator(): Promise<CreatorSession> {
   const { data } = await supabase.from("creator_portal_profile").select("id").maybeSingle();
 
   if (!data?.id) {
-    // A blocked klipper keeps read access to their balance (FR-M3-09).
+    // A blocked kliper keeps read access to their balance (FR-M3-09).
     const { data: account } = await supabase
       .from("creator_portal_account")
       .select("status")
@@ -136,7 +136,7 @@ export async function requireCreator(): Promise<CreatorSession> {
 }
 
 /**
- * Guard for the portal shell and the balance page: lets a blocked klipper in
+ * Guard for the portal shell and the balance page: lets a blocked kliper in
  * (FR-M3-09). Every other portal page keeps `requireCreator`, and every write
  * path in the database still refuses a blocked account.
  */

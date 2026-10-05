@@ -145,7 +145,7 @@ export default async function ClipVerificationPage({
           <Card>
             <CardHeader>
               <CardTitle>
-                <h2>Klipper</h2>
+                <h2>Kliper</h2>
               </CardTitle>
               <CardDescription>
                 Kode verifikasi ini wajib ada di caption klip (FR-M18-03).
@@ -220,7 +220,7 @@ export default async function ClipVerificationPage({
                         : formatRupiah(campaign.maxPayoutPerClip),
                   },
                   {
-                    label: "Batas per klipper",
+                    label: "Batas per kliper",
                     value:
                       campaign.maxPayoutPerCreator === null
                         ? "Tanpa batas"
@@ -340,7 +340,7 @@ export default async function ClipVerificationPage({
             <Alert>
               <AlertDescription>
                 {clip.reviewStatus === "revisi"
-                  ? "Menunggu klipper memperbaiki dan mengirim ulang klip."
+                  ? "Menunggu kliper memperbaiki dan mengirim ulang klip."
                   : "Tidak ada kiriman yang menunggu keputusan untuk klip ini."}
               </AlertDescription>
             </Alert>

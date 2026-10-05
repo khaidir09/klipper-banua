@@ -61,7 +61,7 @@ describe("withdrawalProcessSchema (FR-M19-06)", () => {
     ).toBe(false);
   });
 
-  it("records the transfer fee the klipper bears; empty means none", () => {
+  it("records the transfer fee the kliper bears; empty means none", () => {
     const paid = (transfer_fee: string) =>
       withdrawalProcessSchema.parse({
         status: "dibayar",

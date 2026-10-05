@@ -12,7 +12,7 @@ import { SIGNUP_PATH } from "@/lib/marketing/routes";
 /**
  * One open campaign on the public site (FR-M15-09). The same numbers as the
  * portal card, without the brief: that, the material and the Gabung button
- * are behind the klipper login.
+ * are behind the kliper login.
  */
 export function PublicCampaignCard({ campaign }: { campaign: PublicCampaign }) {
   const coverUrl = campaignCoverUrl(campaign.cover_image_path);
@@ -41,7 +41,7 @@ export function PublicCampaignCard({ campaign }: { campaign: PublicCampaign }) {
         )}
         {campaign.local_only || campaign.budget_exhausted ? (
           <div className="absolute top-3 left-3 flex flex-wrap items-center gap-2">
-            {campaign.local_only ? <Badge>Khusus Klipper Lokal</Badge> : null}
+            {campaign.local_only ? <Badge>Khusus Kliper Lokal</Badge> : null}
             {campaign.budget_exhausted ? <Badge variant="destructive">Anggaran habis</Badge> : null}
           </div>
         ) : null}
@@ -87,7 +87,7 @@ export function PublicCampaignCard({ campaign }: { campaign: PublicCampaign }) {
           remaining={campaign.budget_remaining}
         />
 
-        {/* A visitor signs up first; a klipper who already has an account signs
+        {/* A visitor signs up first; a kliper who already has an account signs
             in and lands straight on this campaign's brief in the portal. */}
         <div className="mt-auto space-y-2 pt-1">
           <Button asChild className="h-11 w-full px-5 text-sm">

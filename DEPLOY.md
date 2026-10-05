@@ -1,6 +1,6 @@
 # Deploy produksi: VPS + Docker + Supabase Cloud
 
-Panduan rilis pilot Klipper Banua. Aplikasi Next.js berjalan di VPS dalam Docker di belakang
+Panduan rilis pilot Kliper Banua. Aplikasi Next.js berjalan di VPS dalam Docker di belakang
 **Caddy** (HTTPS otomatis dari Let's Encrypt). Database, Auth, dan Storage memakai **Supabase
 Cloud** region Singapura.
 
@@ -54,7 +54,7 @@ Pengguna ──HTTPS──▶ Caddy (VPS :443) ──▶ app (Next.js :3000) ─
    perbarui juga teksnya di dashboard setelah mengubahnya di repositori.
 
 7. **Authentication → SMTP Settings**: aktifkan _Custom SMTP_ dengan kredensial layanan email
-   Anda. Pengirim, misalnya `Klipper Banua <no-reply@contoh.id>`.
+   Anda. Pengirim, misalnya `Kliper Banua <no-reply@contoh.id>`.
 
 ## 3. Akun owner pertama
 
@@ -89,11 +89,11 @@ Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan me
 1. Pasang Docker Engine dan plugin Compose (lihat docs.docker.com/engine/install/ubuntu).
 2. Arahkan DNS: record `A` untuk `app.contoh.id` ke IP publik VPS. Buka port 80 dan 443
    (TCP) serta 443 (UDP) di firewall. Tunggu sampai `ping app.contoh.id` mengarah ke VPS.
-3. Salin kode ke server, misalnya `git clone <repo> /opt/klipper-banua && cd /opt/klipper-banua`.
-4. Buat `/opt/klipper-banua/.env.production` (izin `chmod 600`):
+3. Salin kode ke server, misalnya `git clone <repo> /opt/kliper-banua && cd /opt/kliper-banua`.
+4. Buat `/opt/kliper-banua/.env.production` (izin `chmod 600`):
 
    ```bash
-   NEXT_PUBLIC_APP_NAME="Klipper Banua"
+   NEXT_PUBLIC_APP_NAME="Kliper Banua"
    NEXT_PUBLIC_APP_URL="https://app.contoh.id"
    NEXT_PUBLIC_SUPABASE_URL="https://<project-ref>.supabase.co"
    NEXT_PUBLIC_SUPABASE_ANON_KEY="<anon public key>"
@@ -105,12 +105,12 @@ Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan me
    APP_DOMAIN="app.contoh.id"
    # Opsional (v1.1): token untuk pengingat Telegram via n8n, lihat bagian 10
    REMINDER_API_TOKEN="<hasil: openssl rand -hex 32>"
-   # Opsional (v4.1): email pemberitahuan ke klipper (klip diverifikasi, penarikan dibayar)
+   # Opsional (v4.1): email pemberitahuan ke kliper (klip diverifikasi, penarikan dibayar)
    SMTP_HOST="smtp-relay.brevo.com"
    SMTP_PORT="587"
    SMTP_USER="<login SMTP>"
    SMTP_PASS="<kata sandi/kunci SMTP>"
-   EMAIL_FROM="Klipper Banua <no-reply@contoh.id>"
+   EMAIL_FROM="Kliper Banua <no-reply@contoh.id>"
    ```
 
    - Isi URL persis satu kali `https://`, tanpa `/` di akhir. Salah ketik seperti
@@ -122,7 +122,7 @@ Anggota tim lain diundang dari aplikasi (**Pengaturan → Pengguna**). Jangan me
    - `SUPABASE_SERVICE_ROLE_KEY` dan `CLICK_IP_HASH_SALT` hanya dibaca server saat runtime dan
      tidak masuk ke image.
    - `SMTP_*` dan `EMAIL_FROM` boleh memakai kredensial SMTP yang sama dengan langkah 2.7.
-     Bila `SMTP_HOST` atau `EMAIL_FROM` kosong, email pemberitahuan klipper (FR-M18-09,
+     Bila `SMTP_HOST` atau `EMAIL_FROM` kosong, email pemberitahuan kliper (FR-M18-09,
      FR-M19-09) tidak dikirim; aplikasi tetap berjalan. Port `465` memakai TLS langsung,
      port lain STARTTLS. Kegagalan kirim hanya tercatat di log container `app`.
    - **Jangan ganti `CLICK_IP_HASH_SALT`** setelah kampanye berjalan; hash IP klik lama tidak
@@ -158,7 +158,7 @@ kedua. Caddy yang sudah ada cukup ditambah satu blok domain dan meneruskannya ke
 `app` lewat jaringan Docker bersama.
 
 ```
-Pengguna ──HTTPS──▶ Caddy n8n (:443) ──jaringan n8n──▶ app Klipper Banua (:3000)
+Pengguna ──HTTPS──▶ Caddy n8n (:443) ──jaringan n8n──▶ app Kliper Banua (:3000)
 ```
 
 1. Cari nama container Caddy, lokasi Caddyfile-nya di host, dan jaringannya:
@@ -172,20 +172,20 @@ Pengguna ──HTTPS──▶ Caddy n8n (:443) ──jaringan n8n──▶ app K
    Contoh hasil: container `n8n-docker-caddy-1`, Caddyfile
    `/home/<user>/n8n-docker/Caddyfile -> /etc/caddy/Caddyfile`, jaringan `n8n-docker_default`.
 
-2. Hapus container Caddy Klipper Banua bila sempat dibuat oleh percobaan sebelumnya:
+2. Hapus container Caddy Kliper Banua bila sempat dibuat oleh percobaan sebelumnya:
 
    ```bash
-   cd /opt/klipper-banua
+   cd /opt/kliper-banua
    docker compose rm -sf caddy
    ```
 
-3. Buat `/opt/klipper-banua/docker-compose.override.yml`. Compose membacanya otomatis; berkas ini
+3. Buat `/opt/kliper-banua/docker-compose.override.yml`. Compose membacanya otomatis; berkas ini
    khusus server dan diabaikan Git. Ganti `n8n-docker_default` dengan nama jaringan dari
    langkah 1.
 
    ```yaml
    # This VPS already runs Caddy (n8n stack) on ports 80/443; that Caddy proxies
-   # the Klipper Banua domain to the app container over its network.
+   # the Kliper Banua domain to the app container over its network.
    services:
      caddy:
        profiles: ["disabled"]
@@ -193,7 +193,7 @@ Pengguna ──HTTPS──▶ Caddy n8n (:443) ──jaringan n8n──▶ app K
        networks:
          default:
          edge:
-           aliases: [klipper-banua-app]
+           aliases: [kliper-banua-app]
 
    networks:
      edge:
@@ -221,7 +221,7 @@ Pengguna ──HTTPS──▶ Caddy n8n (:443) ──jaringan n8n──▶ app K
    	# Endpoint internal pengingat (bagian 10) tidak boleh terbuka ke internet
    	respond /api/reminders/* 404
 
-   	reverse_proxy klipper-banua-app:3000
+   	reverse_proxy kliper-banua-app:3000
    }
    ```
 
@@ -234,7 +234,7 @@ Pengguna ──HTTPS──▶ Caddy n8n (:443) ──jaringan n8n──▶ app K
    ```bash
    docker compose up -d --build
    docker compose ps                      # hanya "app", status healthy
-   docker exec n8n-docker-caddy-1 wget -qO- http://klipper-banua-app:3000/healthz
+   docker exec n8n-docker-caddy-1 wget -qO- http://kliper-banua-app:3000/healthz
    ```
 
 6. Validasi dan muat ulang Caddy. `reload` tidak memutus n8n.
@@ -255,9 +255,9 @@ Catatan:
 - Bagian `header` di atas menggantikan `Caddyfile` repositori ini, yang tidak dipakai dalam
   skenario ini; `APP_DOMAIN` di `.env.production` juga tidak berpengaruh.
 - Jika stack n8n dibuat ulang (`docker compose down` di folder n8n), jaringannya ikut dibuat
-  ulang. Jalankan `docker compose up -d` lagi di `/opt/klipper-banua` agar `app` tersambung
+  ulang. Jalankan `docker compose up -d` lagi di `/opt/kliper-banua` agar `app` tersambung
   kembali.
-- Sertifikat domain Klipper Banua tersimpan di volume Caddy milik n8n.
+- Sertifikat domain Kliper Banua tersimpan di volume Caddy milik n8n.
 
 ## 6. Verifikasi setelah rilis
 
@@ -278,7 +278,7 @@ Catatan:
 ## 7. Pembaruan versi
 
 ```bash
-cd /opt/klipper-banua
+cd /opt/kliper-banua
 git pull
 npm run db:push        # dari komputer lokal yang sudah `supabase link`, jika ada migrasi baru
 docker compose up -d --build
@@ -329,7 +329,7 @@ n8n (jadwal 08.00 WITA) ──jaringan Docker──▶ app /api/reminders/due-sn
 ```
 
 Panduan ini mengikuti skenario bagian 5 (app bergabung ke jaringan n8n dengan alias
-`klipper-banua-app`). Tanpa skenario itu, sambungkan n8n dan app ke jaringan Docker yang sama.
+`kliper-banua-app`). Tanpa skenario itu, sambungkan n8n dan app ke jaringan Docker yang sama.
 
 1. **Bot Telegram.** Di Telegram, buka **@BotFather** → `/newbot` → catat token bot. Dari akun
    Telegram owner, buka bot baru itu lalu kirim `/start` (bot tidak bisa mengirim pesan duluan).
@@ -339,7 +339,7 @@ Panduan ini mengikuti skenario bagian 5 (app bergabung ke jaringan n8n dengan al
    `openssl rand -hex 32`, lalu jalankan ulang container (tidak perlu build ulang):
 
    ```bash
-   cd /opt/klipper-banua
+   cd /opt/kliper-banua
    docker compose up -d
    ```
 
@@ -353,15 +353,15 @@ Panduan ini mengikuti skenario bagian 5 (app bergabung ke jaringan n8n dengan al
    ```bash
    read -rsp "REMINDER_API_TOKEN: " T; echo
    docker exec n8n-docker-n8n-1 wget -qO- --header "Authorization: Bearer $T" \
-     http://klipper-banua-app:3000/api/reminders/due-snapshots
+     http://kliper-banua-app:3000/api/reminders/due-snapshots
    unset T
    ```
 
    Hasilnya JSON berisi `count`, `text`, dan `items`.
 
 6. **Kredensial di n8n** (menu _Credentials_):
-   - _Telegram API_, beri nama `Klipper Banua bot`, isi token bot.
-   - _Header Auth_, beri nama `Klipper Banua reminder token`: Name `Authorization`, Value
+   - _Telegram API_, beri nama `Kliper Banua bot`, isi token bot.
+   - _Header Auth_, beri nama `Kliper Banua reminder token`: Name `Authorization`, Value
      `Bearer <REMINDER_API_TOKEN>`.
 7. **Impor workflow** dari `docs/n8n/due-snapshot-reminder.json` (_Workflows → Import from File_).
    Pilih kedua kredensial di node HTTP Request dan Telegram, lalu ganti `GANTI_DENGAN_CHAT_ID_OWNER`

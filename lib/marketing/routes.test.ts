@@ -44,7 +44,7 @@ describe("marketing paths", () => {
     }
   });
 
-  it("indexes the klipper registration without treating it as static (v4.0)", () => {
+  it("indexes the kliper registration without treating it as static (v4.0)", () => {
     expect(INDEXED_PATHS).toContain(SIGNUP_PATH);
     expect(isPrivatePath(SIGNUP_PATH)).toBe(false);
     // The proxy must still read the session on /daftar to send members home.

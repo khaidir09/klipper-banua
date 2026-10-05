@@ -72,7 +72,7 @@ export default async function WithdrawalsPage({
     <div className="space-y-6">
       <PageHeader
         title="Penarikan"
-        description="Transfer manual ke rekening klipper, lalu tandai dibayar dengan bukti. Target: diproses paling lambat 1 hari kerja."
+        description="Transfer manual ke rekening kliper, lalu tandai dibayar dengan bukti. Target: diproses paling lambat 1 hari kerja."
         actions={
           <Button variant="outline" asChild>
             <a href={`/penarikan/csv?${params({})}`}>
@@ -138,7 +138,7 @@ export default async function WithdrawalsPage({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Klipper</TableHead>
+                <TableHead>Kliper</TableHead>
                 <TableHead>Rekening</TableHead>
                 <TableHead className="text-right">Nominal</TableHead>
                 <TableHead>Status</TableHead>

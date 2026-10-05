@@ -51,7 +51,7 @@ describe("clip earning (PRD 8.6)", () => {
     expect(result.limitedBy).toBeNull();
   });
 
-  it("stops at the per-klipper cap", () => {
+  it("stops at the per-kliper cap", () => {
     const result = clipEarning({
       ...base,
       maxPayoutPerCreator: 300_000,
@@ -60,7 +60,7 @@ describe("clip earning (PRD 8.6)", () => {
     });
     expect(result.creatorRoom).toBe(150_000);
     expect(result.credit).toBe(150_000);
-    expect(result.limitedBy).toBe("klipper");
+    expect(result.limitedBy).toBe("kliper");
   });
 
   it("stops at the remaining budget", () => {

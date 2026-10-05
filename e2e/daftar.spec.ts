@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { PROOF_FILE, expectToast } from "./helpers";
 
 /**
- * Klipper self-registration (PRD M16, Fase 15): sign up at /daftar, confirm
+ * Kliper self-registration (PRD M16, Fase 15): sign up at /daftar, confirm
  * the email through the local mail catcher, finish the account, ask for the
  * local badge, and have the owner grant it. Needs the local Supabase stack
  * (Mailpit on the port from supabase/config.toml).
@@ -10,9 +10,9 @@ import { PROOF_FILE, expectToast } from "./helpers";
 const MAILPIT_URL = process.env.MAILPIT_URL ?? "http://127.0.0.1:55324";
 
 const stamp = Date.now();
-const email = `e2e.klipper.${stamp}@example.com`;
+const email = `e2e.kliper.${stamp}@example.com`;
 const handle = `e2eklip${stamp}`;
-// Unique per run: the WhatsApp number is unique across klippers.
+// Unique per run: the WhatsApp number is unique across klipers.
 const phone = `0813${String(stamp).slice(-8)}`;
 
 async function confirmationLink(to: string): Promise<string> {
@@ -39,7 +39,7 @@ async function fillSignup(page: Page, overrides: Partial<Record<string, string>>
     email,
     password: "Rahasia123",
     passwordConfirmation: "Rahasia123",
-    full_name: "Klipper Uji E2E",
+    full_name: "Kliper Uji E2E",
     stage_name: "klipuji",
     phone_wa: phone,
     city: "Banjarbaru",
@@ -53,7 +53,7 @@ async function fillSignup(page: Page, overrides: Partial<Record<string, string>>
   }
 }
 
-test.describe.serial("pendaftaran klipper mandiri", () => {
+test.describe.serial("pendaftaran kliper mandiri", () => {
   test("formulir tidak meminta tanggal lahir atau pernyataan usia", async ({ page }) => {
     await page.goto("/daftar");
     await expect(page.locator("#birth_date")).toHaveCount(0);
@@ -63,7 +63,7 @@ test.describe.serial("pendaftaran klipper mandiri", () => {
   test("daftar, konfirmasi email, dan aktifkan akun", async ({ page }) => {
     await page.goto("/daftar");
     await fillSignup(page);
-    await page.getByRole("button", { name: "Daftar jadi Klipper" }).click();
+    await page.getByRole("button", { name: "Daftar jadi Kliper" }).click();
     await expect(page.getByText("Cek emailmu")).toBeVisible();
 
     // The email link lands on /portal/mulai with a session.
@@ -78,12 +78,12 @@ test.describe.serial("pendaftaran klipper mandiri", () => {
     await expectToast(page, "Akun ditambahkan.");
     await expect(page.getByRole("link", { name: "Pilih kampanye" })).toBeVisible();
 
-    // A signed-in klipper who opens /daftar goes home instead.
+    // A signed-in kliper who opens /daftar goes home instead.
     await page.goto("/daftar");
     await expect(page).toHaveURL(/\/portal$/);
   });
 
-  test("ajukan lencana Klipper Lokal, lalu owner memberikannya", async ({ page, browser }) => {
+  test("ajukan lencana Kliper Lokal, lalu owner memberikannya", async ({ page, browser }) => {
     // Sign in again: each test starts with a fresh context.
     await page.goto("/login");
     await page.locator("#email").fill(email);
@@ -92,7 +92,7 @@ test.describe.serial("pendaftaran klipper mandiri", () => {
     await expect(page).toHaveURL(/\/portal/);
 
     await page.goto("/portal/profil");
-    await page.getByRole("button", { name: "Ajukan lencana Klipper Lokal" }).click();
+    await page.getByRole("button", { name: "Ajukan lencana Kliper Lokal" }).click();
     await page.locator("#br-pct").fill("82");
     await page.locator("#br-cities").fill("Banjarbaru, Banjarmasin");
     await page.locator("#br-proof").setInputFiles(PROOF_FILE);
@@ -105,11 +105,11 @@ test.describe.serial("pendaftaran klipper mandiri", () => {
     await ownerPage.goto("/creators/lencana");
     const card = ownerPage.locator('[data-slot="card"]').filter({ hasText: `@${handle}` });
     await card.getByRole("button", { name: "Beri lencana" }).click();
-    await expectToast(ownerPage, "Lencana Klipper Lokal diberikan.");
+    await expectToast(ownerPage, "Lencana Kliper Lokal diberikan.");
     await owner.close();
 
     await page.reload();
-    await expect(page.getByText(/Klipper Lokal sejak/)).toBeVisible();
+    await expect(page.getByText(/Kliper Lokal sejak/)).toBeVisible();
     await expect(page.getByText(/Audiens Kalimantan 82% terverifikasi/)).toBeVisible();
   });
 });

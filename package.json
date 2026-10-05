@@ -1,5 +1,5 @@
 {
-  "name": "klipper-banua",
+  "name": "kliper-banua",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -21,9 +21,9 @@
     "db:types": "supabase gen types typescript --local > types/database.ts",
     "seed:owner": "tsx scripts/seed-owner.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
-    "seed:demo:reset": "docker exec -i supabase_db_klipper-banua psql -U postgres -d postgres -q -f - < scripts/reset-demo.sql && tsx scripts/seed-demo.ts",
-    "db:rls-check": "docker exec -i supabase_db_klipper-banua psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f - < scripts/rls-check.sql",
-    "db:guards-check": "docker exec -i supabase_db_klipper-banua psql -U postgres -d postgres -v ON_ERROR_STOP=0 -f - < scripts/guards-check.sql"
+    "seed:demo:reset": "docker exec -i supabase_db_kliper-banua psql -U postgres -d postgres -q -f - < scripts/reset-demo.sql && tsx scripts/seed-demo.ts",
+    "db:rls-check": "docker exec -i supabase_db_kliper-banua psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f - < scripts/rls-check.sql",
+    "db:guards-check": "docker exec -i supabase_db_kliper-banua psql -U postgres -d postgres -v ON_ERROR_STOP=0 -f - < scripts/guards-check.sql"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

@@ -1,4 +1,4 @@
--- Phase 15 (v4.0): klipper self-registration (PRD M16, FR-M3-01..05, FR-M3-09).
+-- Phase 15 (v4.0): kliper self-registration (PRD M16, FR-M3-01..05, FR-M3-09).
 --
 -- 1. Roles come from the server only. `raw_user_meta_data` is whatever the
 --    caller of `auth.signUp` sends (the anon key is public), so it can never
@@ -181,7 +181,7 @@ begin
     )
     returning id into new_creator_id;
 
-    -- FR-M11-01: the registration is the klipper's own first action.
+    -- FR-M11-01: the registration is the kliper's own first action.
     insert into public.activity_logs (actor_id, entity_type, entity_id, action, details)
     values (
       new.id,
@@ -272,7 +272,7 @@ create trigger creator_social_accounts_guard_portal
   execute function public.guard_portal_social_account();
 
 -- The first social account turns a self-registered prospect into an active
--- klipper (FR-M16-05). Runs as definer: the creator cannot update `creators`.
+-- kliper (FR-M16-05). Runs as definer: the creator cannot update `creators`.
 create or replace function public.activate_self_registered_creator()
 returns trigger
 language plpgsql

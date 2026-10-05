@@ -16,7 +16,7 @@ export type FraudFlagInput = {
   /** Views of the last accepted submission of this clip, if any. */
   previousViews: number | null;
   postedAt: Date | string;
-  /** When the klipper joined the campaign; null for team-made assignments. */
+  /** When the kliper joined the campaign; null for team-made assignments. */
   joinedAt: Date | string | null;
 };
 

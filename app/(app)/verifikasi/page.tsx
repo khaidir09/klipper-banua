@@ -91,7 +91,7 @@ export default async function VerificationQueuePage() {
     <div className="space-y-6">
       <PageHeader
         title="Verifikasi"
-        description="Klip baru dan pembaruan views dari klipper kampanye per views. Yang paling lama menunggu di atas."
+        description="Klip baru dan pembaruan views dari kliper kampanye per views. Yang paling lama menunggu di atas."
       />
       <div className="grid gap-4 lg:grid-cols-2">
         <QueueCard

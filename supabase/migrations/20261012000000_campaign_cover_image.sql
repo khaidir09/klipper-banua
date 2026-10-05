@@ -2,7 +2,7 @@
 -- minimum views a clip needs before it earns (`min_views_to_earn`).
 --
 -- The cover is NOT campaign material: material stays in the private
--- `campaign-assets` bucket behind the klipper login. The team uploads a
+-- `campaign-assets` bucket behind the kliper login. The team uploads a
 -- separate cover image to its own public bucket, so the public site can load
 -- it without a session or signed URL.
 

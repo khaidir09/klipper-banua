@@ -27,7 +27,7 @@ export function withdrawalsCsv(rows: readonly WithdrawalCsvRow[], timezone: stri
   return toCsv(
     [
       "Diajukan",
-      "Nama klipper",
+      "Nama kliper",
       "Nama panggung",
       "Bank / e-wallet",
       "Nomor rekening",
@@ -35,7 +35,7 @@ export function withdrawalsCsv(rows: readonly WithdrawalCsvRow[], timezone: stri
       "Nama cocok",
       "Nominal",
       "Biaya transfer",
-      "Diterima klipper",
+      "Diterima kliper",
       "Status",
       "Tanggal bayar",
     ],

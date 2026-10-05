@@ -1,7 +1,7 @@
 import type { LedgerEntryType, WithdrawalStatus } from "@/lib/constants/withdrawals";
 
 /**
- * Klipper balance and withdrawal rules (PRD 8.7, FR-M19-03, FR-M19-05).
+ * Kliper balance and withdrawal rules (PRD 8.7, FR-M19-03, FR-M19-05).
  * Whole Rupiah only. The database enforces the same rules in
  * `request_withdrawal()` and computes the same sums in
  * `creator_portal_balance`; these explain them in the portal.
@@ -12,7 +12,7 @@ export type LedgerLine = { entryType: LedgerEntryType; amount: number };
 export type BalanceSummary = {
   /** saldo_tersedia = Σ ledger. May go negative after a cancellation. */
   available: number;
-  /** Honor, cancellations and adjustments: what the klipper earned. */
+  /** Honor, cancellations and adjustments: what the kliper earned. */
   totalEarned: number;
   /** Withdrawn, including withdrawals in progress, net of refunds. */
   totalWithdrawn: number;

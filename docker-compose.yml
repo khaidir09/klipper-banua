@@ -13,7 +13,7 @@ services:
         NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
         NEXT_PUBLIC_CONTACT_WA: ${NEXT_PUBLIC_CONTACT_WA}
-    image: klipper-banua:latest
+    image: kliper-banua:latest
     restart: unless-stopped
     env_file: .env.production
     # Only Caddy talks to the app; port 3000 is not published on the host.

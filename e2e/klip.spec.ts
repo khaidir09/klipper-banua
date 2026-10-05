@@ -2,33 +2,33 @@ import { expect, test } from "@playwright/test";
 import { PROOF_FILE, dialog, expectToast } from "./helpers";
 
 /**
- * Clip submission and verification (PRD M18, Fase 17). The demo klipper has
+ * Clip submission and verification (PRD M18, Fase 17). The demo kliper has
  * already joined "Klip Dies Natalis" (DEMO-KLIP2-2026, rate Rp 10.000 per
  * 1.000 views). They send a clip, the manager approves it at 23.450 verified
- * views and the klipper sees Rp 234.500 credited (PRD 8.6).
+ * views and the kliper sees Rp 234.500 credited (PRD 8.6).
  * `npm run seed:demo:reset` removes the clip again.
  */
 
 const CAMPAIGN = "Klip Dies Natalis Universitas Demo Borneo";
 const ASSIGNMENT_URL = "/portal/penugasan/de300000-0000-4000-8000-0000000000b4";
 
-test("a klipper sends a clip, the team verifies it and the honor is credited", async ({
+test("a kliper sends a clip, the team verifies it and the honor is credited", async ({
   page,
   browser,
 }) => {
   const clipUrl = `https://www.tiktok.com/@rina.kuliner/video/${Date.now()}`;
 
-  await test.step("the klipper accepts the current terms if needed", async () => {
+  await test.step("the kliper accepts the current terms if needed", async () => {
     await page.goto("/portal/kampanye");
     const accept = page.getByRole("button", { name: "Setujui syarat" });
     if (await accept.isVisible()) {
-      await page.getByLabel(/Saya sudah membaca dan menyetujui Syarat Klipper/).check();
+      await page.getByLabel(/Saya sudah membaca dan menyetujui Syarat Kliper/).check();
       await accept.click();
-      await expectToast(page, /Syarat Klipper versi .* sudah kamu setujui/);
+      await expectToast(page, /Syarat Kliper versi .* sudah kamu setujui/);
     }
   });
 
-  await test.step("the klipper sends a clip with its views screenshot", async () => {
+  await test.step("the kliper sends a clip with its views screenshot", async () => {
     await page.goto(ASSIGNMENT_URL);
     await expect(page.getByRole("heading", { name: CAMPAIGN })).toBeVisible();
     await page.getByRole("button", { name: "Kirim klip" }).click();
@@ -80,11 +80,11 @@ test("a klipper sends a clip, the team verifies it and the honor is credited", a
     await team.getByLabel("Views terverifikasi").fill("23450");
     await expect(team.getByText("Kredit sekarang: Rp 234.500")).toBeVisible();
     await team.getByRole("button", { name: "Setujui" }).click();
-    await expectToast(team, /Klip disetujui\. Honor Rp 234\.500 masuk ke saldo klipper/);
+    await expectToast(team, /Klip disetujui\. Honor Rp 234\.500 masuk ke saldo kliper/);
     await context.close();
   });
 
-  await test.step("the klipper sees the approval and the honor", async () => {
+  await test.step("the kliper sees the approval and the honor", async () => {
     await page.goto("/portal/klip");
     const clip = page.getByRole("listitem").filter({ hasText: clipUrl });
     await expect(clip.getByText("Disetujui")).toBeVisible();

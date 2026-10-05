@@ -32,7 +32,7 @@ const CONSENTS = [
       <span>
         Saya menyetujui{" "}
         <Link href="/syarat" target="_blank" className="underline underline-offset-4">
-          Syarat Klipper
+          Syarat Kliper
         </Link>
         : nggak pakai views palsu dan selalu tulis kode verifikasi di setiap klip.
       </span>
@@ -245,7 +245,7 @@ export function SignupForm() {
               Mendaftarkan…
             </>
           ) : (
-            "Daftar jadi Klipper"
+            "Daftar jadi Kliper"
           )}
         </Button>
 

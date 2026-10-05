@@ -1,7 +1,7 @@
-# Klipper Banua
+# Kliper Banua
 
-Marketplace klipper lokal Kalimantan: brand bisnis, UMKM, instansi, dan personal memasang
-kampanye, klipper lokal membuat dan memposting klipnya. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
+Marketplace kliper lokal Kalimantan: brand bisnis, UMKM, instansi, dan personal memasang
+kampanye, kliper lokal membuat dan memposting klipnya. Kebutuhan produk ada di [`PRD.md`](./PRD.md), aturan kerja di
 [`CLAUDE.md`](./CLAUDE.md).
 
 Status: **Fase 11 — v3.0** selesai: portal klien untuk memantau kampanye. v2.0 (Fase 9–10)

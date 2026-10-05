@@ -32,10 +32,10 @@ export const DEMO = {
   portalRevisionContentId: "de300000-0000-4000-8000-0000000000d2",
   /** Primary contact of the demo client, who gets the client portal account. */
   contactId: "de300000-0000-4000-8000-0000000000b1",
-  // Phase 16 (M17): an open per_views campaign in the klipper catalog.
+  // Phase 16 (M17): an open per_views campaign in the kliper catalog.
   openCampaignId: "de300000-0000-4000-8000-0000000000c3",
   openCampaignCode: "DEMO-KLIP-2026",
-  // Phase 17 (M18): an open campaign the portal klipper has already joined,
+  // Phase 17 (M18): an open campaign the portal kliper has already joined,
   // for sending a clip and having it verified.
   clipCampaignId: "de300000-0000-4000-8000-0000000000c4",
   clipCampaignCode: "DEMO-KLIP2-2026",
@@ -266,7 +266,7 @@ async function seedPortalAccount(
 }
 
 /**
- * An open per_views campaign for the klipper catalog (M17, phase 16). Nobody
+ * An open per_views campaign for the kliper catalog (M17, phase 16). Nobody
  * has joined it: the creator E2E flow joins and withdraws.
  */
 async function seedOpenCampaign(
@@ -336,7 +336,7 @@ async function seedOpenCampaign(
 }
 
 /**
- * An open per_views campaign the portal klipper (creator 1) joined three days
+ * An open per_views campaign the portal kliper (creator 1) joined three days
  * ago, with no clips yet (M18, phase 17). The E2E flow sends a clip, the
  * manager verifies it and the honor lands in the ledger.
  */

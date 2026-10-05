@@ -15,7 +15,7 @@ import { publicEnv } from "@/lib/env";
 import type { Database } from "@/types/database";
 
 /*
- * Klipper notification emails (FR-M18-09, FR-M19-09), sent after the
+ * Kliper notification emails (FR-M18-09, FR-M19-09), sent after the
  * response so the team never waits on SMTP. Callers pass the session client
  * of the internal member who made the decision; it can read `creators`.
  */

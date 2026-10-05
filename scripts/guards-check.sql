@@ -696,7 +696,7 @@ reset role;
 rollback;
 
 -- ---------------------------------------------------------------------------
--- Phase 15 (v4.0): klipper self-registration (PRD M16, FR-M3-03..09)
+-- Phase 15 (v4.0): kliper self-registration (PRD M16, FR-M3-03..09)
 -- ---------------------------------------------------------------------------
 begin;
 create temporary table p15_roles on commit drop as
@@ -728,7 +728,7 @@ select p.role, c.status, c.signup_source, c.verification_code ~ '^KB-[A-HJ-NP-Z2
 from public.profiles p join public.creators c on c.profile_id = p.id
 where p.id = '15151515-0000-0000-0000-0000000000f1';
 
-\echo 'P15-2. sign-up claiming role manager without klipper data (expect creator / 0)'
+\echo 'P15-2. sign-up claiming role manager without kliper data (expect creator / 0)'
 insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values ('15151515-0000-0000-0000-0000000000f2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
   'guard.bare@example.test', '{}'::jsonb, '{"role": "manager"}'::jsonb, now(), now());
@@ -765,28 +765,28 @@ values ('15151515-0000-0000-0000-0000000000f5', '00000000-0000-0000-0000-0000000
   now(), now());
 rollback to savepoint c;
 
--- A second klipper, so cross-account writes have a target.
+-- A second kliper, so cross-account writes have a target.
 insert into public.creators (id, full_name, birth_date, province, status) values
-  ('15151515-0000-0000-0000-0000000000a2', 'Other Klipper', '1995-01-01', 'Kalimantan Selatan', 'aktif');
+  ('15151515-0000-0000-0000-0000000000a2', 'Other Kliper', '1995-01-01', 'Kalimantan Selatan', 'aktif');
 insert into public.creator_social_accounts (id, creator_id, platform, handle) values
   ('15151515-0000-0000-0000-0000000000e2', '15151515-0000-0000-0000-0000000000a2', 'tiktok', 'guard.other');
 
-select set_config('request.jwt.claims', json_build_object('sub', '15151515-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_claims;
+select set_config('request.jwt.claims', json_build_object('sub', '15151515-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_claims;
 set local role authenticated;
-\echo 'P15-6. klipper stamps their own account as verified (expect PORTAL_FIELD_LOCKED)'
+\echo 'P15-6. kliper stamps their own account as verified (expect PORTAL_FIELD_LOCKED)'
 savepoint d;
 insert into public.creator_social_accounts (creator_id, platform, handle, last_verified_at)
 select id, 'tiktok', 'guard.self', now() from public.creator_portal_profile;
 rollback to savepoint d;
-\echo 'P15-7. klipper adds their first account (expect INSERT 0 1, then aktif)'
+\echo 'P15-7. kliper adds their first account (expect INSERT 0 1, then aktif)'
 insert into public.creator_social_accounts (id, creator_id, platform, handle)
 select '15151515-0000-0000-0000-0000000000e1', id, 'tiktok', 'guard.self' from public.creator_portal_profile;
 select status from public.creator_portal_profile;
-\echo 'P15-8. klipper edits another klipper account (expect UPDATE 0)'
+\echo 'P15-8. kliper edits another kliper account (expect UPDATE 0)'
 update public.creator_social_accounts set followers_count = 1 where id = '15151515-0000-0000-0000-0000000000e2';
-\echo 'P15-9. klipper reads the internal creators table (expect 0)'
+\echo 'P15-9. kliper reads the internal creators table (expect 0)'
 select count(*) as creators_visible from public.creators;
-\echo 'P15-10. klipper asks for account deletion (expect t)'
+\echo 'P15-10. kliper asks for account deletion (expect t)'
 select public.request_creator_account_deletion();
 select deletion_requested_at is not null as requested from public.creator_portal_profile;
 reset role;
@@ -797,7 +797,7 @@ set local role authenticated;
 update public.creator_social_accounts set kalimantan_audience_pct = 70, last_verified_at = now() where id = '15151515-0000-0000-0000-0000000000e1';
 select last_verified_at is not null as verified from public.creator_social_accounts where id = '15151515-0000-0000-0000-0000000000e1';
 reset role;
-select set_config('request.jwt.claims', json_build_object('sub', '15151515-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_claims;
+select set_config('request.jwt.claims', json_build_object('sub', '15151515-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_claims;
 set local role authenticated;
 update public.creator_social_accounts set kalimantan_audience_pct = 90 where id = '15151515-0000-0000-0000-0000000000e1';
 select last_verified_at is not null as still_verified from public.creator_portal_social_accounts where id = '15151515-0000-0000-0000-0000000000e1';
@@ -819,7 +819,7 @@ set local role authenticated;
 update public.creators set status = 'aktif' where id = '15151515-0000-0000-0000-0000000000a2';
 select status, blocked_at is null and blocked_reason is null as cleared from public.creators where id = '15151515-0000-0000-0000-0000000000a2';
 reset role;
-\echo 'P15-16. owner erases the klipper who asked for deletion (expect diblokir / t / t / 0)'
+\echo 'P15-16. owner erases the kliper who asked for deletion (expect diblokir / t / t / 0)'
 select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p15_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
 set local role authenticated;
 select public.anonymize_creator(c.id) is not null as erased
@@ -852,7 +852,7 @@ from (values
 ) as u(id, email);
 
 insert into public.creators (id, full_name, stage_name, birth_date, province, status, terms_version, terms_agreed_at, verified_at, profile_id) values
- ('16161616-0000-0000-0000-0000000000a1','Active K','Aktif Klipper','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),null,'16161616-0000-0000-0000-0000000000f1'),
+ ('16161616-0000-0000-0000-0000000000a1','Active K','Aktif Kliper','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),null,'16161616-0000-0000-0000-0000000000f1'),
  ('16161616-0000-0000-0000-0000000000a2','Prospect K','prospek','1995-01-01','Kalimantan Selatan','prospek','2026-10',now(),null,'16161616-0000-0000-0000-0000000000f2'),
  ('16161616-0000-0000-0000-0000000000a3','Old Terms K','lama','1995-01-01','Kalimantan Selatan','aktif','v1',now(),null,'16161616-0000-0000-0000-0000000000f3'),
  ('16161616-0000-0000-0000-0000000000a4','Local K','lokal','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),now(),'16161616-0000-0000-0000-0000000000f4'),
@@ -894,9 +894,9 @@ savepoint f; update public.campaigns set status='aktif' where id='16161616-0000-
 update public.campaigns set allowed_platforms='{tiktok,instagram}' where id='16161616-0000-0000-0000-0000000000c1';
 \echo 'P16-7. activate after the end date (expect ACTIVATION_PAST_END_DATE)'
 savepoint g; update public.campaigns set start_date=public.campaign_today() - 10, end_date=public.campaign_today() - 1, status='aktif' where id='16161616-0000-0000-0000-0000000000c1'; rollback to savepoint g;
-\echo 'P16-8. an invite-only per_views campaign still needs a klipper (expect ACTIVATION_NEEDS_CREATOR)'
+\echo 'P16-8. an invite-only per_views campaign still needs a kliper (expect ACTIVATION_NEEDS_CREATOR)'
 savepoint h; update public.campaigns set access='undangan', status='aktif' where id='16161616-0000-0000-0000-0000000000c1'; rollback to savepoint h;
-\echo 'P16-9. an open campaign starts without klippers (expect aktif / t)'
+\echo 'P16-9. an open campaign starts without klipers (expect aktif / t)'
 update public.campaigns set status='aktif' where id='16161616-0000-0000-0000-0000000000c1';
 select status, published_at is not null as published from public.campaigns where id='16161616-0000-0000-0000-0000000000c1';
 \echo 'P16-10. switching an active campaign to paket (expect PAKET_RETIRED)'
@@ -907,12 +907,12 @@ savepoint j; update public.campaigns set payout_model='per_views' where id='1616
 update public.campaigns set creator_budget=6000000 where id='16161616-0000-0000-0000-0000000000c2';
 reset role;
 
--- The active klipper (a1).
-select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_claims;
+-- The active kliper (a1).
+select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_claims;
 set local role authenticated;
 \echo 'P16-13. the catalog lists only running open per_views campaigns (expect Draft 16, Local 16, Open 16; 100% each)'
 select name, budget_remaining_pct, budget_exhausted from public.creator_portal_catalog where client_name = 'Open Client 16' order by name;
-\echo 'P16-14. joining for another klipper (expect PORTAL_FIELD_LOCKED)'
+\echo 'P16-14. joining for another kliper (expect PORTAL_FIELD_LOCKED)'
 savepoint k; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a5'); rollback to savepoint k;
 \echo 'P16-15. joining with a fee of their own (expect PORTAL_FIELD_LOCKED)'
 savepoint l; insert into public.campaign_creators (campaign_id, creator_id, base_fee) values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a1', 1000000); rollback to savepoint l;
@@ -929,7 +929,7 @@ insert into public.campaign_creators (campaign_id, creator_id, status, referral_
 values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a1','diundang','AAAAAA','my-own-slug', 99);
 \echo 'P16-21. the server decided the row (expect bergabung / mandiri / t / t / t / t / 3 / t)'
 select status, join_source, creator_confirmed_at is not null as confirmed, joined_at is not null as joined,
-       referral_code <> 'AAAAAA' as code_generated, tracking_slug like 'aktif-klipper-%' as slug_generated,
+       referral_code <> 'AAAAAA' as code_generated, tracking_slug like 'aktif-kliper-%' as slug_generated,
        contents_committed, withdrawn_at is null as not_withdrawn
 from public.creator_portal_assignments where campaign_id = '16161616-0000-0000-0000-0000000000c2';
 \echo 'P16-22. joining twice (expect campaign_creators_campaign_creator_key)'
@@ -949,7 +949,7 @@ reset role;
 select set_config('request.jwt.claims', '', true) is not null as no_claims;
 insert into public.campaign_creators (id, campaign_id, creator_id, status, referral_code, tracking_slug) values
  ('16161616-0000-0000-0000-0000000000b6','16161616-0000-0000-0000-0000000000c6','16161616-0000-0000-0000-0000000000a1','bergabung','PKTSXA','paket-sixteen');
-select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_claims;
+select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_claims;
 set local role authenticated;
 savepoint r; update public.campaign_creators set status = 'mundur' where id = '16161616-0000-0000-0000-0000000000b6'; rollback to savepoint r;
 reset role;
@@ -964,7 +964,7 @@ select (select count(*) from public.creator_portal_catalog where client_name = '
 savepoint s1; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c2','16161616-0000-0000-0000-0000000000a2'); rollback to savepoint s1;
 reset role;
 
--- The klipper on an old version of the terms (a3).
+-- The kliper on an old version of the terms (a3).
 select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f3', 'role', 'authenticated')::text, true) is not null as old_terms_claims;
 set local role authenticated;
 \echo 'P16-29. joining on old terms (expect JOIN_TERMS_OUTDATED)'
@@ -991,7 +991,7 @@ savepoint u; update public.campaigns set rate_per_1000_views = 12000 where id = 
 \echo 'P16-33. the team cuts the budget below the cost of 1,000 views (expect UPDATE 1, then t)'
 update public.campaigns set creator_budget = 5000 where id = '16161616-0000-0000-0000-0000000000c2';
 select public.campaign_budget_exhausted('16161616-0000-0000-0000-0000000000c2') as exhausted;
-\echo 'P16-34. the team blocks a klipper (expect UPDATE 1)'
+\echo 'P16-34. the team blocks a kliper (expect UPDATE 1)'
 update public.creators set status = 'diblokir', blocked_reason = 'Uji blokir' where id = '16161616-0000-0000-0000-0000000000a6';
 reset role;
 
@@ -1004,10 +1004,10 @@ savepoint v; insert into public.campaign_creators (campaign_id, creator_id) valu
 insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c3','16161616-0000-0000-0000-0000000000a4');
 reset role;
 
--- The blocked klipper (a6).
+-- The blocked kliper (a6).
 select set_config('request.jwt.claims', json_build_object('sub', '16161616-0000-0000-0000-0000000000f6', 'role', 'authenticated')::text, true) is not null as blocked_claims;
 set local role authenticated;
-\echo 'P16-37. a blocked klipper reads the catalog, then joins (expect 0, then CREATOR_BLOCKED)'
+\echo 'P16-37. a blocked kliper reads the catalog, then joins (expect 0, then CREATOR_BLOCKED)'
 select count(*) as catalog_rows from public.creator_portal_catalog;
 savepoint w; insert into public.campaign_creators (campaign_id, creator_id) values ('16161616-0000-0000-0000-0000000000c1','16161616-0000-0000-0000-0000000000a6'); rollback to savepoint w;
 reset role;
@@ -1037,8 +1037,8 @@ from (values
 ) as u(id, email);
 
 insert into public.creators (id, full_name, stage_name, birth_date, province, status, terms_version, terms_agreed_at, profile_id) values
- ('17171717-0000-0000-0000-0000000000a1','Klipper A','Klip A','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'17171717-0000-0000-0000-0000000000f1'),
- ('17171717-0000-0000-0000-0000000000a2','Klipper B','Klip B','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'17171717-0000-0000-0000-0000000000f2');
+ ('17171717-0000-0000-0000-0000000000a1','Kliper A','Klip A','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'17171717-0000-0000-0000-0000000000f1'),
+ ('17171717-0000-0000-0000-0000000000a2','Kliper B','Klip B','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'17171717-0000-0000-0000-0000000000f2');
 insert into public.creator_social_accounts (creator_id, platform, handle) values
  ('17171717-0000-0000-0000-0000000000a1','tiktok','guard_p17_a'),
  ('17171717-0000-0000-0000-0000000000a2','tiktok','guard_p17_b');
@@ -1054,8 +1054,8 @@ insert into public.campaign_creators (id, campaign_id, creator_id, status, join_
  ('17171717-0000-0000-0000-0000000000b1','17171717-0000-0000-0000-0000000000c1','17171717-0000-0000-0000-0000000000a1','bergabung','mandiri',now() - interval '3 days',now() - interval '3 days'),
  ('17171717-0000-0000-0000-0000000000b2','17171717-0000-0000-0000-0000000000c1','17171717-0000-0000-0000-0000000000a2','bergabung','mandiri',now() - interval '3 days',now() - interval '3 days');
 
--- Klipper A.
-select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+-- Kliper A.
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_a;
 set local role authenticated;
 \echo 'P17-1. allowed platform without a registered account (expect CLIP_NO_SOCIAL_ACCOUNT)'
 savepoint a; select public.submit_clip('17171717-0000-0000-0000-0000000000b1','youtube','https://youtube.com/shorts/p17yt',now() - interval '1 hour',5000,0,0,0,'x/p.png'); rollback to savepoint a;
@@ -1090,10 +1090,10 @@ savepoint j; insert into public.metric_submissions (content_id, checkpoint, capt
 select id, 'lainnya', now(), 30000, 'x/p.png' from public.contents where posted_url_normalized = 'https://tiktok.com/@a/video/1701'; rollback to savepoint j;
 reset role;
 
--- Klipper B.
-select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as klipper_b;
+-- Kliper B.
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as kliper_b;
 set local role authenticated;
-\echo 'P17-12. another klipper claims the same video (expect contents_posted_url_normalized_key)'
+\echo 'P17-12. another kliper claims the same video (expect contents_posted_url_normalized_key)'
 savepoint k; select public.submit_clip('17171717-0000-0000-0000-0000000000b2','tiktok','https://m.tiktok.com/@a/video/1701#comments',now() - interval '1 hour',100,0,0,0,'x/p.png'); rollback to savepoint k;
 \echo 'P17-13. B cannot see the clips of A (expect 0)'
 select count(*) as visible from public.creator_portal_contents where campaign_creator_id = '17171717-0000-0000-0000-0000000000b1';
@@ -1151,13 +1151,13 @@ savepoint s; insert into public.creator_ledger_entries (creator_id, entry_type, 
 values ('17171717-0000-0000-0000-0000000000a1','honor_klip',1000000,'17171717-0000-0000-0000-0000000000c1',(select clip1 from p17_clips)); rollback to savepoint s;
 reset role;
 
-select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as klipper_b;
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as kliper_b;
 set local role authenticated;
 \echo 'P17-24. a new clip once the budget is used up (expect CLIP_BUDGET_EXHAUSTED)'
 savepoint t; select public.submit_clip('17171717-0000-0000-0000-0000000000b2','tiktok','https://tiktok.com/@b/video/1704',now() - interval '1 hour',100,0,0,0,'x/p.png'); rollback to savepoint t;
 reset role;
 
-select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_a;
 set local role authenticated;
 \echo 'P17-25. a views update within 24 hours (expect VIEWS_UPDATE_TOO_SOON)'
 savepoint u; insert into public.metric_submissions (content_id, checkpoint, captured_at, views, proof_path)
@@ -1166,7 +1166,7 @@ reset role;
 select set_config('request.jwt.claims', '', true) is not null as no_claims;
 update public.metric_submissions set created_at = created_at - interval '2 days' where content_id = (select clip1 from p17_clips);
 
-select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_a;
 set local role authenticated;
 \echo 'P17-26. a views update after 24 hours (expect INSERT 0 1)'
 insert into public.metric_submissions (content_id, checkpoint, captured_at, views, proof_path)
@@ -1186,7 +1186,7 @@ update public.campaigns set creator_budget = 800000 where id = '17171717-0000-00
 reset role;
 select set_config('request.jwt.claims', '', true) is not null as no_claims;
 update public.metric_submissions set created_at = created_at - interval '2 days' where content_id = (select clip1 from p17_clips);
-select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_a;
 set local role authenticated;
 insert into public.metric_submissions (content_id, checkpoint, captured_at, views, proof_path)
 select clip1, 'lainnya', now(), 41000, '17171717-0000-0000-0000-0000000000c1/p4.png' from p17_clips;
@@ -1214,7 +1214,7 @@ select review_status, posted_url is not null as live, rejection_reason, public.c
 from public.contents where id = (select clip2 from p17_clips);
 reset role;
 
-select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_a;
 set local role authenticated;
 \echo 'P17-33. A sends the rejected clip again (expect CLIP_URL_REJECTED_BEFORE)'
 savepoint w; select public.submit_clip('17171717-0000-0000-0000-0000000000b1','tiktok','https://tiktok.com/@a/video/1702',now() - interval '1 hour',100,0,0,0,'x/p.png'); rollback to savepoint w;
@@ -1223,7 +1223,7 @@ select live_status, review_status, earned_amount, rejection_reason from public.c
 where campaign_creator_id = '17171717-0000-0000-0000-0000000000b1' order by created_at;
 reset role;
 
-select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as klipper_b;
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as kliper_b;
 set local role authenticated;
 \echo 'P17-35. the real owner of a rejected video can still send it (expect sent)'
 select public.submit_clip('17171717-0000-0000-0000-0000000000b2','tiktok','https://tiktok.com/@a/video/1702',now() - interval '1 hour',5000,0,0,0,'17171717-0000-0000-0000-0000000000c1/p5.png') is not null as sent;
@@ -1234,7 +1234,7 @@ set local role authenticated;
 select public.verify_clip((select id from public.contents where campaign_creator_id = '17171717-0000-0000-0000-0000000000b2'),'revisi','{}'::jsonb,'Kode verifikasi belum ada di caption',null,null,0) is not null as reviewed;
 select review_status from public.contents where campaign_creator_id = '17171717-0000-0000-0000-0000000000b2';
 reset role;
-select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as klipper_b;
+select set_config('request.jwt.claims', json_build_object('sub', '17171717-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as kliper_b;
 set local role authenticated;
 \echo 'P17-37. B reads the note, then sends the clip again with the same URL (expect note, then menunggu_review / 1)'
 select notes from public.creator_portal_reviews where content_id = (select id from public.creator_portal_contents where campaign_creator_id = '17171717-0000-0000-0000-0000000000b2');
@@ -1276,10 +1276,10 @@ from (values
 
 -- A starts without a birth date (FR-M3-02: asked before the first withdrawal).
 insert into public.creators (id, full_name, stage_name, birth_date, province, status, terms_version, terms_agreed_at, profile_id) values
- ('18181818-0000-0000-0000-0000000000a1','Klipper Saldo A','saldo.a',null,'Kalimantan Selatan','aktif','2026-10',now(),'18181818-0000-0000-0000-0000000000f1'),
- ('18181818-0000-0000-0000-0000000000a2','Klipper Saldo B','saldo.b','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'18181818-0000-0000-0000-0000000000f2');
+ ('18181818-0000-0000-0000-0000000000a1','Kliper Saldo A','saldo.a',null,'Kalimantan Selatan','aktif','2026-10',now(),'18181818-0000-0000-0000-0000000000f1'),
+ ('18181818-0000-0000-0000-0000000000a2','Kliper Saldo B','saldo.b','1995-01-01','Kalimantan Selatan','aktif','2026-10',now(),'18181818-0000-0000-0000-0000000000f2');
 
--- The owner credits both klippers (stands in for approved clips).
+-- The owner credits both klipers (stands in for approved clips).
 select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p18_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
 set local role authenticated;
 \echo 'P18-1. an adjustment without a reason (expect ADJUSTMENT_NEEDS_REASON)'
@@ -1291,8 +1291,8 @@ savepoint b; update public.platform_settings set min_withdrawal = 5000; rollback
 update public.platform_settings set min_withdrawal = 100000;
 reset role;
 
--- Klipper A.
-select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+-- Kliper A.
+select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_a;
 set local role authenticated;
 \echo 'P18-3. A reads the balance (expect 300000 / 300000 / 0 / 100000)'
 select available, total_earned, total_withdrawn, min_withdrawal from public.creator_portal_balance;
@@ -1308,7 +1308,7 @@ select birth_date from public.creator_portal_profile;
 \echo 'P18-4. a withdrawal without a bank account (expect WITHDRAW_NEEDS_BANK)'
 savepoint c; select public.request_withdrawal(150000); rollback to savepoint c;
 \echo 'P18-5. A saves a first account; case and spacing of the name do not matter (expect ******5678 / t / no hold)'
-select public.save_creator_bank_account('Bank Kalsel', '0012-3456 78', 'klipper  saldo a') is not null as saved;
+select public.save_creator_bank_account('Bank Kalsel', '0012-3456 78', 'kliper  saldo a') is not null as saved;
 select bank_name, account_number_masked, holder_matches_name, hold_until is null as no_hold from public.creator_portal_bank_account;
 \echo 'P18-6. A cannot read the base table (expect 0)'
 select count(*) as rows from public.creator_bank_accounts;
@@ -1320,7 +1320,7 @@ select public.request_withdrawal(200000) is not null as sent;
 select available from public.creator_portal_balance;
 select status, amount, account_number_masked from public.creator_portal_withdrawals;
 \echo 'P18-9. a second request while one is open (expect WITHDRAW_PENDING_EXISTS)'
--- request_withdrawal locks the klipper row, so a second call at the same time
+-- request_withdrawal locks the kliper row, so a second call at the same time
 -- waits for the first and then sees it.
 savepoint f; select public.request_withdrawal(100000); rollback to savepoint f;
 \echo 'P18-10. the portal never shows the transfer proof (expect column does not exist)'
@@ -1361,7 +1361,7 @@ savepoint l2; select public.creator_balance('18181818-0000-0000-0000-0000000000a
 reset role;
 select public.creator_balance('18181818-0000-0000-0000-0000000000a1') as balance_after_refund;
 
-select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_a;
 set local role authenticated;
 \echo 'P18-18. A reads the rejection, then requests within the 24-hour hold (expect reason, then WITHDRAW_BANK_RECENT)'
 select status, rejection_reason from public.creator_portal_withdrawals;
@@ -1372,7 +1372,7 @@ select set_config('request.jwt.claims', '', true) is not null as no_claims;
 savepoint n; update public.withdrawals set amount = 1 where id = (select id from p18_w); rollback to savepoint n;
 update public.creator_bank_accounts set changed_at = now() - interval '2 days' where creator_id = '18181818-0000-0000-0000-0000000000a1';
 
-select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_a;
 set local role authenticated;
 \echo 'P18-20. after the hold, the whole balance (expect sent, 0 available)'
 select public.request_withdrawal(300000) is not null as sent;
@@ -1380,7 +1380,7 @@ select available from public.creator_portal_balance;
 reset role;
 select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p18_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
 set local role authenticated;
-\echo 'P18-21. processed and paid with date, proof and a Rp 2.500 fee borne by the klipper (expect dibayar / t / 2500)'
+\echo 'P18-21. processed and paid with date, proof and a Rp 2.500 fee borne by the kliper (expect dibayar / t / 2500)'
 select public.process_withdrawal((select id from public.withdrawals where creator_id = '18181818-0000-0000-0000-0000000000a1' and status = 'diajukan'), 'diproses');
 \echo '       a transfer fee as large as the amount (expect WITHDRAWAL_FEE_INVALID)'
 savepoint n2; select public.process_withdrawal((select id from public.withdrawals where creator_id = '18181818-0000-0000-0000-0000000000a1' and status = 'diproses'), 'dibayar', current_date, 'withdrawals/p18.png', null, 300000); rollback to savepoint n2;
@@ -1390,27 +1390,27 @@ select status, paid_at is not null as paid, transfer_fee from public.withdrawals
 select public.adjust_balance('18181818-0000-0000-0000-0000000000a1', -50000, 'Pembatalan setelah penarikan');
 reset role;
 select public.creator_balance('18181818-0000-0000-0000-0000000000a1') as balance;
-select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as klipper_a;
+select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f1', 'role', 'authenticated')::text, true) is not null as kliper_a;
 set local role authenticated;
 savepoint o; select public.request_withdrawal(100000); rollback to savepoint o;
 select total_withdrawn from public.creator_portal_balance;
-\echo '       the klipper sees the fee and what reached the account (expect 300000 / 2500 / 297500)'
+\echo '       the kliper sees the fee and what reached the account (expect 300000 / 2500 / 297500)'
 select amount, transfer_fee, net_amount from public.creator_portal_withdrawals where status = 'dibayar';
 reset role;
 
--- Blocked klipper B (FR-M3-09).
+-- Blocked kliper B (FR-M3-09).
 select set_config('request.jwt.claims', json_build_object('sub', (select owner_id from p18_roles), 'role', 'authenticated')::text, true) is not null as owner_claims;
 set local role authenticated;
 update public.creators set status = 'diblokir', blocked_reason = 'Uji blokir saldo', blocked_at = now() where id = '18181818-0000-0000-0000-0000000000a2';
 reset role;
-select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as klipper_b;
+select set_config('request.jwt.claims', json_build_object('sub', '18181818-0000-0000-0000-0000000000f2', 'role', 'authenticated')::text, true) is not null as kliper_b;
 set local role authenticated;
-\echo 'P18-23. a blocked klipper still reads their frozen balance (expect diblokir / reason / 200000)'
+\echo 'P18-23. a blocked kliper still reads their frozen balance (expect diblokir / reason / 200000)'
 select a.status, a.blocked_reason, b.available from public.creator_portal_account a, public.creator_portal_balance b;
 \echo 'P18-24. but cannot withdraw or change the account (expect WITHDRAW_CREATOR_BLOCKED, CREATOR_NOT_FOUND)'
 savepoint p; select public.request_withdrawal(100000); rollback to savepoint p;
-savepoint q; select public.save_creator_bank_account('BRI', '12345678', 'Klipper Saldo B'); rollback to savepoint q;
-\echo 'P18-25. only their own entries, nothing of klipper A (expect 1 / 0 / 0)'
+savepoint q; select public.save_creator_bank_account('BRI', '12345678', 'Kliper Saldo B'); rollback to savepoint q;
+\echo 'P18-25. only their own entries, nothing of kliper A (expect 1 / 0 / 0)'
 select (select count(*) from public.creator_portal_ledger) as own_entries,
        (select count(*) from public.creator_portal_withdrawals) as withdrawals,
        (select count(*) from public.creator_ledger_entries) as base_table;

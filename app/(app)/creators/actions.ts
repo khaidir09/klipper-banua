@@ -411,7 +411,7 @@ export async function verifyCreatorAction(values: unknown): Promise<ActionResult
   }
 
   // v4.0: the stamp is the local badge. A prospect the team registered also
-  // becomes assignable, as before; an active klipper keeps their status.
+  // becomes assignable, as before; an active kliper keeps their status.
   const { error } = await supabase
     .from("creators")
     .update({
@@ -432,7 +432,7 @@ export async function verifyCreatorAction(values: unknown): Promise<ActionResult
 
   revalidatePath("/creators");
   revalidatePath(`/creators/${parsed.data.id}`);
-  return ok("Lencana Klipper Lokal diberikan.");
+  return ok("Lencana Kliper Lokal diberikan.");
 }
 
 /* ------------------------------------------------------------------ */
@@ -477,7 +477,7 @@ export async function decideBadgeRequestAction(values: unknown): Promise<ActionR
       );
     }
     if (account.creator?.status === "diblokir") {
-      return fail("Klipper yang diblokir tidak dapat diberi lencana.");
+      return fail("Kliper yang diblokir tidak dapat diberi lencana.");
     }
 
     const { error } = await supabase
@@ -512,7 +512,7 @@ export async function decideBadgeRequestAction(values: unknown): Promise<ActionR
   revalidatePath("/creators/lencana");
   revalidatePath(`/creators/${account.creator_id}`);
   revalidatePath("/dashboard");
-  return ok(decision === "beri" ? "Lencana Klipper Lokal diberikan." : "Pengajuan ditolak.");
+  return ok(decision === "beri" ? "Lencana Kliper Lokal diberikan." : "Pengajuan ditolak.");
 }
 
 export async function revokeLocalBadgeAction(values: unknown): Promise<ActionResult> {
@@ -535,7 +535,7 @@ export async function revokeLocalBadgeAction(values: unknown): Promise<ActionRes
   });
 
   revalidatePath(`/creators/${parsed.data.id}`);
-  return ok("Lencana Klipper Lokal dicabut.");
+  return ok("Lencana Kliper Lokal dicabut.");
 }
 
 /** FR-M3-09. The trigger stamps `blocked_at`; the reason is required. */
@@ -549,7 +549,7 @@ export async function blockCreatorAction(values: unknown): Promise<ActionResult>
     .from("creators")
     .update({ status: "diblokir", blocked_reason: parsed.data.reason })
     .eq("id", parsed.data.creator_id);
-  if (error) return fail(dbRuleMessage(error, "Klipper gagal diblokir."));
+  if (error) return fail(dbRuleMessage(error, "Kliper gagal diblokir."));
 
   await logActivity(supabase, {
     actorId: session.user.id,
@@ -561,7 +561,7 @@ export async function blockCreatorAction(values: unknown): Promise<ActionResult>
 
   revalidatePath("/creators");
   revalidatePath(`/creators/${parsed.data.creator_id}`);
-  return ok("Klipper diblokir.");
+  return ok("Kliper diblokir.");
 }
 
 /** Owner only, here and in `guard_creator_block`. */
@@ -587,7 +587,7 @@ export async function unblockCreatorAction(values: unknown): Promise<ActionResul
 
   revalidatePath("/creators");
   revalidatePath(`/creators/${parsed.data.id}`);
-  return ok("Blokir dibuka. Status klipper kembali aktif.");
+  return ok("Blokir dibuka. Status kliper kembali aktif.");
 }
 
 /* ------------------------------------------------------------------ */

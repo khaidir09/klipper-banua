@@ -10,7 +10,7 @@ import { moneyField, signedMoneyField } from "./money";
 
 const dateField = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Isi tanggal transfer." });
 
-/** FR-M19-04: a klipper's own bank or e-wallet account. */
+/** FR-M19-04: a kliper's own bank or e-wallet account. */
 export const portalBankAccountSchema = z.object({
   bank_name: z.enum(PAYOUT_BANKS, { message: "Pilih bank atau e-wallet." }),
   account_number: z
@@ -46,17 +46,13 @@ export const withdrawalProcessSchema = z.discriminatedUnion("status", [
     withdrawal_id: uuidField,
     paid_at: dateField,
     proof_path: z.string().trim().min(1, { message: "Unggah bukti transfer." }),
-    // Borne by the klipper (owner decision); empty means no fee.
+    // Borne by the kliper (owner decision); empty means no fee.
     transfer_fee: moneyField.default(0),
   }),
   z.object({
     status: z.literal("ditolak"),
     withdrawal_id: uuidField,
-    reason: z
-      .string()
-      .trim()
-      .min(1, { message: "Tulis alasan penolakan untuk klipper." })
-      .max(1000),
+    reason: z.string().trim().min(1, { message: "Tulis alasan penolakan untuk kliper." }).max(1000),
   }),
 ]);
 

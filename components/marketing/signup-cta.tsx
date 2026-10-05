@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { SIGNUP_PATH } from "@/lib/marketing/routes";
 
 /**
- * The klipper's way in (PRD M16, FR-M15-02): a plain link to /daftar. The
+ * The kliper's way in (PRD M16, FR-M15-02): a plain link to /daftar. The
  * form itself lives outside `(marketing)`, so this group stays static and
  * database-free. `brand` inverts the button on the navy panel, as ContactCta
  * does.
  */
 export function SignupCta({
   tone = "default",
-  label = "Daftar jadi Klipper",
+  label = "Daftar jadi Kliper",
   className,
 }: {
   tone?: "default" | "brand";

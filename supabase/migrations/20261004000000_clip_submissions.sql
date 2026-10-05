@@ -2,7 +2,7 @@
 -- FR-M6-03, FR-M6-04, FR-M10-01, FR-M10-03) with a minimal honor ledger
 -- (FR-M19-01, FR-M19-02; balance pages follow in Phase 18).
 --
--- The rule stays "the klipper fills in, the team decides":
+-- The rule stays "the kliper fills in, the team decides":
 --   * a clip is an ordinary `contents` row. While it waits, its live URL and
 --     time sit in `proposed_posted_*`; the team's approval moves them to
 --     `posted_*`, so metrics and reports only ever count approved clips
@@ -11,7 +11,7 @@
 --     the verified number;
 --   * honor is credited to `creator_ledger_entries` by the verification
 --     functions below. The amount comes from lib/calculations/clip-earning.ts;
---     the database only enforces the invariants (budget, per-klipper cap, and
+--     the database only enforces the invariants (budget, per-kliper cap, and
 --     never more than the verified views earn), locking the campaign row so
 --     two approvals at once cannot overspend the budget.
 
@@ -51,9 +51,9 @@ comment on column public.contents.posted_url_normalized is
 comment on column public.contents.verified_views is
   'FR-M18-04: views the team verified on the latest accepted submission of a per_views clip.';
 
--- FR-M18-02: one video can be claimed once, whatever the campaign or klipper.
+-- FR-M18-02: one video can be claimed once, whatever the campaign or kliper.
 -- A rejected clip frees its URL so the real owner can still send it
--- (`bukan_pemilik`); the klipper it was rejected for cannot (guard below).
+-- (`bukan_pemilik`); the kliper it was rejected for cannot (guard below).
 create unique index contents_posted_url_normalized_key
   on public.contents (posted_url_normalized)
   where posted_url_normalized is not null and review_status <> 'ditolak';
@@ -72,7 +72,7 @@ alter table public.metric_submissions
   );
 
 comment on column public.metric_submissions.credit_limited is
-  'PRD 8.6: the credit was cut by the per-klipper cap or the remaining budget ("dibatasi batas kampanye").';
+  'PRD 8.6: the credit was cut by the per-kliper cap or the remaining budget ("dibatasi batas kampanye").';
 
 -- ---------------------------------------------------------------------------
 -- 2. URL normalisation. Mirrored by normalizeClipUrl() in
@@ -164,7 +164,7 @@ create table public.creator_ledger_entries (
 );
 
 comment on table public.creator_ledger_entries is
-  'FR-M19-01: klipper balance ledger. Balance = sum(amount). Append-only; entries only come from security definer functions.';
+  'FR-M19-01: kliper balance ledger. Balance = sum(amount). Append-only; entries only come from security definer functions.';
 
 create index creator_ledger_entries_creator_idx on public.creator_ledger_entries (creator_id, created_at);
 create index creator_ledger_entries_campaign_idx on public.creator_ledger_entries (campaign_id);
@@ -193,7 +193,7 @@ create trigger creator_ledger_entries_guard
 alter table public.creator_ledger_entries enable row level security;
 
 -- The team reads; nobody inserts through the API (no insert policy). The
--- klipper's view of their own entries is Phase 18 (creator_portal_ledger).
+-- kliper's view of their own entries is Phase 18 (creator_portal_ledger).
 create policy "creator_ledger_entries_select_active_members"
   on public.creator_ledger_entries for select to authenticated
   using (public.is_active_member());
@@ -280,7 +280,7 @@ begin
       and creator_id = p_creator_id
       and entry_type in ('honor_klip', 'pembatalan')
   ) + p_credit > v_campaign.max_payout_per_creator then
-    raise exception 'CREDIT_ABOVE_CREATOR_CAP: the credit exceeds the per-klipper cap';
+    raise exception 'CREDIT_ABOVE_CREATOR_CAP: the credit exceeds the per-kliper cap';
   end if;
 
   if public.campaign_creator_cost(p_campaign_id) + p_credit > v_campaign.creator_budget then
@@ -432,7 +432,7 @@ begin
   select * into v_creator from public.creators where id = v_assignment.creator_id;
 
   if v_creator.status not in ('aktif', 'terverifikasi') then
-    raise exception 'CLIP_CREATOR_NOT_ACTIVE: the klipper account is not active';
+    raise exception 'CLIP_CREATOR_NOT_ACTIVE: the kliper account is not active';
   end if;
   if v_creator.terms_version is distinct from public.current_creator_terms_version() then
     raise exception 'CLIP_TERMS_OUTDATED: accept the latest terms first';
@@ -476,7 +476,7 @@ begin
     select count(*) from public.contents ct
     where ct.campaign_creator_id = v_assignment.id and ct.review_status <> 'ditolak'
   ) >= v_campaign.max_clips_per_creator then
-    raise exception 'CLIP_LIMIT_REACHED: the klipper already sent the maximum number of clips';
+    raise exception 'CLIP_LIMIT_REACHED: the kliper already sent the maximum number of clips';
   end if;
 
   if exists (
@@ -532,7 +532,7 @@ create constraint trigger contents_clip_needs_submission
   for each row
   execute function public.assert_clip_has_submission();
 
--- What a portal klipper may change on their own content. Package campaigns
+-- What a portal kliper may change on their own content. Package campaigns
 -- keep the Phase 10 rules; a clip may only be sent back after a revision
 -- request, with its URL unchanged (FR-M18-03).
 create or replace function public.guard_portal_content_change()
@@ -608,7 +608,7 @@ $$;
 -- 5. Reviews. Package campaigns keep the FR-M6-03 checklist; clips use the
 --    FR-M18-04 checklist and are only decided through verify_clip.
 --    `app.clip_review` says which function is writing: verify, withdraw
---    (klipper left the campaign) or fraud (owner cancels an approved clip).
+--    (kliper left the campaign) or fraud (owner cancels an approved clip).
 -- ---------------------------------------------------------------------------
 create or replace function public.guard_content_review_insert()
 returns trigger
@@ -669,7 +669,7 @@ begin
     end loop;
   end if;
 
-  -- A withdrawal is the klipper's own act, not a reviewer's decision.
+  -- A withdrawal is the kliper's own act, not a reviewer's decision.
   new.reviewer_id := case when v_mode = 'withdraw' then null else (select auth.uid()) end;
   new.notes := trim(new.notes);
   new.draft_snapshot := jsonb_build_object(
@@ -863,7 +863,7 @@ $$;
 
 -- ---------------------------------------------------------------------------
 -- 7. Sending a clip from the portal (FR-M18-01). Security invoker: RLS and
---    every trigger above apply to the klipper exactly as for a direct insert;
+--    every trigger above apply to the kliper exactly as for a direct insert;
 --    the function only makes the two inserts one transaction.
 -- ---------------------------------------------------------------------------
 create or replace function public.submit_clip(
@@ -973,7 +973,7 @@ begin
       raise exception 'CLIP_REJECT_NEEDS_REASON: pick a rejection reason';
     end if;
     if v_notes = '' then
-      raise exception 'CLIP_REJECT_NEEDS_NOTES: tell the klipper why the clip was rejected';
+      raise exception 'CLIP_REJECT_NEEDS_NOTES: tell the kliper why the clip was rejected';
     end if;
   end if;
 
@@ -1085,7 +1085,7 @@ begin
 
   if not p_accept then
     if v_notes = '' then
-      raise exception 'SUBMISSION_REJECT_NEEDS_NOTES: tell the klipper why it was rejected';
+      raise exception 'SUBMISSION_REJECT_NEEDS_NOTES: tell the kliper why it was rejected';
     end if;
     update public.metric_submissions
       set status = 'ditolak',
@@ -1205,7 +1205,7 @@ begin
       raise exception 'OWNER_ONLY: only an owner can cancel a clip for fraud';
     end if;
     if v_notes = '' then
-      raise exception 'CLIP_REJECT_NEEDS_NOTES: tell the klipper why the clip was rejected';
+      raise exception 'CLIP_REJECT_NEEDS_NOTES: tell the kliper why the clip was rejected';
     end if;
 
     -- Offline first: FR-M6-04 keeps a live URL for approved content only, and
@@ -1256,7 +1256,7 @@ set search_path = ''
 as $$
 declare
   v_content_id uuid;
-  v_note constant text := 'Klipper mundur dari kampanye.';
+  v_note constant text := 'Kliper mundur dari kampanye.';
 begin
   if new.status <> 'mundur' or old.status = 'mundur' then
     return null;
@@ -1323,7 +1323,7 @@ join public.campaign_creators cc on cc.id = c.campaign_creator_id
 where cc.creator_id = public.current_creator_id();
 
 comment on view public.creator_portal_contents is
-  'FR-M13-05, FR-M18: the klipper''s own content and clips, with review status, verified views and the honor credited per clip.';
+  'FR-M13-05, FR-M18: the kliper''s own content and clips, with review status, verified views and the honor credited per clip.';
 
 create or replace view public.creator_portal_submissions
 with (security_invoker = off) as
@@ -1351,4 +1351,4 @@ join public.campaign_creators cc on cc.id = c.campaign_creator_id
 where cc.creator_id = public.current_creator_id();
 
 comment on view public.creator_portal_submissions is
-  'FR-M13-06, FR-M18-05: the klipper''s own submissions, how they were verified and what they credited.';
+  'FR-M13-06, FR-M18-05: the kliper''s own submissions, how they were verified and what they credited.';

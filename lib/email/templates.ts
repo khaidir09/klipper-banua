@@ -4,7 +4,7 @@ import { formatCalendarDate } from "@/lib/format/date";
 import { formatNumber } from "@/lib/format/number";
 
 /*
- * Klipper notification emails (FR-M18-09, FR-M19-09). Pure builders so the
+ * Kliper notification emails (FR-M18-09, FR-M19-09). Pure builders so the
  * wording is unit tested; sending lives in `lib/email/send.ts`. The emails
  * never carry bank account numbers or transfer proofs.
  */

@@ -20,7 +20,7 @@ import { requireInternal } from "@/lib/auth/guards";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/constants/creators";
 import { CHECKPOINT_LABELS } from "@/lib/constants/metrics";
 import { listClipQueue, listLowBudgetCampaigns, type LowBudgetCampaign } from "@/lib/data/clips";
-import { countKlipperQueues } from "@/lib/data/creators";
+import { countKliperQueues } from "@/lib/data/creators";
 import { countOpenWithdrawals } from "@/lib/data/withdrawals";
 import { getDashboard } from "@/lib/data/dashboard";
 import { formatRupiah } from "@/lib/format/currency";
@@ -205,7 +205,7 @@ function Row({ href, children }: { href: string; children: React.ReactNode }) {
   );
 }
 
-/** Spent vs. left of the klipper budget, in Rupiah and as a bar (FR-M8-06). */
+/** Spent vs. left of the kliper budget, in Rupiah and as a bar (FR-M8-06). */
 function BudgetUsage({ campaign }: { campaign: LowBudgetCampaign }) {
   const usedPct = 100 - campaign.remainingPct;
   return (
@@ -252,9 +252,9 @@ export default async function DashboardPage() {
   const tz = profile.timezone;
   const supabase = await createSupabaseServerClient();
   const isOwner = profile.role === "owner";
-  const [data, klipper, clipQueue, lowBudget, openWithdrawals] = await Promise.all([
+  const [data, kliper, clipQueue, lowBudget, openWithdrawals] = await Promise.all([
     getDashboard(supabase, new Date(), tz),
-    countKlipperQueues(supabase),
+    countKliperQueues(supabase),
     listClipQueue(supabase),
     listLowBudgetCampaigns(supabase),
     isOwner ? countOpenWithdrawals(supabase) : Promise.resolve(0),
@@ -283,7 +283,7 @@ export default async function DashboardPage() {
             waiting={
               overdueClips
                 ? `${formatNumber(overdueClips)} lewat 24 jam`
-                : "Klipper menunggu keputusan"
+                : "Kliper menunggu keputusan"
             }
           />
           <ActionCard
@@ -317,7 +317,7 @@ export default async function DashboardPage() {
           {/* v4.0 (FR-M10-01): local badge requests sent from the portal. */}
           <ActionCard
             label="Pengajuan lencana"
-            count={klipper.badgeRequests}
+            count={kliper.badgeRequests}
             href="/creators/lencana"
             icon={BadgeCheck}
             waiting="Bukti audiens menunggu diperiksa"
@@ -329,11 +329,11 @@ export default async function DashboardPage() {
               count={openWithdrawals}
               href="/penarikan?status=diajukan"
               icon={Wallet}
-              waiting="Transfer ke klipper belum selesai"
+              waiting="Transfer ke kliper belum selesai"
             />
           ) : null}
           <ActionCard
-            label="Anggaran klipper < 10%"
+            label="Anggaran kliper < 10%"
             count={lowBudget.length}
             href="#anggaran-menipis"
             icon={AlertTriangle}
@@ -361,8 +361,8 @@ export default async function DashboardPage() {
             detail={`${formatNumber(data.openInvoices.count)} invoice`}
           />
           <SummaryCard
-            label="Klipper baru (7 hari)"
-            value={formatNumber(klipper.newSignups)}
+            label="Kliper baru (7 hari)"
+            value={formatNumber(kliper.newSignups)}
             href="/creators?source=mandiri"
             detail="Mendaftar sendiri lewat /daftar"
           />
@@ -374,7 +374,7 @@ export default async function DashboardPage() {
         <div className="grid gap-4 lg:grid-cols-2">
           <ListCard
             id="anggaran-menipis"
-            title="Sisa anggaran klipper di bawah 10%"
+            title="Sisa anggaran kliper di bawah 10%"
             description="Kampanye per views yang anggaran honornya hampir habis. Naikkan anggaran atau siapkan penutupan."
             empty="Semua kampanye per views masih punya anggaran cukup."
             total={lowBudget.length}

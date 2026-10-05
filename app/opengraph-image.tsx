@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { publicEnv } from "@/lib/env";
 
-export const alt = `${publicEnv.NEXT_PUBLIC_APP_NAME} — klipper lokal Kalimantan`;
+export const alt = `${publicEnv.NEXT_PUBLIC_APP_NAME} — kliper lokal Kalimantan`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -35,7 +35,7 @@ export default function OpengraphImage() {
           Bisa edit video? Posting klip, dapat honor dari views.
         </div>
         <div style={{ fontSize: 30, color: "#C3D3E8" }}>
-          Daftar gratis · Dibayar per 1.000 views · Klipper Kalimantan
+          Daftar gratis · Dibayar per 1.000 views · Kliper Kalimantan
         </div>
       </div>
     </div>,

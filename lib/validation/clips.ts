@@ -13,7 +13,7 @@ const proofPathField = z.string().trim().min(1, { message: "Unggah screenshot vi
 
 const requiredCountField = z.union([z.string(), z.number()]).pipe(countField);
 
-/** FR-M18-01. `posted_at` is wall-clock time in the klipper's timezone. */
+/** FR-M18-01. `posted_at` is wall-clock time in the kliper's timezone. */
 export const clipSubmitSchema = z.object({
   assignment_id: uuidField,
   platform: z.enum(SOCIAL_PLATFORMS, { message: "Pilih platform." }),
@@ -26,7 +26,7 @@ export const clipSubmitSchema = z.object({
   comments: countField,
   shares: countField,
   proof_path: proofPathField,
-  // FR-M18-03: the klipper states the code is in the caption; the team checks.
+  // FR-M18-03: the kliper states the code is in the caption; the team checks.
   code_in_caption: z.literal(true, {
     message: "Pastikan kode verifikasimu ada di caption, lalu centang pernyataan ini.",
   }),
@@ -90,7 +90,7 @@ export const clipVerifySchema = z
   })
   .refine((value) => value.decision !== "revisi" || value.notes.length > 0, {
     path: ["notes"],
-    message: "Tulis apa yang harus diperbaiki klipper.",
+    message: "Tulis apa yang harus diperbaiki kliper.",
   })
   .refine((value) => value.decision !== "ditolak" || value.rejection_reason !== null, {
     path: ["rejection_reason"],
@@ -98,7 +98,7 @@ export const clipVerifySchema = z
   })
   .refine((value) => value.decision !== "ditolak" || value.notes.length > 0, {
     path: ["notes"],
-    message: "Tulis catatan penolakan untuk klipper.",
+    message: "Tulis catatan penolakan untuk kliper.",
   });
 
 export type ClipVerifyFormInput = z.input<typeof clipVerifySchema>;
@@ -118,7 +118,7 @@ export const viewsUpdateVerifySchema = z
   })
   .refine((value) => value.accept || value.notes.length > 0, {
     path: ["notes"],
-    message: "Tulis alasan penolakan untuk klipper.",
+    message: "Tulis alasan penolakan untuk kliper.",
   });
 
 export type ViewsUpdateVerifyFormInput = z.input<typeof viewsUpdateVerifySchema>;
@@ -135,7 +135,7 @@ export const clipCancelSchema = z.discriminatedUnion("kind", [
     kind: z.literal("kecurangan"),
     content_id: uuidField,
     rejection_reason: z.enum(CLIP_REJECTION_REASONS, { message: "Pilih alasan penolakan." }),
-    notes: z.string().trim().min(1, { message: "Tulis bukti kecurangan untuk klipper." }).max(2000),
+    notes: z.string().trim().min(1, { message: "Tulis bukti kecurangan untuk kliper." }).max(2000),
   }),
 ]);
 

@@ -16,7 +16,7 @@ const PUBLIC_PATHS = [
   ...MARKETING_PATHS,
   ...MARKETING_FILES,
   "/login",
-  // Klipper self-registration (PRD M16, v4.0).
+  // Kliper self-registration (PRD M16, v4.0).
   SIGNUP_PATH,
   "/lupa-sandi",
   "/atur-sandi",

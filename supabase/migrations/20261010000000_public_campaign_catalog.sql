@@ -1,7 +1,7 @@
 -- FR-M15-09 (PRD 1.6): the open campaigns on the public site (/kampanye), so a
 -- visitor sees what is on offer before signing up. Same campaigns as the
 -- portal catalog (FR-M17-03), fewer columns: no brief, must-do/must-not,
--- material or assignment status (those stay behind the klipper login), and
+-- material or assignment status (those stay behind the kliper login), and
 -- never the package price, targets or internal notes.
 --
 -- `anon` must not call the budget helpers directly (they answer for any

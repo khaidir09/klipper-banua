@@ -1,6 +1,6 @@
 -- FR-M4-01 (revised, PRD 1.3): the campaign objective only belongs to legacy
 -- `paket` campaigns. Open `per_views` campaigns pay per verified views, so an
--- objective adds nothing for klippers; it stays null there. Legacy rows keep
+-- objective adds nothing for klipers; it stays null there. Legacy rows keep
 -- their stored value for their reports.
 --
 -- The landing URL rule in guard_campaign_update() only fires for

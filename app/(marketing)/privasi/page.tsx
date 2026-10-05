@@ -7,7 +7,7 @@ import { whatsappDisplay } from "@/lib/marketing/contact";
 const WHATSAPP = whatsappDisplay(publicEnv.NEXT_PUBLIC_CONTACT_WA);
 
 const DESCRIPTION =
-  "Bagaimana kami menangani data anggota tim, kontak klien, dan klipper — serta mengapa kami tidak menyimpan data pribadi calon pendaftar.";
+  "Bagaimana kami menangani data anggota tim, kontak klien, dan kliper — serta mengapa kami tidak menyimpan data pribadi calon pendaftar.";
 
 export const metadata: Metadata = {
   title: "Kebijakan Privasi",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
 /**
  * Describes what the product actually does, so every claim here is checkable
- * against PRD Bagian 9 and the database it documents. v4.0 adds the klipper
+ * against PRD Bagian 9 and the database it documents. v4.0 adds the kliper
  * registration (M16); wording approved by the owner on 23 Sep 2026 (PRD 13.2
  * no. 6). The legal entity name and address are deliberately absent until the
  * founder settles them
@@ -34,24 +34,24 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Ringkasnya",
     bullets: [
-      "Kami mengumpulkan data pribadi seminimal mungkin, dan hanya dari orang yang memang bekerja dengan kami: anggota tim, kontak klien, dan klipper yang mendaftar.",
+      "Kami mengumpulkan data pribadi seminimal mungkin, dan hanya dari orang yang memang bekerja dengan kami: anggota tim, kontak klien, dan kliper yang mendaftar.",
       "Kami tidak menyimpan data pribadi pendaftar atau pembeli dari kampanye klien. Yang kami terima dari klien hanya angka rekap.",
-      "Halaman informasi di situs ini tidak memuat formulir dan tidak memasang pelacak pihak ketiga. Satu-satunya formulir adalah pendaftaran klipper.",
+      "Halaman informasi di situs ini tidak memuat formulir dan tidak memasang pelacak pihak ketiga. Satu-satunya formulir adalah pendaftaran kliper.",
       "Kami tidak meminta foto KTP atau dokumen identitas.",
-      "Klipper dapat meminta akunnya dihapus langsung dari portal.",
+      "Kliper dapat meminta akunnya dihapus langsung dari portal.",
     ],
   },
   {
     heading: "Data yang kami kumpulkan",
     body: [
-      "Data klipper diisi sendiri lewat formulir pendaftaran dan portal. Data lainnya dicatat tim di dalam aplikasi.",
+      "Data kliper diisi sendiri lewat formulir pendaftaran dan portal. Data lainnya dicatat tim di dalam aplikasi.",
     ],
     bullets: [
       "Anggota tim internal: nama, alamat email, peran, dan zona waktu tampilan.",
       "Kontak klien: nama, jabatan, nomor WhatsApp, dan alamat email, untuk koordinasi kampanye dan akses portal klien.",
-      "Klipper: nama, nama panggung, nomor WhatsApp, email, kota dan provinsi, tanggal lahir (diminta sebelum penarikan saldo pertama, untuk mencocokkan data penerima transfer), versi syarat yang disetujui beserta waktunya, akun media sosial, serta tangkapan layar analitik audiens bila mengajukan lencana Klipper Lokal.",
-      "Klip yang dikirim klipper: tautan klip, waktu tayang, dan tangkapan layar views, untuk verifikasi dan perhitungan honor.",
-      "Data rekening klipper: nama bank atau e-wallet, nomor rekening, dan nama pemilik rekening, semata-mata untuk pembayaran honor.",
+      "Kliper: nama, nama panggung, nomor WhatsApp, email, kota dan provinsi, tanggal lahir (diminta sebelum penarikan saldo pertama, untuk mencocokkan data penerima transfer), versi syarat yang disetujui beserta waktunya, akun media sosial, serta tangkapan layar analitik audiens bila mengajukan lencana Kliper Lokal.",
+      "Klip yang dikirim kliper: tautan klip, waktu tayang, dan tangkapan layar views, untuk verifikasi dan perhitungan honor.",
+      "Data rekening kliper: nama bank atau e-wallet, nomor rekening, dan nama pemilik rekening, semata-mata untuk pembayaran honor.",
       "Catatan aktivitas: siapa melakukan tindakan penting apa dan kapan, sebagai jejak audit internal.",
     ],
   },
@@ -65,7 +65,7 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Kunjungan lewat tautan pelacakan",
     body: [
-      "Setiap klipper mendapat tautan pelacakan unik yang meneruskan pengunjung ke halaman tujuan klien. Kami mencatat kunjungan itu untuk menghitung klik per klipper.",
+      "Setiap kliper mendapat tautan pelacakan unik yang meneruskan pengunjung ke halaman tujuan klien. Kami mencatat kunjungan itu untuk menghitung klik per kliper.",
       "Alamat IP pengunjung tidak disimpan apa adanya. Nilainya diacak dengan kunci rahasia (hash) lalu hanya dipakai untuk menyaring klik berulang dan lalu lintas otomatis. Kami tidak membangun profil pengunjung dan tidak mengaitkannya dengan identitas siapa pun.",
     ],
   },
@@ -73,15 +73,15 @@ const SECTIONS: LegalSection[] = [
     heading: "Situs publik ini",
     body: [
       "Halaman informasi yang sedang Anda baca bersifat statis: tidak ada formulir dan tidak ada permintaan data ke basis data kami.",
-      "Formulir pendaftaran klipper terpisah dari halaman ini. Untuk mencegah penyalahgunaan, alamat IP pendaftar dipakai sementara dalam bentuk teracak (hash) untuk membatasi jumlah percobaan, dan tidak disimpan ke basis data.",
+      "Formulir pendaftaran kliper terpisah dari halaman ini. Untuk mencegah penyalahgunaan, alamat IP pendaftar dipakai sementara dalam bentuk teracak (hash) untuk membatasi jumlah percobaan, dan tidak disimpan ke basis data.",
       "Tidak ada layanan analitik atau pelacak pihak ketiga yang dipasang. Satu-satunya hal yang mungkin tersimpan di peramban Anda adalah pilihan tema terang atau gelap, yang berada di perangkat Anda sendiri dan tidak pernah dikirim ke kami.",
     ],
   },
   {
     heading: "Untuk apa data dipakai",
     bullets: [
-      "Menjalankan kampanye: menyusun brief, menampilkan kampanye kepada klipper, dan memverifikasi klip.",
-      "Menghitung dan membayar honor klipper secara adil berdasarkan views yang sudah diverifikasi.",
+      "Menjalankan kampanye: menyusun brief, menampilkan kampanye kepada kliper, dan memverifikasi klip.",
+      "Menghitung dan membayar honor kliper secara adil berdasarkan views yang sudah diverifikasi.",
       "Menyusun laporan kampanye untuk klien.",
       "Menjaga keamanan: membatasi akses sesuai peran dan menyimpan jejak audit tindakan penting.",
     ],
@@ -90,21 +90,21 @@ const SECTIONS: LegalSection[] = [
     heading: "Penyimpanan dan akses",
     body: [
       "Data disimpan pada basis data terkelola dan berkas diunggah ke penyimpanan privat yang hanya dapat dibuka lewat tautan bertanda waktu dan berumur pendek.",
-      "Akses dibatasi per peran. Nomor rekening klipper dan bukti keuangan hanya dapat dilihat lengkap oleh owner; pengelola kampanye melihatnya dalam bentuk tersamar. Klipper dan kontak klien yang memakai portal hanya dapat melihat datanya sendiri.",
+      "Akses dibatasi per peran. Nomor rekening kliper dan bukti keuangan hanya dapat dilihat lengkap oleh owner; pengelola kampanye melihatnya dalam bentuk tersamar. Kliper dan kontak klien yang memakai portal hanya dapat melihat datanya sendiri.",
     ],
   },
   {
     heading: "Berapa lama disimpan",
     body: [
       "Data kampanye, konten, metrik, dan laporan disimpan selama masih dibutuhkan untuk pertanggungjawaban kepada klien dan kewajiban pembukuan.",
-      "Data klipper disimpan selama akun aktif, dan dihapus atau dianonimkan setelah permintaan penghapusan diproses dan saldo diselesaikan, kecuali bagian yang wajib kami simpan sebagai bukti pembayaran.",
+      "Data kliper disimpan selama akun aktif, dan dihapus atau dianonimkan setelah permintaan penghapusan diproses dan saldo diselesaikan, kecuali bagian yang wajib kami simpan sebagai bukti pembayaran.",
     ],
   },
   {
     heading: "Hak Anda",
     body: [
       "Anda dapat meminta penjelasan data apa yang kami simpan tentang Anda, meminta koreksi bila ada yang salah, dan meminta penghapusan data Anda.",
-      "Klipper dapat meminta penghapusan akun dari halaman Profil di portal. Permintaan lain disampaikan lewat kontak di bawah; kami memverifikasi bahwa permintaan itu memang datang dari Anda sebelum menjalankannya.",
+      "Kliper dapat meminta penghapusan akun dari halaman Profil di portal. Permintaan lain disampaikan lewat kontak di bawah; kami memverifikasi bahwa permintaan itu memang datang dari Anda sebelum menjalankannya.",
     ],
   },
   {

@@ -154,20 +154,19 @@ export function CampaignForm({
   // used to sit empty and stays in view while the operator scrolls. `useWatch`
   // rather than `form.watch()`: it re-renders only on these fields and does not
   // opt the component out of the React Compiler.
-  const [clientId, code, startDate, endDate, packagePrice, baseFee, rate, budget] =
-    useWatch({
-      control: form.control,
-      name: [
-        "client_id",
-        "code",
-        "start_date",
-        "end_date",
-        "package_price",
-        "default_base_fee",
-        "rate_per_1000_views",
-        "creator_budget",
-      ],
-    });
+  const [clientId, code, startDate, endDate, packagePrice, baseFee, rate, budget] = useWatch({
+    control: form.control,
+    name: [
+      "client_id",
+      "code",
+      "start_date",
+      "end_date",
+      "package_price",
+      "default_base_fee",
+      "rate_per_1000_views",
+      "creator_budget",
+    ],
+  });
   const selectedClient = clients.find((client) => client.id === clientId);
   const summary: { label: string; value: string; mono?: boolean }[] = [
     { label: "Klien", value: selectedClient?.name ?? "Belum dipilih" },
@@ -177,7 +176,7 @@ export function CampaignForm({
     ...(perViews
       ? [
           { label: "Tarif / 1.000 views", value: summaryRupiah(rate) },
-          { label: "Anggaran klipper", value: summaryRupiah(budget) },
+          { label: "Anggaran kliper", value: summaryRupiah(budget) },
         ]
       : [{ label: "Honor dasar / konten", value: summaryRupiah(baseFee) }]),
   ];
@@ -213,7 +212,7 @@ export function CampaignForm({
               ? [
                   "Sebelum aktif: brief, minimal satu materi, tarif, anggaran, dan platform wajib terisi.",
                   "Anggaran dapat dinaikkan saat kampanye berjalan; tarif terkunci setelah ada klip disetujui.",
-                  "Klipper melihat anggaran klipper dan sisanya, tetapi tidak melihat harga paket.",
+                  "Kliper melihat anggaran kliper dan sisanya, tetapi tidak melihat harga paket.",
                 ]
               : [
                   "Kampanye lama bertujuan Pendaftar butuh URL tujuan terisi sebelum dapat diaktifkan.",
@@ -325,14 +324,10 @@ export function CampaignForm({
             <FieldLegend>Tautan & periode</FieldLegend>
             <Field>
               <FieldLabel htmlFor="landing_url">URL tujuan (landing_url)</FieldLabel>
-              <Input
-                {...text("landing_url")}
-                type="url"
-                placeholder="https://brandx.co.id/promo"
-              />
+              <Input {...text("landing_url")} type="url" placeholder="https://brandx.co.id/promo" />
               <FieldDescription>
                 {perViews
-                  ? "Opsional. Halaman yang dibuka dari tautan pelacakan klipper."
+                  ? "Opsional. Halaman yang dibuka dari tautan pelacakan kliper."
                   : "Tujuan tautan pelacakan. Wajib sebelum kampanye bertujuan pendaftar diaktifkan."}
               </FieldDescription>
               <FieldError errors={[errors.landing_url]} />
@@ -386,7 +381,7 @@ export function CampaignForm({
             <FieldSet>
               <FieldLegend>Akses & honor per views</FieldLegend>
               <FieldDescription>
-                Honor klipper dihitung dari views terverifikasi. Nominal dalam Rupiah utuh.
+                Honor kliper dihitung dari views terverifikasi. Nominal dalam Rupiah utuh.
               </FieldDescription>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
@@ -399,8 +394,8 @@ export function CampaignForm({
                     ))}
                   </NativeSelect>
                   <FieldDescription>
-                    Terbuka: tampil di katalog portal dan klipper bergabung sendiri. Undangan: hanya
-                    klipper yang ditambahkan tim.
+                    Terbuka: tampil di katalog portal dan kliper bergabung sendiri. Undangan: hanya
+                    kliper yang ditambahkan tim.
                   </FieldDescription>
                   <FieldError errors={[errors.access]} />
                 </Field>
@@ -410,9 +405,9 @@ export function CampaignForm({
                   <FieldError errors={[errors.rate_per_1000_views]} />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="creator_budget">Anggaran klipper (Rp)</FieldLabel>
+                  <FieldLabel htmlFor="creator_budget">Anggaran kliper (Rp)</FieldLabel>
                   <Input {...money("creator_budget")} />
-                  <FieldDescription>Total honor yang boleh dibayarkan ke klipper.</FieldDescription>
+                  <FieldDescription>Total honor yang boleh dibayarkan ke kliper.</FieldDescription>
                   <FieldError errors={[errors.creator_budget]} />
                 </Field>
                 <Field>
@@ -430,7 +425,7 @@ export function CampaignForm({
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="max_payout_per_creator">
-                    Batas honor per klipper (Rp)
+                    Batas honor per kliper (Rp)
                   </FieldLabel>
                   <Input
                     {...money("max_payout_per_creator")}
@@ -439,7 +434,7 @@ export function CampaignForm({
                   <FieldError errors={[errors.max_payout_per_creator]} />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="max_clips_per_creator">Maksimal klip per klipper</FieldLabel>
+                  <FieldLabel htmlFor="max_clips_per_creator">Maksimal klip per kliper</FieldLabel>
                   <Input {...text("max_clips_per_creator")} inputMode="numeric" />
                   <FieldError errors={[errors.max_clips_per_creator]} />
                 </Field>
@@ -499,7 +494,7 @@ export function CampaignForm({
                       onCheckedChange={(checked) => field.onChange(checked === true)}
                     />
                     <FieldLabel htmlFor="local_only" className="font-normal">
-                      Khusus pemegang lencana Klipper Lokal
+                      Khusus pemegang lencana Kliper Lokal
                     </FieldLabel>
                   </Field>
                 )}

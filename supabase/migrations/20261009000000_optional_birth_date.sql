@@ -1,12 +1,12 @@
--- FR-M3-02 (revised, PRD 1.5): age is no longer a requirement to be a klipper.
+-- FR-M3-02 (revised, PRD 1.5): age is no longer a requirement to be a kliper.
 --
 -- 1. The 18+ constraint goes, and `birth_date` may stay empty on any row.
 -- 2. Self sign-up (`handle_new_user`) no longer asks for a birth date.
--- 3. `set_own_birth_date()` lets a klipper fill it in once from the portal;
+-- 3. `set_own_birth_date()` lets a kliper fill it in once from the portal;
 --    later changes go through the team.
 -- 4. `request_withdrawal()` refuses until the birth date is filled in
 --    (FR-M19-05). Mirrored by withdrawalBlockers() in lib/calculations/balance.ts.
--- 5. `creator_portal_profile` exposes the klipper's own birth date.
+-- 5. `creator_portal_profile` exposes the kliper's own birth date.
 
 -- ---------------------------------------------------------------------------
 -- 1. Constraints
@@ -88,7 +88,7 @@ begin
     )
     returning id into new_creator_id;
 
-    -- FR-M11-01: the registration is the klipper's own first action.
+    -- FR-M11-01: the registration is the kliper's own first action.
     insert into public.activity_logs (actor_id, entity_type, entity_id, action, details)
     values (
       new.id,
@@ -104,7 +104,7 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------
--- 3. The klipper fills in their own birth date, once
+-- 3. The kliper fills in their own birth date, once
 -- ---------------------------------------------------------------------------
 create or replace function public.set_own_birth_date(p_birth_date date)
 returns void
@@ -117,7 +117,7 @@ declare
   v_creator public.creators%rowtype;
 begin
   if me is null then
-    raise exception 'CREATOR_NOT_FOUND: no active klipper for this account';
+    raise exception 'CREATOR_NOT_FOUND: no active kliper for this account';
   end if;
 
   select * into v_creator from public.creators where id = me for update;
@@ -160,15 +160,15 @@ declare
 begin
   if me is null then
     if public.current_creator_account_id() is not null then
-      raise exception 'WITHDRAW_CREATOR_BLOCKED: a blocked klipper cannot withdraw';
+      raise exception 'WITHDRAW_CREATOR_BLOCKED: a blocked kliper cannot withdraw';
     end if;
-    raise exception 'CREATOR_NOT_FOUND: no active klipper for this account';
+    raise exception 'CREATOR_NOT_FOUND: no active kliper for this account';
   end if;
 
-  -- Serialises every withdrawal of this klipper (two requests at once).
+  -- Serialises every withdrawal of this kliper (two requests at once).
   select * into v_creator from public.creators where id = me for update;
   if v_creator.status = 'diblokir' then
-    raise exception 'WITHDRAW_CREATOR_BLOCKED: a blocked klipper cannot withdraw';
+    raise exception 'WITHDRAW_CREATOR_BLOCKED: a blocked kliper cannot withdraw';
   end if;
   if v_creator.birth_date is null then
     raise exception 'WITHDRAW_NEEDS_BIRTH_DATE: fill in the birth date first';

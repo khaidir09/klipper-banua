@@ -44,7 +44,7 @@ export const signupSchema = z
       }),
     city: requiredText("Kota wajib diisi."),
     province: z.enum(PROVINCES, { message: "Pilih provinsi." }),
-    agree_terms: mustAccept("Setujui Syarat Klipper untuk melanjutkan."),
+    agree_terms: mustAccept("Setujui Syarat Kliper untuk melanjutkan."),
     agree_privacy: mustAccept("Setujui Kebijakan Privasi untuk melanjutkan."),
   })
   .refine((values) => values.password === values.passwordConfirmation, {

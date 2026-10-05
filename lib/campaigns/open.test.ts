@@ -27,7 +27,7 @@ const joinable: JoinCheckInput = {
 };
 
 describe("joinBlockers (FR-M17-04)", () => {
-  it("lets an active klipper join a running open campaign", () => {
+  it("lets an active kliper join a running open campaign", () => {
     expect(joinBlockers(joinable)).toEqual([]);
   });
 
@@ -41,7 +41,7 @@ describe("joinBlockers (FR-M17-04)", () => {
     ["prospek", "creator_not_active"],
     ["nonaktif", "creator_not_active"],
     ["diblokir", "creator_not_active"],
-  ] as const)("refuses a %s klipper", (status, blocker) => {
+  ] as const)("refuses a %s kliper", (status, blocker) => {
     expect(joinBlockers({ ...joinable, creator: { ...joinable.creator, status } })).toEqual([
       blocker,
     ]);
@@ -130,11 +130,11 @@ describe("activationBlockers for per_views (FR-M17-02)", () => {
     access: "terbuka" as const,
   };
 
-  it("lets an open campaign start without klippers", () => {
+  it("lets an open campaign start without klipers", () => {
     expect(activationBlockers({ ...open, perViews: ready })).toEqual([]);
   });
 
-  it("still needs a klipper for an invite-only campaign", () => {
+  it("still needs a kliper for an invite-only campaign", () => {
     expect(activationBlockers({ ...open, access: "undangan", perViews: ready })).toHaveLength(1);
   });
 

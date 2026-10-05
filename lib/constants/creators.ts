@@ -79,7 +79,7 @@ export const SIGNUP_SOURCE_LABELS: Record<SignupSource, string> = {
 export const SIGNUP_SOURCES = Object.keys(SIGNUP_SOURCE_LABELS) as SignupSource[];
 
 /**
- * Version of the klipper terms (Syarat Klipper) a registration agrees to
+ * Version of the kliper terms (Syarat Kliper) a registration agrees to
  * (FR-M3-04, FR-M16-01). Bump it whenever /syarat changes materially: from
  * Phase 16 on, joining a campaign asks for the latest version again.
  */

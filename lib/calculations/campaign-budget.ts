@@ -1,5 +1,5 @@
 /**
- * Klipper budget of a `per_views` campaign (PRD 8.4, FR-M17-06). Whole Rupiah
+ * Kliper budget of a `per_views` campaign (PRD 8.4, FR-M17-06). Whole Rupiah
  * only. Mirrored in the database by `campaign_budget_exhausted()` and the
  * `budget_remaining_pct` / `budget_remaining` columns of `creator_portal_catalog`.
  */
@@ -35,7 +35,7 @@ export function budgetUsedPct({ creatorBudget, creatorCost }: CampaignBudgetInpu
 
 /**
  * FR-M17-06: the rest cannot pay for another 1,000 views, so the campaign
- * takes no new klippers and no new clips.
+ * takes no new klipers and no new clips.
  */
 export function isBudgetExhausted(input: CampaignBudgetInput): boolean {
   return input.creatorBudget - input.creatorCost < input.ratePer1000Views;

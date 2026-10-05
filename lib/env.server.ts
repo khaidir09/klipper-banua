@@ -43,7 +43,7 @@ export function serverEnv() {
 }
 
 /*
- * SMTP for klipper notification emails (FR-M18-09, FR-M19-09). Optional:
+ * SMTP for kliper notification emails (FR-M18-09, FR-M19-09). Optional:
  * without SMTP_HOST and EMAIL_FROM no email is sent. Kept apart from
  * `serverEnv()` so a half-filled SMTP block never breaks the rest of the app.
  */

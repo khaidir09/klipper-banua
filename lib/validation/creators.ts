@@ -37,13 +37,13 @@ export const birthDateField = z
     message: "Tanggal lahir tidak valid.",
   });
 
-/** The team may leave the birth date empty; the klipper fills it in later. */
+/** The team may leave the birth date empty; the kliper fills it in later. */
 const optionalBirthDateField = z
   .union([z.literal(""), birthDateField])
   .transform((value) => (value === "" ? null : value))
   .default("");
 
-/** FR-M3-02: the klipper fills in their own birth date before withdrawing. */
+/** FR-M3-02: the kliper fills in their own birth date before withdrawing. */
 export const ownBirthDateSchema = z.object({ birth_date: birthDateField });
 
 export const creatorSchema = z.object({
@@ -141,7 +141,7 @@ export const creatorListQuerySchema = listQuerySchema.extend({
   status: z.enum(CREATOR_STATUSES).optional().catch(undefined),
   platform: z.enum(SOCIAL_PLATFORMS).optional().catch(undefined),
   min_pct: z.coerce.number().min(0).max(100).optional().catch(undefined),
-  // v4.0 (M16): who registered the klipper, and whether they hold the local badge.
+  // v4.0 (M16): who registered the kliper, and whether they hold the local badge.
   source: z.enum(SIGNUP_SOURCES).optional().catch(undefined),
   badge: z.enum(["ya", "tidak"]).optional().catch(undefined),
 });
@@ -202,7 +202,7 @@ export const anonymizeCreatorSchema = z.object({
 });
 
 /* ------------------------------------------------------------------ */
-/* Klipper self-service (M16, v4.0)                                    */
+/* Kliper self-service (M16, v4.0)                                    */
 /* ------------------------------------------------------------------ */
 
 /**
@@ -240,7 +240,7 @@ export const badgeDecisionSchema = z
   })
   .refine((value) => value.decision === "beri" || value.notes.length > 0, {
     path: ["notes"],
-    message: "Tulis alasan penolakan agar klipper tahu yang perlu diperbaiki.",
+    message: "Tulis alasan penolakan agar kliper tahu yang perlu diperbaiki.",
   });
 
 export type BadgeDecisionInput = z.output<typeof badgeDecisionSchema>;

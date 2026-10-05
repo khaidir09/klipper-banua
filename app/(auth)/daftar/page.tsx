@@ -3,9 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SignupForm } from "./signup-form";
 
 export const metadata: Metadata = {
-  title: "Daftar jadi Klipper",
+  title: "Daftar jadi Kliper",
   description:
-    "Daftar gratis sebagai klipper: pilih kampanye, posting klip di akunmu, dan dapat honor dari views yang terverifikasi.",
+    "Daftar gratis sebagai kliper: pilih kampanye, posting klip di akunmu, dan dapat honor dari views yang terverifikasi.",
   // The only indexed page outside the public site (FR-M15-05).
   robots: { index: true, follow: true },
 };
@@ -17,7 +17,7 @@ export default function SignupPage() {
     <Card data-auth-width="wide">
       <CardHeader>
         <CardTitle>
-          <h1>Daftar jadi Klipper</h1>
+          <h1>Daftar jadi Kliper</h1>
         </CardTitle>
         <CardDescription>
           Gratis, cuma 2 menit. Posting klip di akunmu sendiri, dapat honor dari setiap 1.000 views

@@ -83,7 +83,7 @@ values ('f1000000-0000-4000-8000-000000000017', 'f1000000-0000-4000-8000-0000000
 insert into public.creator_ledger_entries (id, creator_id, entry_type, amount, campaign_id, content_id)
 values ('f1000000-0000-4000-8000-000000000070', 'f1000000-0000-4000-8000-000000000003', 'honor_klip', 10000, 'f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000011');
 -- Phase 18 (M19): one withdrawal of the portal creator, and one of another
--- klipper the portal creator must never see.
+-- kliper the portal creator must never see.
 insert into public.withdrawals (id, creator_id, amount, bank_name, account_number, account_holder) values
   ('f1000000-0000-4000-8000-000000000071', 'f1000000-0000-4000-8000-000000000003', 50000, 'Bank Kalsel', '1234567890', 'RLS Creator'),
   ('f1000000-0000-4000-8000-000000000072', 'f1000000-0000-4000-8000-000000000004', 50000, 'BRI', '9876543210', 'RLS Creator Two');
@@ -128,8 +128,8 @@ insert into public.campaign_creators (id, campaign_id, creator_id, referral_code
 values ('f1000000-0000-4000-8000-000000000096', 'f1000000-0000-4000-8000-000000000094', 'f1000000-0000-4000-8000-000000000003', 'RLSCCC', 'rls-fixture-c', 'diundang');
 insert into public.contents (id, campaign_creator_id, platform, draft_url, review_status, posted_url, posted_at, live_status)
 values ('f1000000-0000-4000-8000-000000000095', 'f1000000-0000-4000-8000-000000000096', 'tiktok', 'https://example.com/draft-c', 'disetujui', 'https://example.com/live-c', now() - interval '2 days', 'tayang');
--- Phase 15 (M16): another klipper's social account, and audience proofs in
--- each klipper's own folder (`<creator_id>/<file>`).
+-- Phase 15 (M16): another kliper's social account, and audience proofs in
+-- each kliper's own folder (`<creator_id>/<file>`).
 insert into public.creator_social_accounts (id, creator_id, platform, handle)
 values ('f1000000-0000-4000-8000-000000000093', 'f1000000-0000-4000-8000-000000000004', 'tiktok', 'rls.other');
 insert into storage.objects (bucket_id, name) values
@@ -137,7 +137,7 @@ insert into storage.objects (bucket_id, name) values
   ('audience-proofs', 'f1000000-0000-4000-8000-000000000004/rls-other.png');
 -- Phase 16 (M17): the fixtures above are legacy campaigns (paket + undangan),
 -- so they stay out of the catalog. f1…90 is an open per_views campaign the
--- portal creator (now an active klipper) has not joined.
+-- portal creator (now an active kliper) has not joined.
 update public.campaigns set payout_model = 'paket', access = 'undangan'
   where id in ('f1000000-0000-4000-8000-000000000007', 'f1000000-0000-4000-8000-000000000022',
                'f1000000-0000-4000-8000-000000000026', 'f1000000-0000-4000-8000-000000000094');
@@ -351,7 +351,7 @@ insert into rls_cases values
   ('storage:metric-proofs-assigned', 'select', $q$select count(*) from storage.objects where bucket_id = 'metric-proofs' and name = 'f1000000-0000-4000-8000-000000000007/rls-assigned.png'$q$),
   ('storage:metric-proofs-assigned', 'insert', $q$insert into storage.objects (bucket_id, name) values ('metric-proofs', 'f1000000-0000-4000-8000-000000000007/rls-new.png')$q$);
 
--- Phase 15 (M16): a klipper manages their own social accounts and proofs.
+-- Phase 15 (M16): a kliper manages their own social accounts and proofs.
 insert into rls_cases values
   ('creator_portal_social_accounts', 'select', $q$select count(*) from public.creator_portal_social_accounts$q$),
   ('creator_portal_social_accounts_other', 'select', $q$select count(*) from public.creator_portal_social_accounts where id = 'f1000000-0000-4000-8000-000000000093'$q$),
@@ -393,7 +393,7 @@ insert into rls_cases values
 
 -- Phase 18 (M19): withdrawals are owner-only and change through functions;
 -- the minimum withdrawal is read by the team and set by the owner; the
--- klipper reads their own balance, ledger, withdrawals and masked account.
+-- kliper reads their own balance, ledger, withdrawals and masked account.
 insert into rls_cases values
   ('withdrawals', 'select', $q$select count(*) from public.withdrawals where id = 'f1000000-0000-4000-8000-000000000071'$q$),
   ('withdrawals', 'insert', $q$insert into public.withdrawals (creator_id, amount, bank_name, account_number, account_holder) values ('f1000000-0000-4000-8000-000000000003', 60000, 'BRI', '11112222', 'x')$q$),
@@ -621,7 +621,7 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) valu
   ('storage:metric-proofs-assigned', 'insert', 'a', 'a', 'd', 'd', 'a');
 
 -- Phase 15 (M16): the fixture account f1…05 is the portal creator's own, so
--- the base-table rows open up for them; another klipper's stays closed.
+-- the base-table rows open up for them; another kliper's stays closed.
 update rls_expected set creator = 'a'
   where tbl = 'creator_social_accounts' and op in ('select', 'insert', 'update', 'delete');
 insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) values
@@ -638,7 +638,7 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) valu
   ('storage:audience-proofs-other', 'insert', 'a', 'a', 'd', 'd', 'd'),
   ('storage:audience-proofs-other', 'delete', 'a', 'a', 'd', 'd', 'd');
 
--- Phase 16 (M17): an active klipper reads the catalog and the material of an
+-- Phase 16 (M17): an active kliper reads the catalog and the material of an
 -- open campaign, and inserts their own assignment only (the trigger fills in
 -- the rest, see guards-check.sql). The team keeps its usual access.
 insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) values
@@ -658,7 +658,7 @@ insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator, clie
   ('public_campaign_catalog', 'select', 'a', 'a', 'a', 'a', 'a', 'a'),
   ('public_campaign_catalog_closed', 'select', 'd', 'd', 'd', 'd', 'd', 'd');
 
--- Phase 17 (M18): the ledger is internal; the klipper sees their honor per
+-- Phase 17 (M18): the ledger is internal; the kliper sees their honor per
 -- clip through creator_portal_contents.earned_amount (Phase 18 adds
 -- creator_portal_ledger).
 insert into rls_expected (tbl, op, owner, manager, inactive, anon, creator) values
@@ -762,7 +762,7 @@ where n.nspname = 'public'
   );
 
 -- FR-M17-03: the catalog never carries the package price, targets, fee
--- defaults or internal notes. The klipper budget is shown as budget_total /
+-- defaults or internal notes. The kliper budget is shown as budget_total /
 -- budget_used / budget_remaining, never under its internal column name.
 create temporary table catalog_forbidden on commit drop as
 select column_name::text
@@ -814,7 +814,7 @@ where n.nspname = 'public'
   and p.prorettype <> 'trigger'::regtype
   and has_function_privilege('anon', p.oid, 'execute')
   and p.proname not in (
-    -- Public catalog (FR-M15-09) and the klipper registration (M16).
+    -- Public catalog (FR-M15-09) and the kliper registration (M16).
     'public_campaign_catalog_rows', 'campaign_today', 'current_creator_terms_version',
     'normalize_clip_url', 'normalize_person_name'
   );

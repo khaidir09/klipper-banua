@@ -162,7 +162,7 @@ export function platformList(platforms: SocialPlatform[]): string {
   return platforms.map((platform) => SOCIAL_PLATFORM_LABELS[platform]).join(", ") || "–";
 }
 
-/** How a per_views clip earns (PRD 8.6), in the klipper's words. */
+/** How a per_views clip earns (PRD 8.6), in the kliper's words. */
 export function PerViewsTermsCard({
   terms,
   className,
@@ -198,7 +198,7 @@ export function PerViewsTermsCard({
                   : formatRupiah(terms.max_payout_per_clip),
             },
             {
-              label: "Honor maks. per klipper",
+              label: "Honor maks. per kliper",
               value:
                 terms.max_payout_per_creator === null
                   ? "Tanpa batas"
@@ -215,7 +215,7 @@ export function PerViewsTermsCard({
               ? [
                   {
                     label: "Siapa yang bisa ikut",
-                    value: "Khusus pemegang lencana Klipper Lokal",
+                    value: "Khusus pemegang lencana Kliper Lokal",
                     wide: true,
                   },
                 ]

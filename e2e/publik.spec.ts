@@ -60,7 +60,7 @@ test("katalog publik mengajak daftar tanpa membuka portal", async ({ page }) => 
   await expect(
     page.getByRole("heading", { level: 1, name: "Kampanye yang lagi buka" }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Daftar jadi Klipper" }).first()).toHaveAttribute(
+  await expect(page.getByRole("link", { name: "Daftar jadi Kliper" }).first()).toHaveAttribute(
     "href",
     "/daftar",
   );
@@ -89,7 +89,7 @@ test("robots.txt hanya mengizinkan rute publik", async ({ request }) => {
   const body = await (await request.get("/robots.txt")).text();
 
   expect(body).toContain("Allow: /kreator");
-  // v4.0 (M16): the klipper registration is public and indexed too.
+  // v4.0 (M16): the kliper registration is public and indexed too.
   expect(body).toContain("Allow: /daftar");
   // PRD 1.6 (FR-M15-09): the open campaigns are public and indexed.
   expect(body).toContain("Allow: /kampanye");

@@ -1,4 +1,4 @@
--- Phase 16 (v4.0): open campaigns and the klipper catalog (PRD M17,
+-- Phase 16 (v4.0): open campaigns and the kliper catalog (PRD M17,
 -- FR-M4-02, FR-M5-01, FR-M13-03, FR-M13-10).
 --
 -- 1. Campaigns gain an access mode (`terbuka` / `undangan`) and a payout model
@@ -6,7 +6,7 @@
 --    `paket` + `undangan`; new ones default to `per_views` + `terbuka`, and
 --    the app can no longer create `paket` campaigns (PRD 5.3).
 -- 2. Activation, budget and rate rules for `per_views` (FR-M17-02, FR-M17-07).
--- 3. A klipper joins an open campaign by inserting their own assignment. The
+-- 3. A kliper joins an open campaign by inserting their own assignment. The
 --    trigger decides everything on that row - status, timestamps, code, slug -
 --    and refuses fee overrides (FR-M17-04). They may withdraw while no clip of
 --    theirs was approved (FR-M17-05).
@@ -57,11 +57,11 @@ alter table public.campaigns
   add constraint campaigns_paket_invite_only check (payout_model = 'per_views' or access = 'undangan');
 
 comment on column public.campaigns.access is
-  'FR-M17-01: terbuka = listed in the portal catalog, klippers join themselves; undangan = team-assigned only.';
+  'FR-M17-01: terbuka = listed in the portal catalog, klipers join themselves; undangan = team-assigned only.';
 comment on column public.campaigns.payout_model is
   'FR-M17-01: per_views (v4.0) or paket (campaigns created before v4.0). Fixed once the campaign leaves draft.';
 comment on column public.campaigns.creator_budget is
-  'FR-M17-01: honor budget for klippers in whole Rupiah. Never shown to klippers as an amount.';
+  'FR-M17-01: honor budget for klipers in whole Rupiah. Never shown to klipers as an amount.';
 
 create index campaigns_catalog_idx on public.campaigns (status, access, end_date);
 
@@ -70,7 +70,7 @@ alter table public.campaign_creators
   add column withdrawn_at timestamptz;
 
 comment on column public.campaign_creators.join_source is
-  'mandiri = the klipper joined from the catalog (FR-M17-04); tim = added by the team.';
+  'mandiri = the kliper joined from the catalog (FR-M17-04); tim = added by the team.';
 
 -- ---------------------------------------------------------------------------
 -- 2. Helpers
@@ -119,7 +119,7 @@ as $$
   );
 $$;
 
--- An open campaign a klipper may browse: running, listed, not past its end.
+-- An open campaign a kliper may browse: running, listed, not past its end.
 create or replace function public.campaign_open_for_catalog(target_campaign_id uuid)
 returns boolean
 language sql
@@ -138,7 +138,7 @@ as $$
   );
 $$;
 
--- The version of the Syarat Klipper a klipper must have accepted to join or
+-- The version of the Syarat Kliper a kliper must have accepted to join or
 -- send clips (FR-M3-04). Must equal CREATOR_TERMS_VERSION in
 -- lib/constants/creators.ts; lib/constants/terms-version.test.ts checks it.
 -- Bump both together with a new migration.
@@ -222,7 +222,7 @@ revoke execute on function public.campaign_creator_cost(uuid) from anon;
 revoke execute on function public.campaign_budget_exhausted(uuid) from anon;
 revoke execute on function public.campaign_open_for_catalog(uuid) from anon;
 
--- Campaign material a klipper may download: campaigns they are on, and open
+-- Campaign material a kliper may download: campaigns they are on, and open
 -- catalog campaigns once their account is active (PRD 7.4). A `prospek`
 -- reads the brief but downloads nothing until they add a social account.
 create or replace function public.creator_can_view_campaign_assets(target_campaign_id uuid)
@@ -345,7 +345,7 @@ begin
           raise exception 'ACTIVATION_NEEDS_RATE: the rate per 1,000 views must be above zero';
         end if;
         if new.creator_budget <= 0 then
-          raise exception 'ACTIVATION_NEEDS_BUDGET: the klipper budget must be above zero';
+          raise exception 'ACTIVATION_NEEDS_BUDGET: the kliper budget must be above zero';
         end if;
         if new.end_date < public.campaign_today() then
           raise exception 'ACTIVATION_PAST_END_DATE: the end date has passed';
@@ -355,7 +355,7 @@ begin
         end if;
       end if;
 
-      -- FR-M4-02: an open campaign may start without klippers.
+      -- FR-M4-02: an open campaign may start without klipers.
       if new.access = 'undangan' and not exists (
         select 1 from public.campaign_creators
         where campaign_id = new.id and status in ('diundang', 'bergabung')
@@ -391,11 +391,11 @@ begin
 
   select * into v_creator from public.creators where id = new.creator_id;
 
-  -- A klipper joining from the catalog. Checked in the order the portal
+  -- A kliper joining from the catalog. Checked in the order the portal
   -- explains them (lib/campaigns/open.ts joinBlockers).
   if tg_op = 'INSERT' and v_portal_creator is not null then
     if new.creator_id is distinct from v_portal_creator then
-      raise exception 'PORTAL_FIELD_LOCKED: a klipper can only join for themselves';
+      raise exception 'PORTAL_FIELD_LOCKED: a kliper can only join for themselves';
     end if;
 
     if num_nonnulls(new.base_fee, new.bonus_per_1000_views, new.bonus_per_registrant, new.views_bonus_cap) > 0 then
@@ -429,7 +429,7 @@ begin
     end if;
 
     if v_campaign.local_only and v_creator.verified_at is null then
-      raise exception 'JOIN_LOCAL_ONLY: this campaign is for Klipper Lokal badge holders';
+      raise exception 'JOIN_LOCAL_ONLY: this campaign is for Kliper Lokal badge holders';
     end if;
 
     -- Everything else on the row comes from the server, whatever was sent.
@@ -478,7 +478,7 @@ begin
 end;
 $$;
 
--- What a portal klipper may change on their own assignment: confirm an
+-- What a portal kliper may change on their own assignment: confirm an
 -- invitation (FR-M13-10) or withdraw from a per_views campaign while no clip
 -- of theirs was approved (FR-M17-05).
 create or replace function public.guard_portal_assignment_confirm()
@@ -518,7 +518,7 @@ begin
       select 1 from public.contents ct
       where ct.campaign_creator_id = old.id and ct.review_status = 'disetujui'
     ) then
-      raise exception 'WITHDRAW_HAS_APPROVED_CLIP: a klipper with an approved clip cannot withdraw';
+      raise exception 'WITHDRAW_HAS_APPROVED_CLIP: a kliper with an approved clip cannot withdraw';
     end if;
     new.joined_at := old.joined_at;
     new.creator_confirmed_at := old.creator_confirmed_at;
@@ -530,7 +530,7 @@ begin
 end;
 $$;
 
--- A klipper inserts only their own assignment; the trigger above decides the
+-- A kliper inserts only their own assignment; the trigger above decides the
 -- rest. Reading it back goes through creator_portal_assignments.
 create policy "campaign_creators_insert_portal_creator"
   on public.campaign_creators for insert to authenticated
@@ -600,7 +600,7 @@ from public.campaign_assets a
 where public.creator_can_view_campaign_assets(a.campaign_id);
 
 comment on view public.creator_portal_assets is
-  'FR-M13-04, PRD 7.4: material of the campaigns this klipper is on, and of open catalog campaigns once their account is active.';
+  'FR-M13-04, PRD 7.4: material of the campaigns this kliper is on, and of open catalog campaigns once their account is active.';
 
 -- ---------------------------------------------------------------------------
 -- 7. Portal read surface
@@ -608,7 +608,7 @@ comment on view public.creator_portal_assets is
 
 -- FR-M17-03. Budget is shown as a percentage only; package price, targets,
 -- the budget amount and internal notes never appear. Readable by an `aktif`
--- or `prospek` klipper (a prospect sees the catalog but cannot join yet).
+-- or `prospek` kliper (a prospect sees the catalog but cannot join yet).
 create view public.creator_portal_catalog
 with (security_invoker = off) as
 select
@@ -659,12 +659,12 @@ where c.status = 'aktif'
   );
 
 comment on view public.creator_portal_catalog is
-  'FR-M17-03: open per_views campaigns for the signed-in klipper. No package_price, targets, budget amount or internal notes.';
+  'FR-M17-03: open per_views campaigns for the signed-in kliper. No package_price, targets, budget amount or internal notes.';
 
 revoke all on public.creator_portal_catalog from anon;
 grant select on public.creator_portal_catalog to authenticated;
 
--- The klipper's own assignments with the per_views terms. New columns are
+-- The kliper's own assignments with the per_views terms. New columns are
 -- appended, so `create or replace view` accepts them.
 create or replace view public.creator_portal_assignments
 with (security_invoker = off) as

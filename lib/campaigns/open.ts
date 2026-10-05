@@ -3,7 +3,7 @@ import type { CreatorStatus } from "@/lib/constants/creators";
 import { formatDateInput } from "@/lib/format/date";
 
 /**
- * Open campaigns and the klipper catalog (PRD M17). The database enforces the
+ * Open campaigns and the kliper catalog (PRD M17). The database enforces the
  * same rules in `guard_campaign_creator_change` and
  * `guard_portal_assignment_confirm`; these give the portal its explanations.
  */
@@ -16,7 +16,7 @@ export function campaignToday(now: Date = new Date()): string {
   return formatDateInput(now, CAMPAIGN_BUSINESS_TIMEZONE);
 }
 
-/** Reasons a klipper cannot join, in the order the trigger checks them. */
+/** Reasons a kliper cannot join, in the order the trigger checks them. */
 export type JoinBlocker =
   | "already_joined"
   | "creator_not_active"
@@ -31,11 +31,11 @@ export const JOIN_BLOCKER_MESSAGES: Record<JoinBlocker, string> = {
   creator_not_active:
     "Tambahkan minimal satu akun medsos di Profil dulu supaya akunmu aktif dan bisa gabung.",
   terms_outdated:
-    "Syarat Klipper sudah diperbarui. Setujui versi terbarunya dulu, baru kamu bisa gabung.",
-  campaign_closed: "Kampanye ini lagi nggak terima klipper baru.",
+    "Syarat Kliper sudah diperbarui. Setujui versi terbarunya dulu, baru kamu bisa gabung.",
+  campaign_closed: "Kampanye ini lagi nggak terima kliper baru.",
   past_deadline: "Kampanye ini sudah selesai.",
   budget_exhausted: "Anggaran kampanye ini sudah habis. Cari kampanye lain, yuk!",
-  local_only: "Kampanye ini khusus pemegang lencana Klipper Lokal. Ajukan lencananya di Profil.",
+  local_only: "Kampanye ini khusus pemegang lencana Kliper Lokal. Ajukan lencananya di Profil.",
 };
 
 export type JoinCheckInput = {
@@ -53,13 +53,13 @@ export type JoinCheckInput = {
     localOnly: boolean;
     budgetExhausted: boolean;
   };
-  /** The klipper already has an assignment on this campaign (any status). */
+  /** The kliper already has an assignment on this campaign (any status). */
   alreadyJoined: boolean;
   currentTermsVersion: string;
   today: string;
 };
 
-/** FR-M17-04. Empty when the klipper may join. */
+/** FR-M17-04. Empty when the kliper may join. */
 export function joinBlockers(input: JoinCheckInput): JoinBlocker[] {
   const { creator, campaign } = input;
   const blockers: JoinBlocker[] = [];
@@ -82,7 +82,7 @@ export function joinBlockers(input: JoinCheckInput): JoinBlocker[] {
 }
 
 /**
- * FR-M17-05: a klipper leaves a running `per_views` campaign on their own
+ * FR-M17-05: a kliper leaves a running `per_views` campaign on their own
  * while none of their clips was approved.
  */
 export function canWithdraw(input: {
